@@ -35,17 +35,7 @@ public class PostGene : MonoBehaviour {
             yield return www.Send();
 
             if(www.isDone) {
-                Debug.Log("Helloooo");
                 response = www.downloadHandler.text.Split('A');
-                // string[] textResponse = www.downloadHandler.text.Split('A');
-                // for (int i = 1; i < textResponse.Length; i++)
-                // {
-                //     float val = float.Parse(textResponse[i].Split('"')[0], System.Globalization.CultureInfo.InvariantCulture);
-                //     //cell.CellInfos.Add(val);
-                // }
-
-                //transform.gameObject.GetComponent<Gene>().CellInfos;
-                //cell.isRequestDone = true;
             }
 
             if (www.isNetworkError || www.isHttpError)
