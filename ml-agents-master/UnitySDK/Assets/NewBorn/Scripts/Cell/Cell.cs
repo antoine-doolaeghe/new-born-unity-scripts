@@ -28,9 +28,10 @@ namespace Gene {
         }
 
         void Update () {
-            if (postGene.response.Length != 0 && !initialised) {
-                for (int i = 1; i < postGene.response.Length; i++) {
-                    float val = float.Parse (postGene.response[i].Split ('\\') [0], System.Globalization.CultureInfo.InvariantCulture);
+            string[] response = postGene.response;
+            if (response.Length != 0 && !initialised) {
+                for (int i = 1; i < response.Length; i++) {
+                    float val = float.Parse (response[i].Split ('\\') [0], System.Globalization.CultureInfo.InvariantCulture);
                     CellInfos.Add (val);
                 }
                 initGerms (partNb, threshold);
@@ -66,7 +67,7 @@ namespace Gene {
             GameObject initCell = InitBaseShape (Germs[0], 0);
             InitRigidBody (initCell);
             initCell.transform.parent = transform;
-            HandleStoreCell (initCell, initCell.transform.localPosition);
+            HandleStoreCell(initCell, initCell.transform.localPosition);
 
             // ////////////////////////////////////////////////////////////////////////////////////
             // ///////////////// Iterate for each new part of the morphology //////////////////////
@@ -117,11 +118,11 @@ namespace Gene {
                 cell.GetComponent<SphereCollider> ().radius /= 2f;
             }
 
-            //////////////////////////////////////////////////////////////////////////////////////
+            // ////////////////////////////////////////////////////////////////////////////////////
             AddAgentPart ();
 
             if (postApiData) {
-                ////Post data to Api
+                //Post data to Api
                 //GameObject.Find("Focus Camera").GetComponent<WebCamPhotoCamera>().CaptureScreenshot();
                 string postData = HandlePostData ();
                 StartCoroutine (postGene.postCell (postData, transform.gameObject.name));
@@ -170,9 +171,6 @@ namespace Gene {
             germs.Add (GameObject.CreatePrimitive (PrimitiveType.Sphere));
             GameObject cell = Germs[y][Germs[y].Count - 1];
             cell.transform.position = transform.position;
-            //cell.transform.localScale = new Vector3(0.5f, 0.5f, 0.5f);
-            //cell.GetComponent<Renderer>().material = Resources.Load<Material>("Materials/cell/cell");
-
             return cell;
         }
 
@@ -188,7 +186,6 @@ namespace Gene {
 
         private void initJoint (GameObject part, GameObject connectedBody, Vector3 jointAnchor, int y, int z) {
             ConfigurableJoint cj = part.transform.gameObject.AddComponent<ConfigurableJoint> ();
-            ///////////////////////
             // Configurable Joint Motion 
             cj.xMotion = ConfigurableJointMotion.Locked;
             cj.yMotion = ConfigurableJointMotion.Locked;

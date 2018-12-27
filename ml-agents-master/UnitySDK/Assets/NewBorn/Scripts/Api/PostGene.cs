@@ -9,7 +9,7 @@ namespace Gene {
     public class PostGene : MonoBehaviour {
         public string[] response;
         public GameObject cell;
-
+        
         public IEnumerator postCell (string cellInfos, string cellName) {
             string url = "https://pnk98uo8jf.execute-api.eu-west-2.amazonaws.com/prod/cell";
             PostObject postObject = new PostObject (cellInfos, cellName);
