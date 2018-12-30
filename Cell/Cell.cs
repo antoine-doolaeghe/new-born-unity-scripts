@@ -7,6 +7,7 @@ namespace Gene {
     public class Cell : MonoBehaviour {
         [Header ("Connection to API Service")]
         public PostGene postGene;
+        public AgentConfig agentConfig;
         public bool postApiData;
         public bool requestApiData;
         public string cellId;
@@ -40,11 +41,9 @@ namespace Gene {
         }
 
         public void initGerms (int numGerms, float threshold) {
-            // RENAME THE PARENT GAMEOBJECT//
-            transform.gameObject.name = transform.gameObject.name + Random.Range(0, 1000);
-            // /////////////////////////////////
-            // INIT GENE LIST //
-            ////////////////////
+
+            transform.gameObject.name = transform.gameObject.name + Random.Range (0, 1000);
+
             Germs = new List<List<GameObject>> ();
             Cells = new List<GameObject> ();
             CellPositions = new List<Vector3> ();
@@ -58,32 +57,18 @@ namespace Gene {
                 new Vector3 (0f, 0f, -1f)
             };
 
-            // ////////////////////////////////////////////////////////////////////////////////////
-            // //////////////////////////////INIT BASE GERMS///////////////////////////////////////
-            // ////////////////////////////////////////////////////////////////////////////////////
-            /// 1ST CELL ///
-            // init object shape
             Germs.Add (new List<GameObject> ());
             GameObject initCell = InitBaseShape (Germs[0], 0);
-            InitRigidBody (initCell);
             initCell.transform.parent = transform;
-            HandleStoreCell(initCell, initCell.transform.localPosition);
-
-            // ////////////////////////////////////////////////////////////////////////////////////
-            // ///////////////// Iterate for each new part of the morphology //////////////////////
-            /// //////////////////////////////////////////////////////////////////////////////////
+            InitRigidBody (initCell);
+            HandleStoreCell (initCell, initCell.transform.localPosition);
+            
             for (int y = 1; y < numGerms; y++) {
                 int prevCount = Germs[y - 1].Count;
                 Germs.Add (new List<GameObject> ());
 
-                //////////////////////////////////////////////////
-                /// ITERATE FOR EACH PREVIOUS GERM CELL NUMBER ///
                 for (int i = 0; i < prevCount; i++) {
-                    //////////////////////////////////////////////////
-                    ////////// ITERATE FOR EACH CELL SIDES ///////////
                     for (int z = 0; z < sides.Count; z++) {
-                        /// RANDOM ITERATION FROM THE PREVIOUS CELL
-
                         bool isValid = true;
                         float cellInfo = 0f;
                         Vector3 cellPosition = Germs[y - 1][i].transform.position + sides[z];
@@ -111,23 +96,17 @@ namespace Gene {
                     cell.transform.parent = transform;
                 }
             }
-            //////////////////////////////////////////////////////////////////////////////////////
 
             foreach (var cell in Cells) {
-                //cell.transform.localScale *= 2f;
                 cell.GetComponent<SphereCollider> ().radius /= 2f;
             }
 
-            // ////////////////////////////////////////////////////////////////////////////////////
             AddAgentPart ();
 
             if (postApiData) {
-                //Post data to Api
-                //GameObject.Find("Focus Camera").GetComponent<WebCamPhotoCamera>().CaptureScreenshot();
                 string postData = HandlePostData ();
                 StartCoroutine (postGene.postCell (postData, transform.gameObject.name));
             }
-            //gameObject.transform.GetChild(0).transform.parent = gameObject.transform.GetChild(1).transform;
         }
 
         private void HandleStoreCell (GameObject cell, Vector3 cellPosition) {
@@ -186,23 +165,19 @@ namespace Gene {
 
         private void initJoint (GameObject part, GameObject connectedBody, Vector3 jointAnchor, int y, int z) {
             ConfigurableJoint cj = part.transform.gameObject.AddComponent<ConfigurableJoint> ();
-            // Configurable Joint Motion 
             cj.xMotion = ConfigurableJointMotion.Locked;
             cj.yMotion = ConfigurableJointMotion.Locked;
             cj.zMotion = ConfigurableJointMotion.Locked;
-            // Configurable Joint Angular Mortion
             cj.angularXMotion = ConfigurableJointMotion.Limited;
             cj.angularYMotion = ConfigurableJointMotion.Limited;
             cj.angularZMotion = ConfigurableJointMotion.Limited;
-            // Configurable Joint Connected Body AND Anchor settings
             cj.anchor = new Vector3 (0f, 0f, 0f);
             cj.connectedBody = connectedBody.gameObject.GetComponent<Rigidbody> ();
             cj.rotationDriveMode = RotationDriveMode.Slerp;
-            // Configurable Joint Angular Limit
-            cj.angularYLimit = new SoftJointLimit () { limit = 90f, bounciness = 10f };
-            cj.highAngularXLimit = new SoftJointLimit () { limit = 50f, bounciness = 10f };
-            cj.lowAngularXLimit = new SoftJointLimit () { limit = 0f, bounciness = 10f };
-            cj.angularZLimit = new SoftJointLimit () { limit = 1f, bounciness = 10f };
+            cj.angularYLimit = new SoftJointLimit () { limit = agentConfig.yLimit, bounciness = agentConfig.bounciness };
+            cj.highAngularXLimit = new SoftJointLimit () { limit = agentConfig.highXLimit, bounciness = agentConfig.bounciness };
+            cj.lowAngularXLimit = new SoftJointLimit () { limit = agentConfig.lowXLimit, bounciness = agentConfig.bounciness };
+            cj.angularZLimit = new SoftJointLimit () { limit = agentConfig.zLimit, bounciness = agentConfig.bounciness };
             part.gameObject.GetComponent<Rigidbody> ().useGravity = true;
             part.gameObject.GetComponent<Rigidbody> ().mass = 1f;
         }

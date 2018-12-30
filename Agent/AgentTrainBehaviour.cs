@@ -7,6 +7,10 @@ using UnityEngine.UI;
 
 [RequireComponent (typeof (JointDriveController))] // Required to set joint forces
 public class AgentTrainBehaviour : Agent {
+	[Header ("Morphology Parts")]
+	public AgentConfig agentConfig;
+	[HideInInspector] public List<Transform> parts;
+	[HideInInspector] public Transform initPart;
 	[Header ("Connection to API Service")]
 	public bool requestApiData;
 	public string cellId;
@@ -18,13 +22,6 @@ public class AgentTrainBehaviour : Agent {
 	public bool detectTargets;
 	public bool respawnTargetWhenTouched;
 	public float targetSpawnRadius;
-
-	[Header ("Morphology Parts")]
-	[Space (10)]
-	public int partNb;
-	public float threshold;
-	[HideInInspector] public List<Transform> parts;
-	[HideInInspector] public Transform initPart;
 
 	[Header ("Joint Settings")][Space (10)] JointDriveController jdController;
 	Vector3 dirToTarget;
@@ -45,11 +42,11 @@ public class AgentTrainBehaviour : Agent {
 		// Handle starting/communication with api data
 		Cell cell = GetComponent<Cell> ();
 		if (requestApiData) {
-			cell.partNb = partNb;
-			cell.threshold = threshold;
+			cell.partNb = agentConfig.layerNumber;
+			cell.threshold = agentConfig.threshold;
 			StartCoroutine (postGene.getCell (cellId));
 		} else {
-			cell.initGerms (partNb, threshold);
+			cell.initGerms (agentConfig.layerNumber, agentConfig.threshold);
 		}
 		currentDecisionStep = 1;
 	}
@@ -141,8 +138,6 @@ public class AgentTrainBehaviour : Agent {
 				// Update joint strength
 				bpDict[part].SetJointStrength (vectorAction[++i]);
 			}
-
-			NewMethod (vectorAction, i);
 		}
 
 		// Set reward for this step according to mixture of the following elements.
@@ -205,74 +200,74 @@ public class AgentTrainBehaviour : Agent {
 /// TEMPORARY METHOD ///
 // ////////////////////// 
 // private void NewMethod (float[] vectorAction, int i) {
-	//   if (colorGrading != null && vectorAction[i++] > 0.5f && vectorAction[i] < 0.55f)
-	//   {
-	//     colorGrading.temperature.value = 100f;
-	//     colorGrading.tint.value = 100f;
-	//     colorGrading.saturation.value = 100f;
-	//     colorGrading.contrast.value = -60f;
-	//   }
-	//   else
-	//   {
-	//     colorGrading.temperature.value = colorGrading.temperature.value == 0f ? colorGrading.temperature.value : colorGrading.temperature.value - 10f;
-	//     colorGrading.tint.value = 0f;
-	//     colorGrading.saturation.value = colorGrading.saturation.value == 0f ? colorGrading.saturation.value : colorGrading.saturation.value - 10f;
-	//     colorGrading.contrast.value = 0f;
-	//   }
+//   if (colorGrading != null && vectorAction[i++] > 0.5f && vectorAction[i] < 0.55f)
+//   {
+//     colorGrading.temperature.value = 100f;
+//     colorGrading.tint.value = 100f;
+//     colorGrading.saturation.value = 100f;
+//     colorGrading.contrast.value = -60f;
+//   }
+//   else
+//   {
+//     colorGrading.temperature.value = colorGrading.temperature.value == 0f ? colorGrading.temperature.value : colorGrading.temperature.value - 10f;
+//     colorGrading.tint.value = 0f;
+//     colorGrading.saturation.value = colorGrading.saturation.value == 0f ? colorGrading.saturation.value : colorGrading.saturation.value - 10f;
+//     colorGrading.contrast.value = 0f;
+//   }
 
-	//   ParticleSystem[] particleSystems = particleSystem.GetComponentsInChildren<ParticleSystem>();
+//   ParticleSystem[] particleSystems = particleSystem.GetComponentsInChildren<ParticleSystem>();
 
-	//   if (vectorAction[i++] > 0.3f)
-	//   {
-	//     text.SetActive(true);
-	//   }
-	//   else
-	//   {
-	//     text.SetActive(false);
-	//   }
+//   if (vectorAction[i++] > 0.3f)
+//   {
+//     text.SetActive(true);
+//   }
+//   else
+//   {
+//     text.SetActive(false);
+//   }
 
-	//   if (vectorAction[i++] > 0.3f)
-	//   {
-	//     particleSystems[0].Play();
-	//   }
-	//   else
-	//   {
-	//     particleSystems[0].Stop();
-	//   }
+//   if (vectorAction[i++] > 0.3f)
+//   {
+//     particleSystems[0].Play();
+//   }
+//   else
+//   {
+//     particleSystems[0].Stop();
+//   }
 
-	//   if (vectorAction[i++] > 0.3f && vectorAction[i] > 0.75f)
-	//   {
-	//     particleSystems[1].Play();
-	//   }
-	//   else
-	//   {
-	//     particleSystems[1].Stop();
-	//   }
+//   if (vectorAction[i++] > 0.3f && vectorAction[i] > 0.75f)
+//   {
+//     particleSystems[1].Play();
+//   }
+//   else
+//   {
+//     particleSystems[1].Stop();
+//   }
 
-	//   if (vectorAction[i++] > 0.3f && vectorAction[i] > 0.75f)
-	//   {
-	//     particleSystems[2].Play();
-	//   }
-	//   else
-	//   {
-	//     particleSystems[2].Stop();
-	//   }
+//   if (vectorAction[i++] > 0.3f && vectorAction[i] > 0.75f)
+//   {
+//     particleSystems[2].Play();
+//   }
+//   else
+//   {
+//     particleSystems[2].Stop();
+//   }
 
-	//   if (vectorAction[i++] > 0.65f)
-	//   {
-	//     image.texture = Resources.Load("Textures/1") as Texture;
-	//     // image.gameObject.GetComponent<RectTransform>().localPosition = new Vector3(Random.Range(-100f, 110f), Random.Range(-100f, 100f), 0f);
-	//     // image.gameObject.GetComponent<RectTransform>().localRotation = Quaternion.Euler(0f, 0f, Random.Range(-50f, 50f));
-	//     imageAlpha = 1f;
-	//   }
-	//   else
-	//   {
-	//     imageAlpha = imageAlpha - 0.1f;
-	//   }
-	//   Color color = Color.white;
-	//   color.a = imageAlpha;
-	//   image.color = color;
+//   if (vectorAction[i++] > 0.65f)
+//   {
+//     image.texture = Resources.Load("Textures/1") as Texture;
+//     // image.gameObject.GetComponent<RectTransform>().localPosition = new Vector3(Random.Range(-100f, 110f), Random.Range(-100f, 100f), 0f);
+//     // image.gameObject.GetComponent<RectTransform>().localRotation = Quaternion.Euler(0f, 0f, Random.Range(-50f, 50f));
+//     imageAlpha = 1f;
+//   }
+//   else
+//   {
+//     imageAlpha = imageAlpha - 0.1f;
+//   }
+//   Color color = Color.white;
+//   color.a = imageAlpha;
+//   image.color = color;
 
-	//   handleAgentSound(vectorAction, i);
-	//   return i;
+//   handleAgentSound(vectorAction, i);
+//   return i;
 // }

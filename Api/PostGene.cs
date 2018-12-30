@@ -9,12 +9,13 @@ namespace Gene {
     public class PostGene : MonoBehaviour {
         public string[] response;
         public GameObject cell;
+        public ApiConfig apiConfig;
         
         public IEnumerator postCell (string cellInfos, string cellName) {
-            string url = "https://pnk98uo8jf.execute-api.eu-west-2.amazonaws.com/prod/cell";
+            string url = apiConfig.url;
             PostObject postObject = new PostObject (cellInfos, cellName);
-            string jsonStringTrial = JsonUtility.ToJson (postObject);
-            UnityWebRequest www = UnityWebRequest.Put (url, jsonStringTrial);
+            string jsonString = JsonUtility.ToJson (postObject);
+            UnityWebRequest www = UnityWebRequest.Put (url, jsonString);
             yield return www.SendWebRequest ();
             if (www.isNetworkError || www.isHttpError) {
                 Debug.Log ("error");
@@ -22,15 +23,14 @@ namespace Gene {
         }
 
         public IEnumerator getCell (string id) {
-            // TEMPORARY URL
-            using (UnityWebRequest www = UnityWebRequest.Get ("https://pnk98uo8jf.execute-api.eu-west-2.amazonaws.com/prod/cell/" + id)) {
+            using (UnityWebRequest www = UnityWebRequest.Get (apiConfig.url + id)) {
                 yield return www.Send ();
 
                 if (www.isNetworkError || www.isHttpError) {
                     Debug.Log (www.error);
                 } else {
                     if (www.isDone) {
-                        response = www.downloadHandler.text.Split ('A'); // A IS THE SPLITTER KEY BETWEEN INFOS
+                        response = www.downloadHandler.text.Split ('A');
                     }
                 }
             }
