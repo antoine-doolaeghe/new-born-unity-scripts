@@ -42,7 +42,7 @@ namespace Gene {
 
         public void initGerms (int numGerms, float threshold) {
 
-            transform.gameObject.name = transform.gameObject.name + Random.Range (0, 1000);
+            transform.gameObject.name = transform.GetComponent<AgentTrainBehaviour>().brain +  Random.Range (0, 1000);
 
             Germs = new List<List<GameObject>> ();
             Cells = new List<GameObject> ();
@@ -62,7 +62,7 @@ namespace Gene {
             initCell.transform.parent = transform;
             InitRigidBody (initCell);
             HandleStoreCell (initCell, initCell.transform.localPosition);
-            
+
             for (int y = 1; y < numGerms; y++) {
                 int prevCount = Germs[y - 1].Count;
                 Germs.Add (new List<GameObject> ());
