@@ -11,7 +11,7 @@ namespace Gene {
         public bool postApiData;
         public bool requestApiData;
         public string cellId;
-
+        
         private int cellInfoIndex = 0;
         private bool initialised;
         private List<List<GameObject>> Germs;
@@ -42,7 +42,7 @@ namespace Gene {
 
         public void initGerms (int numGerms, float threshold) {
 
-            transform.gameObject.name = transform.GetComponent<AgentTrainBehaviour>().brain +  Random.Range (0, 1000);
+            transform.gameObject.name = transform.GetComponent<AgentTrainBehaviour>().brain + "";
 
             Germs = new List<List<GameObject>> ();
             Cells = new List<GameObject> ();
