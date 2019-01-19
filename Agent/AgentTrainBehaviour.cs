@@ -5,269 +5,250 @@ using MLAgents;
 using UnityEngine;
 using UnityEngine.UI;
 
-[RequireComponent (typeof (JointDriveController))] // Required to set joint forces
-public class AgentTrainBehaviour : Agent {
-	[Header ("Morphology Parts")]
-	public AgentConfig agentConfig;
-	[HideInInspector] public List<Transform> parts;
-	[HideInInspector] public Transform initPart;
-	[Header ("Connection to API Service")]
-	public bool requestApiData;
-	public string cellId;
-	public PostGene postGene;
-	[Header ("Target To Walk Towards")]
-	[Space (10)]
-	public Transform target;
-	public Transform ground;
-	public bool detectTargets;
-	public bool respawnTargetWhenTouched;
-	public float targetSpawnRadius;
+[RequireComponent(typeof(JointDriveController))] // Required to set joint forces
+public class AgentTrainBehaviour : Agent
+{
+  [Header("Morphology Parts")]
+  public AgentConfig agentConfig;
 
-	[Header ("Joint Settings")][Space (10)] JointDriveController jdController;
-	Vector3 dirToTarget;
-	float movingTowardsDot;
-	float facingDot;
+  [SerializeField] public List<Transform> parts;
+  [SerializeField] public Transform initPart;
+  [Header("Connection to API Service")]
+  public bool requestApiData;
+  public string cellId;
+  public PostGene postGene;
+  [Header("Target To Walk Towards")]
+  [Space(10)]
+  public Transform target;
+  public Transform ground;
+  public bool detectTargets;
+  public bool respawnTargetWhenTouched;
+  public float targetSpawnRadius;
 
-	[Header ("Reward Functions To Use")]
-	[Space (10)]
-	public bool rewardMovingTowardsTarget; // Agent should move towards target
-	public bool rewardFacingTarget; // Agent should face the target
-	public bool rewardUseTimePenalty; // Hurry up
+  [Header("Joint Settings")]
+  [Space(10)]
+  public JointDriveController jdController;
+  Vector3 dirToTarget;
+  float initTargetDistance;
+  float movingTowardsDot;
+  float facingDot;
 
-	bool isNewDecisionStep;
-	int currentDecisionStep;
+  [Header("Reward Functions To Use")]
+  [Space(10)]
+  public bool rewardMovingTowardsTarget; // Agent should move towards target
+  public bool rewardFacingTarget; // Agent should face the target
+  public bool rewardUseTimePenalty; // Hurry up
+  public bool penaltyFunctionMovingAgainst; // stay in the zone
 
-	public override void InitializeAgent () {
-		jdController = GetComponent<JointDriveController> ();
-		// Handle starting/communication with api data
-		Cell cell = GetComponent<Cell> ();
-		if (requestApiData) {
-			cell.partNb = agentConfig.layerNumber;
-			cell.threshold = agentConfig.threshold;
-			StartCoroutine (postGene.getCell (cellId));
-		} else {
-			cell.initGerms (agentConfig.layerNumber, agentConfig.threshold);
-		}
-		currentDecisionStep = 1;
-	}
+  private bool isNewDecisionStep;
+  private int currentDecisionStep;
 
-	public void initBodyParts () {
-		jdController.SetupBodyPart (initPart);
-		foreach (var part in parts) {
-			jdController.SetupBodyPart (part);
-		}
-	}
+  public override void InitializeAgent()
+  {
+    initBodyParts();
+    currentDecisionStep = 1;
+  }
 
-	/// <summary>
-	/// We only need to change the joint settings based on decision freq.
-	/// </summary>
-	public void IncrementDecisionTimer () {
-		if (currentDecisionStep == agentParameters.numberOfActionsBetweenDecisions ||
-			agentParameters.numberOfActionsBetweenDecisions == 1) {
-			currentDecisionStep = 1;
-			isNewDecisionStep = true;
-		} else {
-			currentDecisionStep++;
-			isNewDecisionStep = false;
-		}
-	}
+  public void initBodyParts()
+  {
+    jdController.SetupBodyPart(initPart);
+    initTargetDistance = Vector3.Distance(initPart.position, target.position);
+    foreach (var part in parts)
+    {
+      jdController.SetupBodyPart(part);
+    }
+  }
 
-	/// <summary>
-	/// Add relevant information on each morphology part to observations.
-	/// </summary>
-	public void CollectObservationBodyPart (BodyPart bp) {
-		var rb = bp.rb;
+  public void DeleteBodyParts()
+  {
+    parts.Clear();
+  }
 
-		if (bp.rb.transform != initPart) {
-			Vector3 localPosRelToBody = initPart.InverseTransformPoint (rb.position);
-		}
-	}
+  /// <summary>
+  /// We only need to change the joint settings based on decision freq.
+  /// </summary>
+  public void IncrementDecisionTimer()
+  {
+    if (currentDecisionStep == agentParameters.numberOfActionsBetweenDecisions ||
+      agentParameters.numberOfActionsBetweenDecisions == 1)
+    {
+      currentDecisionStep = 1;
+      isNewDecisionStep = true;
+    }
+    else
+    {
+      currentDecisionStep++;
+      isNewDecisionStep = false;
+    }
+  }
 
-	public override void CollectObservations () {
-		jdController.GetCurrentJointForces ();
-		// Normalize dir vector to help generalize
-		AddVectorObs (dirToTarget.normalized);
+  /// <summary>
+  /// Add relevant information on each morphology part to observations.
+  /// </summary>
+  public void CollectObservationBodyPart(BodyPart bp)
+  {
+    var rb = bp.rb;
+    AddVectorObs(rb.velocity);
+    AddVectorObs(rb.angularVelocity);
 
-		foreach (var bodyPart in jdController.bodyPartsDict.Values) {
-			CollectObservationBodyPart (bodyPart);
-		}
-	}
+    if (bp.rb.transform != initPart)
+    {
+      Vector3 localPosRelToBody = initPart.InverseTransformPoint(rb.position);
+      AddVectorObs(localPosRelToBody);
+      AddVectorObs(bp.currentXNormalizedRot); // Current x rot
+      AddVectorObs(bp.currentYNormalizedRot); // Current y rot
+      AddVectorObs(bp.currentZNormalizedRot); // Current z rot
+      AddVectorObs(bp.currentStrength / jdController.maxJointForceLimit);
+    }
+  }
 
-	/// <summary>
-	/// Agent touched the target
-	/// </summary>
-	public void TouchedTarget () {
-		AddReward (1f);
-		if (respawnTargetWhenTouched) {
-			GetRandomTargetPos ();
-		}
-	}
+  public override void CollectObservations()
+  {
+    jdController.GetCurrentJointForces();
+    // Normalize dir vector to help generalize
+    AddVectorObs(dirToTarget.normalized);
 
-	/// <summary>
-	/// Moves target to a random position within specified radius.
-	/// </summary>
-	public void GetRandomTargetPos () {
-		Vector3 newTargetPos = Random.insideUnitSphere * targetSpawnRadius;
-		newTargetPos.y = 5;
-		target.position = newTargetPos + ground.position;
-	}
+    foreach (var bodyPart in jdController.bodyPartsDict.Values)
+    {
+      CollectObservationBodyPart(bodyPart);
+    }
+  }
 
-	public override void AgentAction (float[] vectorAction, string textAction) {
+  /// <summary>
+  /// Agent touched the target
+  /// </summary>
+  public void TouchedTarget()
+  {
+    AddReward(15f);
+    AgentReset();
+    if (respawnTargetWhenTouched)
+    {
+      GetRandomTargetPos();
+    }
+  }
 
-		if (detectTargets) {
-			foreach (var bodyPart in jdController.bodyPartsDict.Values) {
-				if (bodyPart.targetContact && !IsDone () && bodyPart.targetContact.touchingTarget) {
-					TouchedTarget ();
-				}
-			}
-		}
+  /// <summary>
+  /// Moves target to a random position within specified radius.
+  /// </summary>
+  public void GetRandomTargetPos()
+  {
+    Vector3 newTargetPos = Random.insideUnitSphere * targetSpawnRadius;
+    newTargetPos.y = 5;
+    target.position = newTargetPos + ground.position;
+  }
 
-		// Update pos to target
-		dirToTarget = target.position - jdController.bodyPartsDict[initPart].rb.position;
+  public override void AgentAction(float[] vectorAction, string textAction)
+  {
+    if (detectTargets)
+    {
+      foreach (var bodyPart in jdController.bodyPartsDict.Values)
+      {
+        if (bodyPart.targetContact && !IsDone() && bodyPart.targetContact.touchingTarget)
+        {
+          TouchedTarget();
+        }
+      }
+    }
 
-		// Joint update logic only needs to happen when a new decision is made
-		if (isNewDecisionStep) {
-			// The dictionary with all the body parts in it are in the jdController
-			var bpDict = jdController.bodyPartsDict;
+    // Update pos to target
+    dirToTarget = target.position - initPart.position;
 
-			int i = 1;
+    // Joint update logic only needs to happen when a new decision is made
+    if (isNewDecisionStep)
+    {
+      // The dictionary with all the body parts in it are in the jdController
+      var bpDict = jdController.bodyPartsDict;
 
-			foreach (var part in parts) {
-				// Pick a new target joint rotation
-				bpDict[part].SetJointTargetRotation (vectorAction[++i], vectorAction[++i], 0);
-				// Update joint strength
-				bpDict[part].SetJointStrength (vectorAction[++i]);
-			}
-		}
+      int i = 1;
 
-		// Set reward for this step according to mixture of the following elements.
-		if (rewardMovingTowardsTarget) {
-			RewardFunctionMovingTowards ();
-		}
+      foreach (var part in parts)
+      {
+        // Pick a new target joint rotation
+        bpDict[part].SetJointTargetRotation(vectorAction[++i], vectorAction[++i], 0);
+        // Update joint strength
+        bpDict[part].SetJointStrength(vectorAction[++i]);
+      }
+    }
 
-		if (rewardFacingTarget) {
-			RewardFunctionFacingTarget ();
-		}
+    // Set reward for this step according to mixture of the following elements.
+    if (rewardMovingTowardsTarget)
+    {
+      RewardFunctionMovingTowards();
+    }
 
-		if (rewardUseTimePenalty) {
-			RewardFunctionTimePenalty ();
-		}
+    if (rewardFacingTarget)
+    {
+      RewardFunctionFacingTarget();
+    }
 
-		IncrementDecisionTimer ();
-	}
+    if (rewardUseTimePenalty)
+    {
+      RewardFunctionTimePenalty();
+    }
 
-	/// <summary>
-	/// Reward moving towards target & Penalize moving away from target.
-	/// </summary>
-	void RewardFunctionMovingTowards () {
-		movingTowardsDot = Vector3.Dot (jdController.bodyPartsDict[initPart].rb.velocity, dirToTarget.normalized);
-		AddReward (0.03f * movingTowardsDot);
-	}
+    if (penaltyFunctionMovingAgainst)
+    {
+      PenaltyFunctionMovingAgainst();
+    }
 
-	/// <summary>
-	/// Reward facing target & Penalize facing away from target
-	/// </summary>
-	void RewardFunctionFacingTarget () {
-		facingDot = Vector3.Dot (dirToTarget.normalized, initPart.forward);
-		AddReward (0.01f * facingDot);
-	}
+    IncrementDecisionTimer();
+  }
 
-	/// <summary>
-	/// Existential penalty for time-contrained tasks.
-	/// </summary>
-	void RewardFunctionTimePenalty () {
-		AddReward (-0.001f);
-	}
+  /// <summary>
+  /// Reward moving towards target & Penalize moving away from target.
+  /// </summary>
+  void RewardFunctionMovingTowards()
+  {
+    movingTowardsDot = Vector3.Dot(jdController.bodyPartsDict[initPart].rb.velocity, dirToTarget.normalized);
+    AddReward(0.03f * movingTowardsDot);
+  }
 
-	/// <summary>
-	/// Loop over Morphology parts and reset them to initial conditions.
-	/// </summary>
-	public override void AgentReset () {
-		if (dirToTarget != Vector3.zero) {
-			transform.rotation = Quaternion.LookRotation (dirToTarget);
-		}
+  /// <summary>
+  /// Add Penalty and reset if the agent is moving in too far in the wrong direction.
+  /// </summary>
+  void PenaltyFunctionMovingAgainst()
+  {
+    if (initTargetDistance < Vector3.Distance(initPart.position, target.position) - 10f)
+    {
+      Debug.Log("HERE PENALTY");
+      SetReward(-10f);
+      AgentReset();
+    };
+  }
 
-		foreach (var bodyPart in jdController.bodyPartsDict.Values) {
-			bodyPart.Reset (bodyPart);
-		}
+  /// <summary>
+  /// Reward facing target & Penalize facing away from target
+  /// </summary>
+  void RewardFunctionFacingTarget()
+  {
+    facingDot = Vector3.Dot(dirToTarget.normalized, initPart.forward);
+    AddReward(0.01f * facingDot);
+  }
 
-		isNewDecisionStep = true;
-		currentDecisionStep = 1;
-	}
+  /// <summary>
+  /// Existential penalty for time-contrained tasks.
+  /// </summary>
+  void RewardFunctionTimePenalty()
+  {
+    AddReward(-0.001f);
+  }
+
+  /// <summary>
+  /// Loop over Morphology parts and reset them to initial conditions.
+  /// </summary>
+  public override void AgentReset()
+  {
+    if (dirToTarget != Vector3.zero)
+    {
+      transform.rotation = Quaternion.LookRotation(dirToTarget);
+    }
+
+    foreach (var bodyPart in jdController.bodyPartsDict.Values)
+    {
+      bodyPart.Reset(bodyPart);
+    }
+
+    isNewDecisionStep = true;
+    currentDecisionStep = 1;
+  }
 }
-
-// //////////////////////
-/// TEMPORARY METHOD ///
-// ////////////////////// 
-// private void NewMethod (float[] vectorAction, int i) {
-//   if (colorGrading != null && vectorAction[i++] > 0.5f && vectorAction[i] < 0.55f)
-//   {
-//     colorGrading.temperature.value = 100f;
-//     colorGrading.tint.value = 100f;
-//     colorGrading.saturation.value = 100f;
-//     colorGrading.contrast.value = -60f;
-//   }
-//   else
-//   {
-//     colorGrading.temperature.value = colorGrading.temperature.value == 0f ? colorGrading.temperature.value : colorGrading.temperature.value - 10f;
-//     colorGrading.tint.value = 0f;
-//     colorGrading.saturation.value = colorGrading.saturation.value == 0f ? colorGrading.saturation.value : colorGrading.saturation.value - 10f;
-//     colorGrading.contrast.value = 0f;
-//   }
-
-//   ParticleSystem[] particleSystems = particleSystem.GetComponentsInChildren<ParticleSystem>();
-
-//   if (vectorAction[i++] > 0.3f)
-//   {
-//     text.SetActive(true);
-//   }
-//   else
-//   {
-//     text.SetActive(false);
-//   }
-
-//   if (vectorAction[i++] > 0.3f)
-//   {
-//     particleSystems[0].Play();
-//   }
-//   else
-//   {
-//     particleSystems[0].Stop();
-//   }
-
-//   if (vectorAction[i++] > 0.3f && vectorAction[i] > 0.75f)
-//   {
-//     particleSystems[1].Play();
-//   }
-//   else
-//   {
-//     particleSystems[1].Stop();
-//   }
-
-//   if (vectorAction[i++] > 0.3f && vectorAction[i] > 0.75f)
-//   {
-//     particleSystems[2].Play();
-//   }
-//   else
-//   {
-//     particleSystems[2].Stop();
-//   }
-
-//   if (vectorAction[i++] > 0.65f)
-//   {
-//     image.texture = Resources.Load("Textures/1") as Texture;
-//     // image.gameObject.GetComponent<RectTransform>().localPosition = new Vector3(Random.Range(-100f, 110f), Random.Range(-100f, 100f), 0f);
-//     // image.gameObject.GetComponent<RectTransform>().localRotation = Quaternion.Euler(0f, 0f, Random.Range(-50f, 50f));
-//     imageAlpha = 1f;
-//   }
-//   else
-//   {
-//     imageAlpha = imageAlpha - 0.1f;
-//   }
-//   Color color = Color.white;
-//   color.a = imageAlpha;
-//   image.color = color;
-
-//   handleAgentSound(vectorAction, i);
-//   return i;
-// }

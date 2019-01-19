@@ -3,52 +3,71 @@ using System.Collections.Generic;
 using MLAgents;
 using UnityEngine;
 
-namespace Gene {
-    public class Cell : MonoBehaviour {
-        [Header ("Connection to API Service")]
-        public PostGene postGene;
-        public AgentConfig agentConfig;
-        public bool postApiData;
-        public bool requestApiData;
-        public string cellId;
-        
-        private int cellInfoIndex = 0;
-        private bool initialised;
-        private List<List<GameObject>> Germs;
-        private List<GameObject> Cells;
-        private List<Vector3> CellPositions;
-        private AgentTrainBehaviour aTBehaviour;
+namespace Gene
+{
+  public class Cell : MonoBehaviour
+  {
+    [Header("Connection to API Service")]
+    public PostGene postGene;
+    public AgentConfig agentConfig;
+    public bool postApiData;
+    public bool requestApiData;
+    public string cellId;
+    public int cellNb = 0;
+    public int minCellNb;
 
-        [HideInInspector] public bool isRequestDone;
-        [HideInInspector] public float threshold;
-        [HideInInspector] public int partNb;
-        [HideInInspector] public List<float> CellInfos;
+    private int cellInfoIndex = 0;
+    private bool initialised;
+    public List<List<GameObject>> Germs;
+    public List<GameObject> Cells;
+    public List<Vector3> CellPositions;
+    private AgentTrainBehaviour aTBehaviour;
 
-        void Awake () {
-            initialised = false;
+    [HideInInspector] public bool isRequestDone;
+    [HideInInspector] public float threshold;
+    [HideInInspector] public int partNb;
+    [HideInInspector] public List<float> CellInfos;
+
+    void Awake()
+    {
+      initialised = false;
+    }
+
+    public void DeleteCells()
+    {
+      Cells.Clear();
+      Germs.Clear();
+      CellPositions.Clear();
+      cellInfoIndex = 0;
+      initialised = false;
+      CellInfos.Clear();
+      cellNb = 0;
+    }
+
+    public void parseRequestData()
+    {
+      string[] response = postGene.response;
+      if (response.Length != 0 && !initialised)
+      {
+        for (int i = 1; i < response.Length; i++)
+        {
+          float val = float.Parse(response[i].Split('\\')[0], System.Globalization.CultureInfo.InvariantCulture);
+          CellInfos.Add(val);
         }
+        initGerms(partNb, threshold);
+        initialised = true;
+      }
+    }
 
-        void Update () {
-            string[] response = postGene.response;
-            if (response.Length != 0 && !initialised) {
-                for (int i = 1; i < response.Length; i++) {
-                    float val = float.Parse (response[i].Split ('\\') [0], System.Globalization.CultureInfo.InvariantCulture);
-                    CellInfos.Add (val);
-                }
-                initGerms (partNb, threshold);
-                initialised = true;
-            }
-        }
+    public void initGerms(int numGerms, float threshold)
+    {
+      transform.gameObject.name = transform.GetComponent<AgentTrainBehaviour>().brain + "";
 
-        public void initGerms (int numGerms, float threshold) {
+      Germs = new List<List<GameObject>>();
+      Cells = new List<GameObject>();
+      CellPositions = new List<Vector3>();
 
-            transform.gameObject.name = transform.GetComponent<AgentTrainBehaviour>().brain + "";
-
-            Germs = new List<List<GameObject>> ();
-            Cells = new List<GameObject> ();
-            CellPositions = new List<Vector3> ();
-
-            List<Vector3> sides = new List<Vector3> {
+      List<Vector3> sides = new List<Vector3> {
                 new Vector3 (1f, 0f, 0f),
                 new Vector3 (0f, 1f, 0f),
                 new Vector3 (0f, 0f, 1f),
@@ -57,138 +76,170 @@ namespace Gene {
                 new Vector3 (0f, 0f, -1f)
             };
 
-            Germs.Add (new List<GameObject> ());
-            GameObject initCell = InitBaseShape (Germs[0], 0);
-            initCell.transform.parent = transform;
-            InitRigidBody (initCell);
-            HandleStoreCell (initCell, initCell.transform.localPosition);
+      Germs.Add(new List<GameObject>());
+      GameObject initCell = InitBaseShape(Germs[0], 0);
+      initCell.transform.parent = transform;
+      InitRigidBody(initCell);
+      HandleStoreCell(initCell, initCell.transform.position);
 
-            for (int y = 1; y < numGerms; y++) {
-                int prevCount = Germs[y - 1].Count;
-                Germs.Add (new List<GameObject> ());
+      for (int y = 1; y < numGerms; y++)
+      {
+        int prevCount = Germs[y - 1].Count;
+        Germs.Add(new List<GameObject>());
 
-                for (int i = 0; i < prevCount; i++) {
-                    for (int z = 0; z < sides.Count; z++) {
-                        bool isValid = true;
-                        float cellInfo = 0f;
-                        Vector3 cellPosition = Germs[y - 1][i].transform.position + sides[z];
+        for (int i = 0; i < prevCount; i++)
+        {
+          for (int z = 0; z < sides.Count; z++)
+          {
+            if (!requestApiData || cellInfoIndex < CellInfos.Count)
+            {
+              bool isValid = true;
+              float cellInfo = 0f;
+              Vector3 cellPosition = Germs[y - 1][i].transform.position + sides[z];
 
-                        isValid = CheckIsValid (isValid, cellPosition);
-                        cellInfo = HandleCellsRequest (cellInfoIndex);
+              isValid = CheckIsValid(isValid, cellPosition);
+              cellInfo = HandleCellsRequest(cellInfoIndex);
 
-                        if (isValid) {
-                            if (cellInfo > threshold) {
-                                GameObject cell = InitBaseShape (Germs[y], y);
-                                InitPosition (sides, y, i, z, cell);
-                                InitRigidBody (cell);
-                                initJoint (cell, Germs[y - 1][i], sides[z], y, z);
-                                HandleStoreCell (cell, cellPosition);
-                                cell.transform.parent = transform;
-                                cell.GetComponent<Renderer> ().material.SetVector ("_position", new Vector2 (cell.transform.position.z, cell.transform.position.y));
-                                cell.GetComponent<Renderer> ().material.SetFloat ("_X", (cell.transform.position.magnitude * 6) / 220);
-                                cell.GetComponent<Renderer> ().material.SetFloat ("_Scale", (cell.transform.position.magnitude * 90) / 220);
-                            }
-                        }
-                    }
+              if (isValid)
+              {
+                if (cellInfo > threshold)
+                {
+                  GameObject cell = InitBaseShape(Germs[y], y);
+                  InitPosition(sides, y, i, z, cell);
+                  InitRigidBody(cell);
+                  initJoint(cell, Germs[y - 1][i], sides[z], y, z);
+                  HandleStoreCell(cell, cellPosition);
+                  cell.transform.parent = transform;
                 }
-
-                foreach (var cell in Cells) {
-                    cell.transform.parent = transform;
-                }
+              }
             }
-
-            foreach (var cell in Cells) {
-                cell.GetComponent<SphereCollider> ().radius /= 2f;
-            }
-
-            AddAgentPart ();
-
-            if (postApiData) {
-                string postData = HandlePostData ();
-                StartCoroutine (postGene.postCell (postData, transform.gameObject.name));
-            }
+          }
         }
+      }
 
-        private void HandleStoreCell (GameObject cell, Vector3 cellPosition) {
-            Cells.Add (cell);
-            CellPositions.Add (cellPosition);
-        }
+      foreach (var cell in Cells)
+      {
+        cell.transform.parent = transform; // RESET CELL TO MAIN TRANSFORM
+        cell.GetComponent<SphereCollider>().radius /= 2f;
+      }
 
-        private string HandlePostData () {
-            string postData = "";
-            foreach (var info in CellInfos) {
-                postData = postData + 'A' + info.ToString ();
-            }
+      cellNb = Cells.Count;
 
-            return postData;
-        }
-
-        private float HandleCellsRequest (int x) {
-            if (requestApiData) {
-                cellInfoIndex++;
-                return CellInfos[x];
-            } else {
-                float cellInfo = Random.Range (0f, 1f);
-                CellInfos.Add (cellInfo);
-                cellInfoIndex++;
-                return cellInfo;
-            }
-        }
-
-        private static void InitRigidBody (GameObject cell) {
-            cell.AddComponent<Rigidbody> ();
-            cell.GetComponent<Rigidbody> ().useGravity = true;
-            cell.GetComponent<Rigidbody> ().mass = 1f;
-        }
-
-        private void InitPosition (List<Vector3> sides, int y, int i, int z, GameObject cell) {
-            cell.transform.parent = Germs[y - 1][i].transform;
-            cell.transform.localPosition = sides[z];
-        }
-
-        private GameObject InitBaseShape (List<GameObject> germs, int y) {
-            germs.Add (GameObject.CreatePrimitive (PrimitiveType.Sphere));
-            GameObject cell = Germs[y][Germs[y].Count - 1];
-            cell.transform.position = transform.position;
-            return cell;
-        }
-
-        private bool CheckIsValid (bool isValid, Vector3 cellPosition) {
-            foreach (var position in CellPositions) {
-                if (cellPosition == position) {
-                    isValid = false;
-                }
-            }
-
-            return isValid;
-        }
-
-        private void initJoint (GameObject part, GameObject connectedBody, Vector3 jointAnchor, int y, int z) {
-            ConfigurableJoint cj = part.transform.gameObject.AddComponent<ConfigurableJoint> ();
-            cj.xMotion = ConfigurableJointMotion.Locked;
-            cj.yMotion = ConfigurableJointMotion.Locked;
-            cj.zMotion = ConfigurableJointMotion.Locked;
-            cj.angularXMotion = ConfigurableJointMotion.Limited;
-            cj.angularYMotion = ConfigurableJointMotion.Limited;
-            cj.angularZMotion = ConfigurableJointMotion.Limited;
-            cj.anchor = new Vector3 (0f, 0f, 0f);
-            cj.connectedBody = connectedBody.gameObject.GetComponent<Rigidbody> ();
-            cj.rotationDriveMode = RotationDriveMode.Slerp;
-            cj.angularYLimit = new SoftJointLimit () { limit = agentConfig.yLimit, bounciness = agentConfig.bounciness };
-            cj.highAngularXLimit = new SoftJointLimit () { limit = agentConfig.highXLimit, bounciness = agentConfig.bounciness };
-            cj.lowAngularXLimit = new SoftJointLimit () { limit = agentConfig.lowXLimit, bounciness = agentConfig.bounciness };
-            cj.angularZLimit = new SoftJointLimit () { limit = agentConfig.zLimit, bounciness = agentConfig.bounciness };
-            part.gameObject.GetComponent<Rigidbody> ().useGravity = true;
-            part.gameObject.GetComponent<Rigidbody> ().mass = 1f;
-        }
-
-        private void AddAgentPart () {
-            aTBehaviour = transform.gameObject.GetComponent<AgentTrainBehaviour> ();
-            aTBehaviour.initPart = Cells[0].transform;
-            for (int i = 1; i < Cells.Count; i++) {
-                aTBehaviour.parts.Add (Cells[i].transform);
-            }
-            aTBehaviour.initBodyParts ();
-        }
+      checkMinCellNb();
     }
+
+    private void checkMinCellNb()
+    {
+      if (cellNb < minCellNb)
+      {
+        Debug.Log("Killin Object (less that requiered size");
+        transform.gameObject.SetActive(false);
+      }
+    }
+
+    public string HandlePostData()
+    {
+      string postData = "";
+      foreach (var info in CellInfos)
+      {
+        postData = postData + 'A' + info.ToString();
+      }
+
+      return postData;
+    }
+
+    public void PostCell()
+    {
+      string postData = HandlePostData();
+      StartCoroutine(postGene.postCell(postData, transform.gameObject.name));
+    }
+
+    private void HandleStoreCell(GameObject cell, Vector3 cellPosition)
+    {
+      Cells.Add(cell);
+      CellPositions.Add(cellPosition);
+    }
+
+    private float HandleCellsRequest(int x)
+    {
+      if (requestApiData)
+      {
+        float cellInfo = CellInfos[cellInfoIndex];
+        cellInfoIndex++;
+        return cellInfo;
+      }
+      else
+      {
+        float cellInfo = Random.Range(0f, 1f);
+        CellInfos.Add(cellInfo);
+        cellInfoIndex++;
+        return cellInfo;
+      }
+    }
+
+    private static void InitRigidBody(GameObject cell)
+    {
+      cell.AddComponent<Rigidbody>();
+      cell.GetComponent<Rigidbody>().useGravity = true;
+      cell.GetComponent<Rigidbody>().mass = 1f;
+    }
+
+    private void InitPosition(List<Vector3> sides, int y, int i, int z, GameObject cell)
+    {
+      cell.transform.parent = Germs[y - 1][i].transform;
+      cell.transform.localPosition = sides[z];
+    }
+
+    private GameObject InitBaseShape(List<GameObject> germs, int y)
+    {
+      germs.Add(GameObject.CreatePrimitive(PrimitiveType.Sphere));
+      GameObject cell = Germs[y][Germs[y].Count - 1];
+      cell.transform.position = transform.position;
+      return cell;
+    }
+
+    private bool CheckIsValid(bool isValid, Vector3 cellPosition)
+    {
+      foreach (var position in CellPositions)
+      {
+        if (cellPosition == position)
+        {
+          isValid = false;
+        }
+      }
+
+      return isValid;
+    }
+
+    private void initJoint(GameObject part, GameObject connectedBody, Vector3 jointAnchor, int y, int z)
+    {
+      ConfigurableJoint cj = part.transform.gameObject.AddComponent<ConfigurableJoint>();
+      cj.xMotion = ConfigurableJointMotion.Locked;
+      cj.yMotion = ConfigurableJointMotion.Locked;
+      cj.zMotion = ConfigurableJointMotion.Locked;
+      cj.angularXMotion = ConfigurableJointMotion.Limited;
+      cj.angularYMotion = ConfigurableJointMotion.Limited;
+      cj.angularZMotion = ConfigurableJointMotion.Limited;
+      cj.anchor = new Vector3(0f, 0f, 0f);
+      cj.connectedBody = connectedBody.gameObject.GetComponent<Rigidbody>();
+      cj.rotationDriveMode = RotationDriveMode.Slerp;
+      cj.angularYLimit = new SoftJointLimit() { limit = agentConfig.yLimit, bounciness = agentConfig.bounciness };
+      cj.highAngularXLimit = new SoftJointLimit() { limit = agentConfig.highXLimit, bounciness = agentConfig.bounciness };
+      cj.lowAngularXLimit = new SoftJointLimit() { limit = agentConfig.lowXLimit, bounciness = agentConfig.bounciness };
+      cj.angularZLimit = new SoftJointLimit() { limit = agentConfig.zLimit, bounciness = agentConfig.bounciness };
+      part.gameObject.GetComponent<Rigidbody>().useGravity = true;
+      part.gameObject.GetComponent<Rigidbody>().mass = 1f;
+    }
+
+    private void AddAgentPart()
+    {
+      aTBehaviour = transform.gameObject.GetComponent<AgentTrainBehaviour>();
+      aTBehaviour.initPart = Cells[0].transform;
+      for (int i = 1; i < Cells.Count; i++)
+      {
+        aTBehaviour.parts.Add(Cells[i].transform);
+      }
+      aTBehaviour.initBodyParts();
+    }
+  }
 }
