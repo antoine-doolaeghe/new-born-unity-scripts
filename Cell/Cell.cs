@@ -22,11 +22,20 @@ namespace Gene
     public List<GameObject> Cells;
     public List<Vector3> CellPositions;
     private AgentTrainBehaviour aTBehaviour;
+    private List<Vector3> sides = new List<Vector3> {
+                new Vector3 (1f, 0f, 0f),
+                new Vector3 (0f, 1f, 0f),
+                new Vector3 (0f, 0f, 1f),
+                new Vector3 (-1f, 0f, 0f),
+                new Vector3 (0f, -1f, 0f),
+                new Vector3 (0f, 0f, -1f)
+            };
 
     [HideInInspector] public bool isRequestDone;
     [HideInInspector] public float threshold;
     [HideInInspector] public int partNb;
-    [HideInInspector] public List<float> CellInfos;
+    [HideInInspector] public List<List<float>> GenerationInfos = new List<List<float>>();
+
 
     void Awake()
     {
@@ -40,19 +49,26 @@ namespace Gene
       CellPositions.Clear();
       cellInfoIndex = 0;
       initialised = false;
-      CellInfos.Clear();
+      GenerationInfos.Clear();
       cellNb = 0;
     }
 
     public void parseRequestData()
     {
-      string[] response = postGene.response;
-      if (response.Length != 0 && !initialised)
+      List<List<Info>> response = postGene.response;
+      if (response.Count != 0 && !initialised)
       {
-        for (int i = 1; i < response.Length; i++)
+        Debug.Log(response[0][0].val);
+        Debug.Log(response[0][1].val);
+        Debug.Log(response[0][2].val);
+        for (int generationInfo = 0; generationInfo < response.Count; generationInfo++)
         {
-          float val = float.Parse(response[i].Split('\\')[0], System.Globalization.CultureInfo.InvariantCulture);
-          CellInfos.Add(val);
+          GenerationInfos.Add(new List<float>());
+          for (int i = 0; i < response[generationInfo].Count; i++)
+          {
+            string val = response[generationInfo][i].val;
+            GenerationInfos[generationInfo].Add(float.Parse(val));
+          }
         }
         initGerms(partNb, threshold);
         initialised = true;
@@ -66,40 +82,30 @@ namespace Gene
       Germs = new List<List<GameObject>>();
       Cells = new List<GameObject>();
       CellPositions = new List<Vector3>();
-
-      List<Vector3> sides = new List<Vector3> {
-                new Vector3 (1f, 0f, 0f),
-                new Vector3 (0f, 1f, 0f),
-                new Vector3 (0f, 0f, 1f),
-                new Vector3 (-1f, 0f, 0f),
-                new Vector3 (0f, -1f, 0f),
-                new Vector3 (0f, 0f, -1f)
-            };
-
+      if(GenerationInfos.Count == 0) {
+        GenerationInfos.Add(new List<float>());
+      }
       Germs.Add(new List<GameObject>());
       GameObject initCell = InitBaseShape(Germs[0], 0);
       initCell.transform.parent = transform;
       InitRigidBody(initCell);
       HandleStoreCell(initCell, initCell.transform.position);
-
       for (int y = 1; y < numGerms; y++)
       {
         int prevCount = Germs[y - 1].Count;
         Germs.Add(new List<GameObject>());
-
         for (int i = 0; i < prevCount; i++)
         {
           for (int z = 0; z < sides.Count; z++)
           {
-            if (!requestApiData || cellInfoIndex < CellInfos.Count)
+            if (!requestApiData || cellInfoIndex < GenerationInfos[0].Count)
             {
               bool isValid = true;
               float cellInfo = 0f;
               Vector3 cellPosition = Germs[y - 1][i].transform.position + sides[z];
-
               isValid = CheckIsValid(isValid, cellPosition);
-              cellInfo = HandleCellsRequest(cellInfoIndex);
-
+              cellInfo = HandleCellInfos(0, cellInfoIndex);
+              cellInfoIndex++;
               if (isValid)
               {
                 if (cellInfo > threshold)
@@ -128,6 +134,54 @@ namespace Gene
       checkMinCellNb();
     }
 
+    public void AddGeneration()
+    {
+      int indexInfo = 0;
+      int prevCount = 0;
+      int germNb = 0;
+      partNb += 1;
+      
+
+      for (int i = 0; i < Germs.Count; i++)
+      {
+          if(Germs[i].Count > 0)
+          {
+            prevCount = Germs[i].Count;
+            germNb = i;
+          }
+      }
+
+      GenerationInfos.Add(new List<float>());
+      Germs.Add(new List<GameObject>());
+
+      for (int i = 0; i < prevCount; i++)
+      {
+        for (int z = 0; z < sides.Count; z++)
+        {
+          bool isValid = true;
+          float cellInfo = 0f;
+          Vector3 cellPosition = Germs[germNb][i].transform.position + sides[z];
+
+          isValid = CheckIsValid(isValid, cellPosition);
+          cellInfo = HandleCellInfos(GenerationInfos.Count - 1, indexInfo);
+          indexInfo++;
+          
+          if (isValid)
+          {
+            if (cellInfo > threshold)
+            {
+              GameObject cell = InitBaseShape(Germs[germNb], germNb);
+              InitPosition(sides, germNb + 1, i, z, cell);
+              InitRigidBody(cell);
+              initJoint(cell, Germs[germNb][i], sides[z], germNb + 1, z);
+              HandleStoreCell(cell, cellPosition);
+              cell.transform.parent = transform;
+            }
+          }
+        }
+      }
+    }
+
     private void checkMinCellNb()
     {
       if (cellNb < minCellNb)
@@ -137,20 +191,29 @@ namespace Gene
       }
     }
 
-    public string HandlePostData()
+    public List<CellInfo> HandlePostData()
     {
-      string postData = "";
-      foreach (var info in CellInfos)
+      List<CellInfo> generationInfos = new List<CellInfo>();
+      for (int i = 0; i < GenerationInfos.Count; i++)
       {
-        postData = postData + 'A' + info.ToString();
+        List<Info> postData = new List<Info>();
+        for (int y = 0; y < GenerationInfos[i].Count; y++)
+        {
+          postData.Add(new Info(GenerationInfos[i][y].ToString()));
+        }
+        generationInfos.Add(new CellInfo(postData));
       }
 
-      return postData;
+      Debug.Log(generationInfos[0].infos[0].val);
+      Debug.Log(generationInfos[0].infos[1].val);
+      Debug.Log(generationInfos[0].infos[2].val);
+
+      return generationInfos;
     }
 
     public void PostCell()
     {
-      string postData = HandlePostData();
+      List<CellInfo> postData = HandlePostData();
       StartCoroutine(postGene.postCell(postData, transform.gameObject.name));
     }
 
@@ -160,22 +223,22 @@ namespace Gene
       CellPositions.Add(cellPosition);
     }
 
-    private float HandleCellsRequest(int x)
+    private float HandleCellInfos(int generationIndex, int cellIndex)
     {
       if (requestApiData)
       {
-        float cellInfo = CellInfos[cellInfoIndex];
-        cellInfoIndex++;
+        float cellInfo = GenerationInfos[generationIndex][cellIndex];
         return cellInfo;
       }
       else
       {
         float cellInfo = Random.Range(0f, 1f);
-        CellInfos.Add(cellInfo);
-        cellInfoIndex++;
+        GenerationInfos[generationIndex].Add(cellInfo);
         return cellInfo;
       }
     }
+
+    
 
     private static void InitRigidBody(GameObject cell)
     {

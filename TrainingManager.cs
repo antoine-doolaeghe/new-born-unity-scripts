@@ -7,7 +7,7 @@ using UnityEngine;
 
 namespace Gene
 {
-  public class TrainingSpawner : MonoBehaviour
+  public class TrainingManager : MonoBehaviour
   {
     public int agentTrainerNumber;
     public int agentNumber;
@@ -33,7 +33,7 @@ namespace Gene
     [Header("Camera parameters")]
     public float fieldOfView;
 
-    private List<GameObject> Agents = new List<GameObject>();
+    public List<GameObject> Agents = new List<GameObject>();
 
     public void Delete()
     {
@@ -172,8 +172,11 @@ namespace Gene
 
       if (requestApiData) // NON RANDOM BUILD
       {
-        cell.partNb = agentConfig.layerNumber;
-        cell.threshold = agentConfig.threshold;
+        if (cell.partNb == 0 && cell.threshold == 0f)
+        {
+          cell.partNb = agentConfig.layerNumber;
+          cell.threshold = agentConfig.threshold;   
+        }
         cell.requestApiData = true;
         cell.parseRequestData();
         if (buildFromPost)
@@ -196,15 +199,26 @@ namespace Gene
       }
       else // RANDOMLY BUILT
       {
-        for (int k = 0; k < Agents.Count; k++)
-        {
-          cell.requestApiData = false;
-          cell.initGerms(agentConfig.layerNumber, agentConfig.threshold);
-          atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
-          atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
-          atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { Agents[agentId].transform.GetComponent<Cell>().cellNb * 3 };
-          atBehaviour.brain.brainParameters.vectorObservationSize = Agents[agentId].transform.GetComponent<Cell>().cellNb * 13 - 4;
-        }
+        cell.requestApiData = false;
+        cell.initGerms(agentConfig.layerNumber, agentConfig.threshold);
+        atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
+        atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
+        atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { Agents[agentId].transform.GetComponent<Cell>().cellNb * 3 };
+        atBehaviour.brain.brainParameters.vectorObservationSize = Agents[agentId].transform.GetComponent<Cell>().cellNb * 13 - 4;
+      }
+    }
+
+    public void AddAgentGeneration() 
+    {
+      academy.broadcastHub.broadcastingBrains.Clear();
+      for (int a = 0; a < Agents.Count; a++)
+      {
+        Cell cell = Agents[a].transform.GetComponent<Cell>();
+        AgentTrainBehaviour atBehaviour = Agents[a].transform.GetComponent<AgentTrainBehaviour>();
+        SetRequestApi(cell, atBehaviour, false);
+        cell.AddGeneration();
+        Brain brain = Resources.Load<Brain>("Brains/agentBrain" + a);
+        SetBrainParams(brain);
       }
     }
 
@@ -215,8 +229,11 @@ namespace Gene
       {
         Cell cell = Agents[a].transform.GetComponent<Cell>();
         PostGene postGene = Agents[a].transform.GetComponent<PostGene>();
-        string postData = cell.HandlePostData();
-        StartCoroutine(postGene.postCell(postData, agent.name, a));
+        List<CellInfo> postData = cell.HandlePostData();
+        Debug.Log(postData[0].infos[0].val);
+        Debug.Log(postData[0].infos[1].val);
+        Debug.Log(postData[0].infos[2].val);
+        StartCoroutine(postGene.postCell(postData, Agents[a].name, a));
       }
     }
 

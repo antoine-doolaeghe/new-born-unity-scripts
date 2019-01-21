@@ -1,25 +1,48 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.Serialization.Formatters.Binary;
 using System.Linq;
 using System.Text;
+using System.IO;
+using System;
 using Gene;
 using UnityEngine;
 using UnityEngine.Networking;
+
 using UnityEngine.UI;
 
 namespace Gene
 {
   public class PostGene : MonoBehaviour
   {
-    public string[] response;
+    public List<List<Info>> response;
     public string responseUuid;
     public GameObject cell;
     public ApiConfig apiConfig;
 
-    public IEnumerator postCell(string cellInfos, string cellName, int agentId = 0)
+    public IEnumerator postCell(List<CellInfo> cellInfos, string cellName, int agentId = 0)
     {
+      // Debug.Log(cellInfos[0].infos[0].val);
+      // Debug.Log(cellInfos[0].infos[1].val);
+      // Debug.Log(cellInfos[0].infos[2].val);
+      // List<CellInfo> cellInfo = new List<CellInfo>();
+      // for (int i = 0; i < cellInfos.Count; i++)
+      // {
+      //   List<Info> infos = new List<Info>();
+      //   for (int y = 0; y < cellInfos[i].infos.Count; y++)
+      //   {
+      //       infos.Add(new Info(cellInfos[i].infos[y].val));
+      //   }
+      //   cellInfo.Add(new CellInfo(infos));
+      // }
+
+      Debug.Log(cellInfos[0].infos[0].val);
+      Debug.Log(cellInfos[0].infos[1].val);
+      Debug.Log(cellInfos[0].infos[2].val);
+
       PostObject postObject = new PostObject(cellInfos, cellName);
       string jsonString = JsonUtility.ToJson(postObject);
+      Debug.Log(jsonString);
       string url = apiConfig.url;
       UnityWebRequest www = UnityWebRequest.Put(url, jsonString);
       yield return www.SendWebRequest();
@@ -27,7 +50,8 @@ namespace Gene
       {
         Debug.Log("Agents successfully posted");
         Transform[] childs = transform.Cast<Transform>().ToArray();
-        string uuid = www.downloadHandler.text.Split('"')[5]; // TO-DO REFACTOR THIS
+        PostResponseObject responseObject = JsonUtility.FromJson<PostResponseObject>(www.downloadHandler.text);
+        string uuid = responseObject.uuid;
         DestroyAgent(childs);
         // THEN REQUEST NEW AGENT INFO WITH RECEIVED UUID
         StartCoroutine(getCell(uuid, agentId, true));
@@ -53,11 +77,16 @@ namespace Gene
           if (www.isDone)
           {
             Debug.Log("Agent Cell Successfully Requested");
-            response = www.downloadHandler.text.Split(',')[0].Split('A');
-            responseUuid = www.downloadHandler.text.Split(',')[1].Split('n')[1].Split(' ')[0];
+            response = new List<List<Info>>();
+            GetResponseObject getResponseObject = JsonUtility.FromJson<GetResponseObject>(www.downloadHandler.text);
+            foreach (var cellInfo in getResponseObject.getCellInfo)
+            {
+              response.Add(cellInfo.info);
+            }
+            responseUuid = getResponseObject.cellName;
             // TO REFACTOR HERE
-            transform.parent.transform.parent.transform.parent.transform.GetComponent<TrainingSpawner>().requestApiData = true;
-            transform.parent.transform.parent.transform.parent.transform.GetComponent<TrainingSpawner>().BuildAgentCell(IsGetAfterPost, agentId);
+            transform.parent.transform.parent.transform.parent.transform.GetComponent<TrainingManager>().requestApiData = true;
+            transform.parent.transform.parent.transform.parent.transform.GetComponent<TrainingManager>().BuildAgentCell(IsGetAfterPost, agentId);
           }
         }
       }
@@ -76,15 +105,69 @@ namespace Gene
 
   }
 
-  public class PostObject
+  [Serializable]
+  public struct PostObject
   {
-    public string cellInfos;
+    public List<CellInfo> cellInfos;
     public string cellName;
 
-    public PostObject(string cellInfos, string cellName)
+    public PostObject(List<CellInfo> cellInfos, string cellName)
     {
       this.cellInfos = cellInfos;
       this.cellName = cellName;
+    }
+  }
+
+  public struct PostResponseObject
+  {
+    public string uuid;
+
+    public PostResponseObject(string uuid)
+    {
+      this.uuid = uuid;
+    }
+  }
+
+  public struct GetResponseObject
+  {
+    public List<GetCellInfo> getCellInfo;
+    public string cellName;
+
+    public GetResponseObject(List<GetCellInfo> getCellInfo, string cellName)
+    {
+      this.getCellInfo = getCellInfo;
+      this.cellName = cellName;
+    }
+  }
+
+  [Serializable]
+  public struct GetCellInfo
+  {
+    public List<Info> info;
+    public GetCellInfo(List<Info> info)
+    {
+      this.info = info;
+    }
+  }
+
+  [Serializable]
+  public struct Info
+  {
+    public string val;
+    public Info(string val)
+    {
+      this.val = val;
+    }
+  }
+  
+
+  [Serializable]
+  public struct CellInfo
+  {
+    public List<Info> infos;
+    public CellInfo(List<Info> infos)
+    {
+      this.infos = infos;
     }
   }
 }
