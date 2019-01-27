@@ -22,27 +22,8 @@ namespace Gene
 
     public IEnumerator postCell(List<CellInfo> cellInfos, string cellName, int agentId = 0)
     {
-      // Debug.Log(cellInfos[0].infos[0].val);
-      // Debug.Log(cellInfos[0].infos[1].val);
-      // Debug.Log(cellInfos[0].infos[2].val);
-      // List<CellInfo> cellInfo = new List<CellInfo>();
-      // for (int i = 0; i < cellInfos.Count; i++)
-      // {
-      //   List<Info> infos = new List<Info>();
-      //   for (int y = 0; y < cellInfos[i].infos.Count; y++)
-      //   {
-      //       infos.Add(new Info(cellInfos[i].infos[y].val));
-      //   }
-      //   cellInfo.Add(new CellInfo(infos));
-      // }
-
-      Debug.Log(cellInfos[0].infos[0].val);
-      Debug.Log(cellInfos[0].infos[1].val);
-      Debug.Log(cellInfos[0].infos[2].val);
-
       PostObject postObject = new PostObject(cellInfos, cellName);
       string jsonString = JsonUtility.ToJson(postObject);
-      Debug.Log(jsonString);
       string url = apiConfig.url;
       UnityWebRequest www = UnityWebRequest.Put(url, jsonString);
       yield return www.SendWebRequest();
