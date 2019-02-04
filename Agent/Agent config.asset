@@ -13,9 +13,9 @@ MonoBehaviour:
   m_Name: Agent config
   m_EditorClassIdentifier: 
   bounciness: 10
-  yLimit: 90
-  highXLimit: 10
-  lowXLimit: 90
+  yLimit: 180
+  highXLimit: 180
+  lowXLimit: -180
   zLimit: 0
   threshold: 0.75
   layerNumber: 11
