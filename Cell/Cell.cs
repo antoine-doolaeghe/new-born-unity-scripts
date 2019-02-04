@@ -31,6 +31,9 @@ namespace Gene
                 new Vector3 (0f, 0f, -1f)
             };
 
+    private Vector3 childPositionSum = new Vector3(0f, 0f, 0f);
+
+    [HideInInspector] public Vector3 center;
     [HideInInspector] public bool isRequestDone;
     [HideInInspector] public float threshold;
     [HideInInspector] public int partNb;
@@ -40,6 +43,17 @@ namespace Gene
     void Awake()
     {
       initialised = false;
+    }
+
+    void Update()
+    {
+      childPositionSum = new Vector3(0f, 0f, 0f);
+      foreach (Transform child in transform)
+      {
+        childPositionSum += child.transform.position;
+      }
+
+      center = (childPositionSum / transform.childCount);
     }
 
     public void DeleteCells()
@@ -82,7 +96,6 @@ namespace Gene
     public void initGerms(int numGerms, float threshold)
     {
       transform.gameObject.name = transform.GetComponent<AgentTrainBehaviour>().brain + "";
-
       Germs = new List<List<GameObject>>();
       Cells = new List<GameObject>();
       CellPositions = new List<Vector3>();
@@ -127,6 +140,7 @@ namespace Gene
           }
         }
       }
+
 
       foreach (var cell in Cells)
       {

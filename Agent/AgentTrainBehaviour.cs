@@ -51,6 +51,7 @@ public class AgentTrainBehaviour : Agent
 
   public void initBodyParts()
   {
+    jdController.target = target;
     jdController.SetupBodyPart(initPart);
     initTargetDistance = Vector3.Distance(initPart.position, target.position);
     foreach (var part in parts)
