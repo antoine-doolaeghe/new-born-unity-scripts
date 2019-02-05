@@ -20,11 +20,15 @@ namespace Gene
     public GameObject cell;
     public ApiConfig apiConfig;
 
-    public IEnumerator postCell(List<CellInfo> cellInfos, string cellName, int agentId = 0)
+    public IEnumerator postCell(List<CellInfo> cellInfos, List<Position> cellPositions, string cellName, int agentId = 0)
     {
-      PostObject postObject = new PostObject(cellInfos, cellName);
+      Debug.Log(cellPositions.Count);
+      PostObject postObject = new PostObject(cellInfos, cellPositions, cellName);
+      Debug.Log(postObject.cellPositions);
+
       string jsonString = JsonUtility.ToJson(postObject);
       string url = apiConfig.url;
+      Debug.Log(jsonString);
       UnityWebRequest www = UnityWebRequest.Put(url, jsonString);
       yield return www.SendWebRequest();
       if (www.isDone)
@@ -90,11 +94,13 @@ namespace Gene
   public struct PostObject
   {
     public List<CellInfo> cellInfos;
+    public List<Position> cellPositions;
     public string cellName;
 
-    public PostObject(List<CellInfo> cellInfos, string cellName)
+    public PostObject(List<CellInfo> cellInfos, List<Position> cellPositions, string cellName)
     {
       this.cellInfos = cellInfos;
+      this.cellPositions = cellPositions;
       this.cellName = cellName;
     }
   }
@@ -131,6 +137,20 @@ namespace Gene
     }
   }
 
+
+  [Serializable]
+  public struct Position
+  {
+    public float x;
+    public float y;
+    public float z;
+    public Position(Vector3 pos)
+    {
+      this.x = pos.x;
+      this.y = pos.y;
+      this.z = pos.z;
+    }
+  }
   [Serializable]
   public struct Info
   {

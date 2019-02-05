@@ -21,6 +21,8 @@ namespace Gene
     public List<List<GameObject>> Germs;
     public List<GameObject> Cells;
     public List<Vector3> CellPositions;
+
+    public List<Vector3> CelllocalPositions;
     private AgentTrainBehaviour aTBehaviour;
     private List<Vector3> sides = new List<Vector3> {
                 new Vector3 (1f, 0f, 0f),
@@ -61,6 +63,7 @@ namespace Gene
       Cells.Clear();
       Germs.Clear();
       CellPositions.Clear();
+      CelllocalPositions.Clear();
       cellInfoIndex = 0;
       initialised = false;
       GenerationInfos.Clear();
@@ -99,6 +102,7 @@ namespace Gene
       Germs = new List<List<GameObject>>();
       Cells = new List<GameObject>();
       CellPositions = new List<Vector3>();
+      CelllocalPositions = new List<Vector3>();
       if (GenerationInfos.Count == 0)
       {
         GenerationInfos.Add(new List<float>());
@@ -107,7 +111,7 @@ namespace Gene
       GameObject initCell = InitBaseShape(Germs[0], 0);
       initCell.transform.parent = transform;
       InitRigidBody(initCell);
-      HandleStoreCell(initCell, initCell.transform.position);
+      HandleStoreCell(initCell, initCell.transform.position, initCell.transform.localPosition);
       for (int y = 1; y < numGerms; y++)
       {
         int prevCount = Germs[y - 1].Count;
@@ -121,6 +125,7 @@ namespace Gene
               bool isValid = true;
               float cellInfo = 0f;
               Vector3 cellPosition = Germs[y - 1][i].transform.position + sides[z];
+              Vector3 cellLocalPosition = Germs[y - 1][i].transform.localPosition + sides[z];
               isValid = CheckIsValid(isValid, cellPosition);
               cellInfo = HandleCellInfos(0, cellInfoIndex);
               cellInfoIndex++;
@@ -132,7 +137,7 @@ namespace Gene
                   InitPosition(sides, y, i, z, cell);
                   InitRigidBody(cell);
                   initJoint(cell, Germs[y - 1][i], sides[z], y, z);
-                  HandleStoreCell(cell, cellPosition);
+                  HandleStoreCell(cell, cellPosition, cellLocalPosition);
                   cell.transform.parent = transform;
                 }
               }
@@ -188,7 +193,7 @@ namespace Gene
           bool isValid = true;
           float cellInfo = 0f;
           Vector3 cellPosition = Germs[germNb][i].transform.position + sides[z];
-
+          Vector3 cellLocalPosition = Germs[germNb][i].transform.localPosition + sides[z];
           isValid = CheckIsValid(isValid, cellPosition);
           cellInfo = HandleCellInfos(GenerationInfos.Count - 1, indexInfo);
           indexInfo++;
@@ -200,7 +205,7 @@ namespace Gene
               InitPosition(sides, germNb + 1, i, z, cell);
               InitRigidBody(cell);
               initJoint(cell, Germs[germNb][i], sides[z], germNb + 1, z);
-              HandleStoreCell(cell, cellPosition);
+              HandleStoreCell(cell, cellPosition, cellLocalPosition);
               cell.transform.parent = transform;
             }
           }
@@ -219,7 +224,7 @@ namespace Gene
       }
     }
 
-    public List<CellInfo> HandlePostData()
+    public List<CellInfo> ReturnCellInfos()
     {
       List<CellInfo> generationInfos = new List<CellInfo>();
       for (int i = 0; i < GenerationInfos.Count; i++)
@@ -234,16 +239,28 @@ namespace Gene
       return generationInfos;
     }
 
-    public void PostCell()
+    public List<Position> ReturnCellPositions()
     {
-      List<CellInfo> postData = HandlePostData();
-      StartCoroutine(postGene.postCell(postData, transform.gameObject.name));
+      List<Position> positions = new List<Position>();
+      for (int i = 0; i < CelllocalPositions.Count; i++)
+      {
+        positions.Add(new Position(CelllocalPositions[i]));
+      }
+      return positions;
     }
 
-    private void HandleStoreCell(GameObject cell, Vector3 cellPosition)
+    public void PostCell()
+    {
+      List<CellInfo> cellInfos = ReturnCellInfos();
+      List<Position> cellPositions = ReturnCellPositions();
+      StartCoroutine(postGene.postCell(cellInfos, cellPositions, transform.gameObject.name));
+    }
+
+    private void HandleStoreCell(GameObject cell, Vector3 cellPosition, Vector3 cellLocalPosition)
     {
       Cells.Add(cell);
       CellPositions.Add(cellPosition);
+      CelllocalPositions.Add(cellLocalPosition);
     }
 
     private float HandleCellInfos(int generationIndex, int cellIndex)

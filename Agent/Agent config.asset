@@ -15,7 +15,7 @@ MonoBehaviour:
   bounciness: 10
   yLimit: 45
   highLimit: 135
-  lowLimit: 45
+  lowLimit: 0
   zLimit: 0
   threshold: 0.75
   layerNumber: 11

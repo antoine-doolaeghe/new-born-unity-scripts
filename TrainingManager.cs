@@ -196,8 +196,9 @@ namespace Gene
         Cell cell = Agents[a].transform.GetComponent<Cell>();
         PostGene postGene = Agents[a].transform.GetComponent<PostGene>();
         AgentTrainBehaviour atBehaviour = Agents[a].transform.GetComponent<AgentTrainBehaviour>();
-        List<CellInfo> postData = cell.HandlePostData();
-        StartCoroutine(postGene.postCell(postData, atBehaviour.brain.name, a));
+        List<CellInfo> postData = cell.ReturnCellInfos();
+        List<Position> cellPositions = cell.ReturnCellPositions();
+        StartCoroutine(postGene.postCell(postData, cellPositions, atBehaviour.brain.name));
       }
     }
 
