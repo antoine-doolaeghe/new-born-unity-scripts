@@ -22,13 +22,9 @@ namespace Gene
 
     public IEnumerator postCell(List<CellInfo> cellInfos, List<Position> cellPositions, string cellName, int agentId = 0)
     {
-      Debug.Log(cellPositions.Count);
       PostObject postObject = new PostObject(cellInfos, cellPositions, cellName);
-      Debug.Log(postObject.cellPositions);
-
       string jsonString = JsonUtility.ToJson(postObject);
       string url = apiConfig.url;
-      Debug.Log(jsonString);
       UnityWebRequest www = UnityWebRequest.Put(url, jsonString);
       yield return www.SendWebRequest();
       if (www.isDone)

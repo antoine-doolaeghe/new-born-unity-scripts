@@ -111,7 +111,7 @@ namespace Gene
       GameObject initCell = InitBaseShape(Germs[0], 0);
       initCell.transform.parent = transform;
       InitRigidBody(initCell);
-      HandleStoreCell(initCell, initCell.transform.position, initCell.transform.localPosition);
+      HandleStoreCell(initCell, initCell.transform.position, initCell.transform.position);
       for (int y = 1; y < numGerms; y++)
       {
         int prevCount = Germs[y - 1].Count;
@@ -125,7 +125,6 @@ namespace Gene
               bool isValid = true;
               float cellInfo = 0f;
               Vector3 cellPosition = Germs[y - 1][i].transform.position + sides[z];
-              Vector3 cellLocalPosition = Germs[y - 1][i].transform.localPosition + sides[z];
               isValid = CheckIsValid(isValid, cellPosition);
               cellInfo = HandleCellInfos(0, cellInfoIndex);
               cellInfoIndex++;
@@ -137,8 +136,8 @@ namespace Gene
                   InitPosition(sides, y, i, z, cell);
                   InitRigidBody(cell);
                   initJoint(cell, Germs[y - 1][i], sides[z], y, z);
-                  HandleStoreCell(cell, cellPosition, cellLocalPosition);
                   cell.transform.parent = transform;
+                  HandleStoreCell(cell, cellPosition, cellPosition);
                 }
               }
             }
@@ -193,7 +192,6 @@ namespace Gene
           bool isValid = true;
           float cellInfo = 0f;
           Vector3 cellPosition = Germs[germNb][i].transform.position + sides[z];
-          Vector3 cellLocalPosition = Germs[germNb][i].transform.localPosition + sides[z];
           isValid = CheckIsValid(isValid, cellPosition);
           cellInfo = HandleCellInfos(GenerationInfos.Count - 1, indexInfo);
           indexInfo++;
@@ -205,8 +203,8 @@ namespace Gene
               InitPosition(sides, germNb + 1, i, z, cell);
               InitRigidBody(cell);
               initJoint(cell, Germs[germNb][i], sides[z], germNb + 1, z);
-              HandleStoreCell(cell, cellPosition, cellLocalPosition);
               cell.transform.parent = transform;
+              HandleStoreCell(cell, cellPosition, cellPosition);
             }
           }
         }
