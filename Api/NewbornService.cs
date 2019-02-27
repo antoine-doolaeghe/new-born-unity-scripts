@@ -29,9 +29,6 @@ namespace Gene
     public static Dictionary<string, string> variable = new Dictionary<string, string>();
     public static Dictionary<string, string[]> array = new Dictionary<string, string[]>();
 
-    public string newBornGraphQlMutation;
-    public string generationGraphQlMutation;
-    public string newBornGraphQlQuery;
     // Use this for initialization
 
     public IEnumerator postNewborn(NewBornPostData newBornPostData, int agentId)
@@ -40,11 +37,10 @@ namespace Gene
       byte[] postData;
       Dictionary<string, string> postHeader;
 
-      newBornGraphQlMutation = "mutation PutPost {createNewborn(input: {id: $id^, name: $name^}) {name, id}}";
+      string newBornGraphQlMutation = apiConfig.newBornGraphQlMutation; 
       NewbornService.variable["id"] = Regex.Replace(newBornPostData.id.ToString(), @"[^0-9]", "");
       NewbornService.variable["name"] = newBornPostData.name;
       newBornGraphQlMutation = QuerySorter(newBornGraphQlMutation);
-      Debug.Log(newBornGraphQlMutation);
       jsonData = NewbornServiceHelpers.ReturnJsonData(newBornGraphQlMutation);
       NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
 
@@ -68,7 +64,7 @@ namespace Gene
       byte[] postData;
       Dictionary<string, string> postHeader;
 
-      generationGraphQlMutation = "mutation PutPost {createGeneration(input:{ id: $id^, generationNewbornId: $generationNewbornId^, cellInfos: $cellInfos^, cellPositions: $cellPositions^}) {cellInfos, cellPositions, id}}";
+      string generationGraphQlMutation = apiConfig.generationGraphQlMutation;
       NewbornService.variable["id"] = Regex.Replace(generationPostData.id.ToString(), @"[^0-9]", "");
       NewbornService.variable["generationNewbornId"] = newbornId;
       NewbornService.variable["cellPositions"] = JSON.Parse(JsonUtility.ToJson(generationPostData))["cellPositions"].ToString();
@@ -106,7 +102,7 @@ namespace Gene
       byte[] postData;
       Dictionary<string, string> postHeader;
 
-      newBornGraphQlQuery = "query getNewBorn {getNewborn(id: $id^) {id, name, generations {items {cellInfos}}}}";
+      string newBornGraphQlQuery = apiConfig.newBornGraphQlQuery; 
       NewbornService.variable["id"] = id;
       newBornGraphQlQuery = QuerySorter(newBornGraphQlQuery);
       jsonData = NewbornServiceHelpers.ReturnJsonData(newBornGraphQlQuery);
