@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.Serialization.Formatters.Binary;
+using System.Text.RegularExpressions;
 using System.Linq;
 using System.Text;
 using System.IO;
@@ -28,34 +29,33 @@ namespace Gene
     public static Dictionary<string, string> variable = new Dictionary<string, string>();
     public static Dictionary<string, string[]> array = new Dictionary<string, string[]>();
 
-    public string newBornGraphQlMutation = "mutation PutPost {createNewborn(input: {id: $id^, name: $name^}) {name, id}}";
-    public string generationGraphQlMutation = "mutation PutPost {createNewborn(input: $input^) {generations, name, id}}";
-    public string newBornGraphQlQuery = "query getNewBorn {getNewborn(id: $id^) {id, name, generations {items {cellInfos}}}}";
+    public string newBornGraphQlMutation;
+    public string generationGraphQlMutation;
+    public string newBornGraphQlQuery;
     // Use this for initialization
 
     public IEnumerator postNewborn(NewBornPostData newBornPostData, int agentId)
     {
-      newBornGraphQlMutation = "mutation PutPost {createNewborn(input: {id: $id^, name: $name^}) {name, id}}";
-
-      NewbornService.variable["id"] = newBornPostData.id.ToString();
-      NewbornService.variable["name"] = newBornPostData.name;
-      newBornGraphQlMutation = QuerySorter(newBornGraphQlMutation);
-
-      string jsonData = NewbornServiceHelpers.ReturnJsonData(newBornGraphQlMutation);
-
+      string jsonData;
       byte[] postData;
       Dictionary<string, string> postHeader;
+
+      newBornGraphQlMutation = "mutation PutPost {createNewborn(input: {id: $id^, name: $name^}) {name, id}}";
+      NewbornService.variable["id"] = Regex.Replace(newBornPostData.id.ToString(), @"[^0-9]", "");
+      NewbornService.variable["name"] = newBornPostData.name;
+      newBornGraphQlMutation = QuerySorter(newBornGraphQlMutation);
+      Debug.Log(newBornGraphQlMutation);
+      jsonData = NewbornServiceHelpers.ReturnJsonData(newBornGraphQlMutation);
       NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
 
       WWW www = new WWW(apiConfig.url, postData, postHeader);
-      yield return www; // Wait until the download is done
+      yield return www; 
       if (www.error != null)
       {
         Debug.Log("There was an error sending request: " + www.error);
       }
       else
       {
-        Debug.Log("Newborn has been posted successfully");
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
         transform.GetComponent<Cell>().PostGeneration(createdNewBornId, 0, agentId);
       }
@@ -64,21 +64,21 @@ namespace Gene
 
     public IEnumerator postGeneration(GenerationPostData generationPostData, string newbornId, int agentId)
     {
+      string jsonData;
+      byte[] postData;
+      Dictionary<string, string> postHeader;
+
       generationGraphQlMutation = "mutation PutPost {createGeneration(input:{ id: $id^, generationNewbornId: $generationNewbornId^, cellInfos: $cellInfos^, cellPositions: $cellPositions^}) {cellInfos, cellPositions, id}}";
-      NewbornService.variable["id"] = generationPostData.id.ToString();
+      NewbornService.variable["id"] = Regex.Replace(generationPostData.id.ToString(), @"[^0-9]", "");
       NewbornService.variable["generationNewbornId"] = newbornId;
       NewbornService.variable["cellPositions"] = JSON.Parse(JsonUtility.ToJson(generationPostData))["cellPositions"].ToString();
       NewbornService.variable["cellInfos"] = JSON.Parse(JsonUtility.ToJson(generationPostData))["cellInfos"].ToString();
-
       generationGraphQlMutation = QuerySorter(generationGraphQlMutation);
-      string jsonData = NewbornServiceHelpers.ReturnJsonData(generationGraphQlMutation);
-
-      byte[] postData;
-      Dictionary<string, string> postHeader;
+      jsonData = NewbornServiceHelpers.ReturnJsonData(generationGraphQlMutation);
       NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
 
       WWW www = new WWW(apiConfig.url, postData, postHeader);
-      yield return www; // Wait until the download is done
+      yield return www; 
       if (www.error != null)
       {
         Debug.Log("There was an error sending request: " + www.error);
@@ -102,18 +102,18 @@ namespace Gene
 
     public IEnumerator getNewborn(string id, int agentId, bool IsGetAfterPost)
     {
-      newBornGraphQlQuery = "query getNewBorn {getNewborn(id: $id^) {id, name, generations {items {cellInfos}}}}";
-      NewbornService.variable["id"] = id;
-
-      newBornGraphQlQuery = QuerySorter(newBornGraphQlQuery);
-
-      string jsonData = NewbornServiceHelpers.ReturnJsonData(newBornGraphQlQuery);
+      string jsonData;
       byte[] postData;
       Dictionary<string, string> postHeader;
+
+      newBornGraphQlQuery = "query getNewBorn {getNewborn(id: $id^) {id, name, generations {items {cellInfos}}}}";
+      NewbornService.variable["id"] = id;
+      newBornGraphQlQuery = QuerySorter(newBornGraphQlQuery);
+      jsonData = NewbornServiceHelpers.ReturnJsonData(newBornGraphQlQuery);
       NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
 
       WWW www = new WWW(apiConfig.url, postData, postHeader);
-      yield return www; // Wait until the download is done
+      yield return www; 
       if (www.error != null)
       {
         Debug.Log("There was an error sending request: " + www.error);

@@ -240,7 +240,7 @@ namespace Gene
     public void PostCell()
     {
       string newBornName = "\"cellName\"";
-      int newBornId = Random.Range(1, 1000);
+      System.Guid newBornId = System.Guid.NewGuid();
       NewBornPostData newBornPostData = new NewBornPostData(newBornName, newBornId);
       newbornService.postNewborn(newBornPostData, 0);
     }
@@ -249,8 +249,7 @@ namespace Gene
     {
       List<float> cellInfos = ReturnGenerationInfos(generationId);
       List<List<float>> cellPositions = ReturnGenerationPositions();
-      int id = Random.Range(1, 1000);
-      // cellGenerations.Add(new Generation(cellInfos, cellPositions));
+      System.Guid id = System.Guid.NewGuid();
       GenerationPostData generationPostData = new GenerationPostData(id, cellPositions, cellInfos);
       StartCoroutine(newbornService.postGeneration(generationPostData, newbornId, agentId));
     }

@@ -195,7 +195,7 @@ namespace Gene
       for (int a = 0; a < Agents.Count; a++)
       {
         NewbornService newbornService = Agents[a].transform.GetComponent<NewbornService>();
-        NewBornPostData newBornPostData = new NewBornPostData("\"cellName\"", Random.Range(1, 1000));
+        NewBornPostData newBornPostData = new NewBornPostData("\"cellName\"", System.Guid.NewGuid());
         StartCoroutine(newbornService.postNewborn(newBornPostData, a));
       }
     }

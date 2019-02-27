@@ -4,8 +4,8 @@
 public struct NewBornPostData
 {
   public string name;
-  public int id;
-  public NewBornPostData(string name, int id)
+  public System.Guid id;
+  public NewBornPostData(string name, System.Guid id)
   {
     this.id = id;
     this.name = name;
