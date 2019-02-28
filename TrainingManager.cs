@@ -172,7 +172,7 @@ namespace Gene
       atBehaviour.brain.brainParameters.vectorObservationSize = Agents[agentId].transform.GetComponent<NewBornBuilder>().cellNb * 13 - 4;
     }
 
-    public void AddAgentGeneration()
+    public void BuildRandomGeneration()
     {
       academy.broadcastHub.broadcastingBrains.Clear();
       for (int a = 0; a < Agents.Count; a++)
@@ -181,7 +181,7 @@ namespace Gene
         newBornBuilder.threshold = agentConfig.threshold;
         AgentTrainBehaviour atBehaviour = Agents[a].transform.GetComponent<AgentTrainBehaviour>();
         SetRequestApi(newBornBuilder, atBehaviour, false);
-        newBornBuilder.AddGeneration(newBornBuilder.GenerationInfos.Count - 1, false);
+        newBornBuilder.BuildGeneration(newBornBuilder.GenerationInfos.Count - 1, false);
         Brain brain = Resources.Load<Brain>("Brains/agentBrain" + a);
         SetBrainParams(brain);
         Agents[a].gameObject.name = brain + "";

@@ -18,7 +18,7 @@ namespace Gene
     public int minCellNb;
     private int cellInfoIndex = 0;
     private bool initialised;
-    public List<List<GameObject>> Germs;
+    public List<List<GameObject>> NewBornGenerations;
     public List<GameObject> Cells;
     public List<Vector3> CellPositions;
 
@@ -64,7 +64,7 @@ namespace Gene
     public void DeleteCells()
     {
       Cells.Clear();
-      Germs.Clear();
+      NewBornGenerations.Clear();
       CellPositions.Clear();
       CelllocalPositions.Clear();
       cellInfoIndex = 0;
@@ -83,15 +83,15 @@ namespace Gene
         {
           GenerationInfos[0].Add(response[i]);
         }
-        initGerms(partNb, threshold);
+        initNewBorn(partNb, threshold);
         initialised = true;
       }
     }
 
-    public void initGerms(int numGerms, float threshold)
+    public void initNewBorn(int generationNumber, float threshold)
     {
       transform.gameObject.name = transform.GetComponent<AgentTrainBehaviour>().brain + "";
-      Germs = new List<List<GameObject>>();
+      NewBornGenerations = new List<List<GameObject>>();
       Cells = new List<GameObject>();
       CellPositions = new List<Vector3>();
       CelllocalPositions = new List<Vector3>();
@@ -99,15 +99,15 @@ namespace Gene
       {
         GenerationInfos.Add(new List<float>());
       }
-      Germs.Add(new List<GameObject>());
-      GameObject initCell = InitBaseShape(Germs[0], 0);
+      NewBornGenerations.Add(new List<GameObject>());
+      GameObject initCell = InitBaseShape(NewBornGenerations[0], 0);
       initCell.transform.parent = transform;
       InitRigidBody(initCell);
       HandleStoreCell(initCell, initCell.transform.position, initCell.transform.position);
-      for (int y = 1; y < numGerms; y++)
+      for (int y = 1; y < generationNumber; y++)
       {
-        int prevCount = Germs[y - 1].Count;
-        Germs.Add(new List<GameObject>());
+        int prevCount = NewBornGenerations[y - 1].Count;
+        NewBornGenerations.Add(new List<GameObject>());
         for (int i = 0; i < prevCount; i++)
         {
           for (int z = 0; z < sides.Count; z++)
@@ -116,7 +116,7 @@ namespace Gene
             {
               bool isValid = true;
               float cellInfo = 0f;
-              Vector3 cellPosition = Germs[y - 1][i].transform.position + sides[z];
+              Vector3 cellPosition = NewBornGenerations[y - 1][i].transform.position + sides[z];
               isValid = CheckIsValid(isValid, cellPosition);
               cellInfo = HandleCellInfos(0, cellInfoIndex);
               cellInfoIndex++;
@@ -124,10 +124,10 @@ namespace Gene
               {
                 if (cellInfo > threshold)
                 {
-                  GameObject cell = InitBaseShape(Germs[y], y);
+                  GameObject cell = InitBaseShape(NewBornGenerations[y], y);
                   InitPosition(sides, y, i, z, cell);
                   InitRigidBody(cell);
-                  initJoint(cell, Germs[y - 1][i], sides[z], y, z);
+                  initJoint(cell, NewBornGenerations[y - 1][i], sides[z], y, z);
                   cell.transform.parent = transform;
                   HandleStoreCell(cell, cellPosition, cellPosition);
                 }
@@ -150,7 +150,7 @@ namespace Gene
       AddAgentPart(true);
     }
 
-    public void AddGeneration(int generationInfo, bool isAfterRequest)
+    public void BuildGeneration(int generationInfo, bool isAfterRequest)
     {
       int indexInfo = 0;
       int prevCount = 0;
@@ -158,16 +158,16 @@ namespace Gene
       partNb += 1;
 
 
-      for (int i = 0; i < Germs.Count; i++)
+      for (int i = 0; i < NewBornGenerations.Count; i++)
       {
-        if (Germs[i].Count > 0)
+        if (NewBornGenerations[i].Count > 0)
         {
-          prevCount = Germs[i].Count;
+          prevCount = NewBornGenerations[i].Count;
           germNb = i;
         }
         else
         {
-          Germs.RemoveAt(i);
+          NewBornGenerations.RemoveAt(i);
         }
       }
       if (!isAfterRequest)
@@ -175,7 +175,7 @@ namespace Gene
         GenerationInfos.Add(new List<float>());
       }
 
-      Germs.Add(new List<GameObject>());
+      NewBornGenerations.Add(new List<GameObject>());
 
       for (int i = 0; i < prevCount; i++)
       {
@@ -183,7 +183,7 @@ namespace Gene
         {
           bool isValid = true;
           float cellInfo = 0f;
-          Vector3 cellPosition = Germs[germNb][i].transform.position + sides[z];
+          Vector3 cellPosition = NewBornGenerations[germNb][i].transform.position + sides[z];
           isValid = CheckIsValid(isValid, cellPosition);
           cellInfo = HandleCellInfos(GenerationInfos.Count - 1, indexInfo);
           indexInfo++;
@@ -191,10 +191,10 @@ namespace Gene
           {
             if (cellInfo > threshold)
             {
-              GameObject cell = InitBaseShape(Germs[germNb + 1], germNb + 1);
+              GameObject cell = InitBaseShape(NewBornGenerations[germNb + 1], germNb + 1);
               InitPosition(sides, germNb + 1, i, z, cell);
               InitRigidBody(cell);
-              initJoint(cell, Germs[germNb][i], sides[z], germNb + 1, z);
+              initJoint(cell, NewBornGenerations[germNb][i], sides[z], germNb + 1, z);
               cell.transform.parent = transform;
               HandleStoreCell(cell, cellPosition, cellPosition);
             }
@@ -290,14 +290,14 @@ namespace Gene
 
     private void InitPosition(List<Vector3> sides, int y, int i, int z, GameObject cell)
     {
-      cell.transform.parent = Germs[y - 1][i].transform;
+      cell.transform.parent = NewBornGenerations[y - 1][i].transform;
       cell.transform.localPosition = sides[z];
     }
 
-    private GameObject InitBaseShape(List<GameObject> germs, int y)
+    private GameObject InitBaseShape(List<GameObject> NewBornGeneration, int y)
     {
-      germs.Add(Instantiate(CellPrefab));
-      GameObject cell = Germs[y][Germs[y].Count - 1];
+      NewBornGeneration.Add(Instantiate(CellPrefab));
+      GameObject cell = NewBornGenerations[y][NewBornGenerations[y].Count - 1];
       cell.transform.position = transform.position;
       return cell;
     }
