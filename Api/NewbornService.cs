@@ -29,7 +29,12 @@ namespace Gene
     public static Dictionary<string, string> variable = new Dictionary<string, string>();
     public static Dictionary<string, string[]> array = new Dictionary<string, string[]>();
 
-    // Use this for initialization
+    private TrainingManager trainingManager;
+
+    void Awake()
+    {
+      trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
+    }
 
     public IEnumerator postNewborn(NewBornPostData newBornPostData, int agentId)
     {
@@ -48,12 +53,12 @@ namespace Gene
       yield return www; 
       if (www.error != null)
       {
-        Debug.Log("There was an error sending request: " + www.error);
+        throw new Exception("There was an error sending request: " + www.error);
       }
       else
       {
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
-        transform.GetComponent<Cell>().PostGeneration(createdNewBornId, 0, agentId);
+        transform.GetComponent<NewBornBuilder>().PostGeneration(createdNewBornId, 0, agentId); // will it always be first generation
       }
     }
 
@@ -77,7 +82,7 @@ namespace Gene
       yield return www; 
       if (www.error != null)
       {
-        Debug.Log("There was an error sending request: " + www.error);
+        throw new Exception("There was an error sending request: " + www.error);
       }
       else
       {
@@ -91,8 +96,8 @@ namespace Gene
           response.Add(cellInfo.Value.AsFloat);
         }
 
-        transform.parent.transform.parent.transform.parent.transform.GetComponent<TrainingManager>().requestApiData = true;
-        transform.parent.transform.parent.transform.parent.transform.GetComponent<TrainingManager>().BuildAgentCell(true, agentId);
+        trainingManager.requestApiData = true;
+        trainingManager.BuildNewBornFromFetch(true, agentId);
       }
     }
 
@@ -112,7 +117,7 @@ namespace Gene
       yield return www; 
       if (www.error != null)
       {
-        Debug.Log("There was an error sending request: " + www.error);
+        throw new Exception("There was an error sending request: " + www.error);
       }
       else
       {
@@ -123,9 +128,8 @@ namespace Gene
           response.Add(cellInfo.Value.AsFloat);
         }
 
-        // TO REFACTOR HERE
-        transform.parent.transform.parent.transform.parent.transform.GetComponent<TrainingManager>().requestApiData = true;
-        transform.parent.transform.parent.transform.parent.transform.GetComponent<TrainingManager>().BuildAgentCell(false, agentId);
+        trainingManager.requestApiData = true;
+        trainingManager.BuildNewBornFromFetch(false, agentId);
       }
     }
 
@@ -181,7 +185,7 @@ namespace Gene
     public void DestroyAgent(Transform[] childs)
     {
       transform.gameObject.SetActive(true);
-      transform.GetComponent<Cell>().DeleteCells();
+      transform.GetComponent<NewBornBuilder>().DeleteCells();
       transform.GetComponent<AgentTrainBehaviour>().DeleteBodyParts();
       foreach (Transform child in childs)
       {

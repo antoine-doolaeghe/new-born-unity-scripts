@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace Gene
 {
-  public class Cell : MonoBehaviour
+  public class NewBornBuilder : MonoBehaviour
   {
     public GameObject CellPrefab;
     [Header("Connection to API Service")]
@@ -24,6 +24,8 @@ namespace Gene
 
     public List<Vector3> CelllocalPositions;
     private AgentTrainBehaviour aTBehaviour;
+
+    private TrainingManager trainingManager;
     private List<Vector3> sides = new List<Vector3> {
                 new Vector3 (1f, 0f, 0f),
                 new Vector3 (0f, 1f, 0f),
@@ -44,6 +46,7 @@ namespace Gene
 
     void Awake()
     {
+      trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
       initialised = false;
     }
 
