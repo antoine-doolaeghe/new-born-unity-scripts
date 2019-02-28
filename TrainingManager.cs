@@ -165,7 +165,7 @@ namespace Gene
       NewbornService newbornService = agent.GetComponent<NewbornService>();
 
       newBornBuilder.requestApiData = false;
-      newBornBuilder.initGerms(agentConfig.layerNumber, agentConfig.threshold);
+      newBornBuilder.initNewBorn(agentConfig.layerNumber, agentConfig.threshold);
       atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
       atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
       atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { Agents[agentId].transform.GetComponent<NewBornBuilder>().cellNb * 3 };
@@ -181,7 +181,7 @@ namespace Gene
         newBornBuilder.threshold = agentConfig.threshold;
         AgentTrainBehaviour atBehaviour = Agents[a].transform.GetComponent<AgentTrainBehaviour>();
         SetRequestApi(newBornBuilder, atBehaviour, false);
-        newBornBuilder.BuildGeneration(newBornBuilder.GenerationInfos.Count - 1, false);
+        newBornBuilder.BuildGeneration(newBornBuilder.GenerationInfos.Count, false);
         Brain brain = Resources.Load<Brain>("Brains/agentBrain" + a);
         SetBrainParams(brain);
         Agents[a].gameObject.name = brain + "";

@@ -106,9 +106,9 @@ namespace Gene
       HandleStoreCell(initCell, initCell.transform.position, initCell.transform.position);
       for (int y = 1; y < generationNumber; y++)
       {
-        int prevCount = NewBornGenerations[y - 1].Count;
+        int previousGenerationCellNumber = NewBornGenerations[y - 1].Count;
         NewBornGenerations.Add(new List<GameObject>());
-        for (int i = 0; i < prevCount; i++)
+        for (int i = 0; i < previousGenerationCellNumber; i++)
         {
           for (int z = 0; z < sides.Count; z++)
           {
@@ -153,7 +153,7 @@ namespace Gene
     public void BuildGeneration(int generationInfo, bool isAfterRequest)
     {
       int indexInfo = 0;
-      int prevCount = 0;
+      int previousGenerationCellNumber = 0;
       int germNb = 0;
       partNb += 1;
 
@@ -162,7 +162,7 @@ namespace Gene
       {
         if (NewBornGenerations[i].Count > 0)
         {
-          prevCount = NewBornGenerations[i].Count;
+          previousGenerationCellNumber = NewBornGenerations[i].Count;
           germNb = i;
         }
         else
@@ -177,7 +177,7 @@ namespace Gene
 
       NewBornGenerations.Add(new List<GameObject>());
 
-      for (int i = 0; i < prevCount; i++)
+      for (int i = 0; i < previousGenerationCellNumber; i++)
       {
         for (int z = 0; z < sides.Count; z++)
         {
