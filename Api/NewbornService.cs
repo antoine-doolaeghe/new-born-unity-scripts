@@ -80,6 +80,7 @@ namespace Gene
 
       WWW www = new WWW(apiConfig.url, postData, postHeader);
       yield return www; 
+
       if (www.error != null)
       {
         throw new Exception("There was an error sending request: " + www.error);
@@ -96,8 +97,8 @@ namespace Gene
           response.Add(cellInfo.Value.AsFloat);
         }
 
-        trainingManager.requestApiData = true;
-        trainingManager.BuildNewBornFromFetch(true, agentId);
+        GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>().requestApiData = true;
+        GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>().BuildNewBornFromFetch(true, agentId);
       }
     }
 
@@ -128,8 +129,8 @@ namespace Gene
           response.Add(cellInfo.Value.AsFloat);
         }
 
-        trainingManager.requestApiData = true;
-        trainingManager.BuildNewBornFromFetch(false, agentId);
+        GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>().requestApiData = true;
+        GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>().BuildNewBornFromFetch(false, agentId);
       }
     }
 

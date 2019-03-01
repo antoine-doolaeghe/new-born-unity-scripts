@@ -56,11 +56,10 @@ namespace Gene
     public void BuildAgents()
     {
       GameObject trainingFloor = new GameObject();
-      GameObject trainingCamera = Instantiate(camera, trainingFloor.transform);
       int floor = 0;
       int squarePosition = 0;
 
-      NameTrainingEnv(trainingFloor, trainingCamera, floor);
+      NameTrainingEnv(trainingFloor, floor);
 
       for (var i = 0; i < agentTrainerNumber; i++)
       {
@@ -73,12 +72,12 @@ namespace Gene
           floor++;
           squarePosition = 0;
           trainingFloor = CreateTrainingFloor(floor);
-          CreateFloorCamera(trainingFloor, floor);
+          // CreateFloorCamera(trainingFloor, floor);
         }
 
         AddTrainer(trainingFloor, floor, squarePosition, out newBornTrainer);
         SetSquarePosition(squarePosition, newBornTrainer);
-        AddAgentCamera(newBornTrainer);
+        // AddAgentCamera(newBornTrainer);
         SetBrainParams(brain);
 
         if (!isTargetDynamic)
@@ -199,7 +198,7 @@ namespace Gene
       for (int a = 0; a < Agents.Count; a++)
       {
         NewbornService newbornService = Agents[a].transform.GetComponent<NewbornService>();
-        NewBornPostData newBornPostData = new NewBornPostData("\"cellName\"", System.Guid.NewGuid());
+        NewBornPostData newBornPostData = new NewBornPostData("\"cellName\"", System.Guid.NewGuid(), "green");
         StartCoroutine(newbornService.postNewborn(newBornPostData, a));
       }
     }
@@ -303,11 +302,10 @@ namespace Gene
       c.GetComponent<Camera>().fieldOfView = fieldOfView;
     }
 
-    private void NameTrainingEnv(GameObject trainingFloor, GameObject trainingCamera, int floor)
+    private void NameTrainingEnv(GameObject trainingFloor, int floor)
     {
       trainingFloor.name = "Floor" + floor;
       trainingFloor.transform.parent = transform;
-      trainingCamera.name = "Camera" + floor;
     }
 
 

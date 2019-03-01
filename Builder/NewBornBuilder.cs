@@ -243,8 +243,9 @@ namespace Gene
     public void PostCell()
     {
       string newBornName = "\"cellName\"";
+      string nexBornHexColor = "\"red\"";
       System.Guid newBornId = System.Guid.NewGuid();
-      NewBornPostData newBornPostData = new NewBornPostData(newBornName, newBornId);
+      NewBornPostData newBornPostData = new NewBornPostData(newBornName, newBornId, nexBornHexColor);
       newbornService.postNewborn(newBornPostData, 0);
     }
 
