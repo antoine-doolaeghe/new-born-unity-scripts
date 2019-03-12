@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using System.Linq;
 using MLAgents;
 using UnityEditor;
@@ -50,7 +51,6 @@ namespace Gene
       }
       Agents.Clear();
       academy.broadcastHub.broadcastingBrains.Clear();
-      transform.GetComponent<CameraSwitch>().cameraList.Clear();
     }
 
     public void BuildAgents()
@@ -78,7 +78,7 @@ namespace Gene
         AddTrainer(trainingFloor, floor, squarePosition, out newBornTrainer);
         SetSquarePosition(squarePosition, newBornTrainer);
         // AddAgentCamera(newBornTrainer);
-        SetBrainParams(brain);
+        SetBrainParams(brain, Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""));
 
         if (!isTargetDynamic)
         {
@@ -121,7 +121,7 @@ namespace Gene
     }
 
 
-    public void BuildNewBornFromFetch(bool buildFromPost, int agentId = 0)
+    public void BuildNewBornFromFetch(bool buildFromPost, string responseId, int agentId = 0)
     {
       Transform agent = Agents[agentId].transform;
       AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
@@ -142,7 +142,7 @@ namespace Gene
         atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
         atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { newBornBuilder.cellNb * 3 };
         atBehaviour.brain.brainParameters.vectorObservationSize = newBornBuilder.cellNb * 13 - 4;
-        atBehaviour.brain.name = "NewBorn" + newbornService.responseUuid;
+        atBehaviour.brain.name = responseId;
       }
       else if (agentId == 0) // INIT FIRST BRAIN
       {
@@ -182,7 +182,7 @@ namespace Gene
         SetRequestApi(newBornBuilder, atBehaviour, false);
         newBornBuilder.BuildGeneration(newBornBuilder.GenerationInfos.Count, false);
         Brain brain = Resources.Load<Brain>("Brains/agentBrain" + a);
-        SetBrainParams(brain);
+        SetBrainParams(brain, brain.name);
         Agents[a].gameObject.name = brain + "";
         brain.brainParameters.vectorObservationSize = vectorObservationSize;
         brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
@@ -197,9 +197,10 @@ namespace Gene
       Debug.Log("Posting NewBorn to server...");
       for (int a = 0; a < Agents.Count; a++)
       {
-        NewbornService newbornService = Agents[a].transform.GetComponent<NewbornService>();
-        NewBornPostData newBornPostData = new NewBornPostData("\"cellName\"", System.Guid.NewGuid(), "green");
-        StartCoroutine(newbornService.postNewborn(newBornPostData, a));
+        NewBornBuilder newBornBuilder = Agents[a].transform.GetComponent<NewBornBuilder>();
+        AgentTrainBehaviour agentTrainBehaviour = Agents[a].transform.GetComponent<AgentTrainBehaviour>();
+        string brainName = agentTrainBehaviour.brain.name;
+        newBornBuilder.PostCell(brainName, a);
       }
     }
 
@@ -228,9 +229,9 @@ namespace Gene
       }
     }
 
-    private void SetBrainParams(Brain brain)
+    private void SetBrainParams(Brain brain, string brainName)
     {
-      brain.name = "NewBorn" + System.Guid.NewGuid();
+      brain.name = brainName;
       brain.brainParameters.vectorActionSize = new int[1] { vectorActionSize };
       academy.broadcastHub.broadcastingBrains.Add(brain);
       academy.broadcastHub.SetControlled(brain, control);

@@ -4,9 +4,9 @@
 public struct NewBornPostData
 {
   public string name;
-  public System.Guid id;
+  public string id;
   public String hexColor;
-  public NewBornPostData(string name, System.Guid id, string hexColor)
+  public NewBornPostData(string name, string id, string hexColor)
   {
     this.id = id;
     this.name = name;

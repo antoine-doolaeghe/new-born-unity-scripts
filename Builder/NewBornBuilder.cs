@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using MLAgents;
 using UnityEngine;
 
@@ -240,21 +241,20 @@ namespace Gene
       return positions;
     }
 
-    public void PostCell()
+    public void PostCell(string newbornId, int agentId)
     {
       string newBornName = "\"cellName\"";
       string nexBornHexColor = "\"red\"";
-      System.Guid newBornId = System.Guid.NewGuid();
-      NewBornPostData newBornPostData = new NewBornPostData(newBornName, newBornId, nexBornHexColor);
-      newbornService.postNewborn(newBornPostData, 0);
+      NewBornPostData newBornPostData = new NewBornPostData(newBornName, newbornId, nexBornHexColor);
+      StartCoroutine(newbornService.postNewborn(newBornPostData, agentId));
     }
 
     public void PostGeneration(string newbornId, int generationId, int agentId)
     {
       List<float> cellInfos = ReturnGenerationInfos(generationId);
       List<List<float>> cellPositions = ReturnGenerationPositions();
-      System.Guid id = System.Guid.NewGuid();
-      GenerationPostData generationPostData = new GenerationPostData(id, cellPositions, cellInfos);
+      string id = Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
+      GenerationPostData generationPostData = new GenerationPostData(newbornId, cellPositions, cellInfos);
       StartCoroutine(newbornService.postGeneration(generationPostData, newbornId, agentId));
     }
 

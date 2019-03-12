@@ -43,14 +43,15 @@ namespace Gene
       Dictionary<string, string> postHeader;
 
       string newBornGraphQlMutation = apiConfig.newBornGraphQlMutation; 
-      NewbornService.variable["id"] = Regex.Replace(newBornPostData.id.ToString(), @"[^0-9]", "");
+      NewbornService.variable["id"] = newBornPostData.id;
       NewbornService.variable["name"] = newBornPostData.name;
       newBornGraphQlMutation = QuerySorter(newBornGraphQlMutation);
       jsonData = NewbornServiceHelpers.ReturnJsonData(newBornGraphQlMutation);
       NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
-
       WWW www = new WWW(apiConfig.url, postData, postHeader);
       yield return www; 
+      Debug.Log(newBornGraphQlMutation);
+      Debug.Log(www.text);
       if (www.error != null)
       {
         throw new Exception("There was an error sending request: " + www.error);
@@ -70,7 +71,7 @@ namespace Gene
       Dictionary<string, string> postHeader;
 
       string generationGraphQlMutation = apiConfig.generationGraphQlMutation;
-      NewbornService.variable["id"] = Regex.Replace(generationPostData.id.ToString(), @"[^0-9]", "");
+      NewbornService.variable["id"] = generationPostData.id;
       NewbornService.variable["generationNewbornId"] = newbornId;
       NewbornService.variable["cellPositions"] = JSON.Parse(JsonUtility.ToJson(generationPostData))["cellPositions"].ToString();
       NewbornService.variable["cellInfos"] = JSON.Parse(JsonUtility.ToJson(generationPostData))["cellInfos"].ToString();
@@ -79,8 +80,8 @@ namespace Gene
       NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
 
       WWW www = new WWW(apiConfig.url, postData, postHeader);
-      yield return www; 
 
+      yield return www;
       if (www.error != null)
       {
         throw new Exception("There was an error sending request: " + www.error);
@@ -91,14 +92,14 @@ namespace Gene
         Transform[] childs = transform.Cast<Transform>().ToArray();
         DestroyAgent(childs);
         response = new List<float>();
-        
+        string responseId = JSON.Parse(www.text)["data"]["createGeneration"]["id"];
         foreach (var cellInfo in JSON.Parse(www.text)["data"]["createGeneration"]["cellInfos"].AsArray)
         {
           response.Add(cellInfo.Value.AsFloat);
         }
 
         GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>().requestApiData = true;
-        GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>().BuildNewBornFromFetch(true, agentId);
+        GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>().BuildNewBornFromFetch(true, responseId, agentId);
       }
     }
 
@@ -124,13 +125,15 @@ namespace Gene
       {
         Debug.Log("NewBorn successfully requested!");
         response = new List<float>();
+        string responseId = JSON.Parse(www.text)["data"]["createGeneration"]["id"];
+
         foreach (var cellInfo in JSON.Parse(www.text)["data"]["getNewborn"]["generations"]["items"][0]["cellInfos"].AsArray)
         {
           response.Add(cellInfo.Value.AsFloat);
         }
 
         GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>().requestApiData = true;
-        GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>().BuildNewBornFromFetch(false, agentId);
+        GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>().BuildNewBornFromFetch(false, responseId, agentId);
       }
     }
 

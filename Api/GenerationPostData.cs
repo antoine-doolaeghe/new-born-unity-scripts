@@ -7,8 +7,8 @@ public struct GenerationPostData
 {
   public List<float> cellInfos;
   public List<List<float>> cellPositions;
-  public System.Guid id;
-  public GenerationPostData(System.Guid id, List<List<float>> cellPositions, List<float> cellInfos)
+  public string id;
+  public GenerationPostData(string id, List<List<float>> cellPositions, List<float> cellInfos)
   {
     this.id = id;
     this.cellInfos = cellInfos;
