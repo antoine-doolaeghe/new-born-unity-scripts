@@ -10,6 +10,8 @@ namespace Gene
 {
   public class TrainingManager : MonoBehaviour
   {
+    [Header("Production Mode")]
+    public bool isProductionMode;
     [Header("Environment parameters")]
     public int agentTrainerNumber;
     public int agentNumber;
