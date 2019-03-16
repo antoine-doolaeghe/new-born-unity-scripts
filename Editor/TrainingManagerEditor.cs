@@ -41,7 +41,10 @@ namespace Gene
 
       if (GUILayout.Button("Build NewBorn Production Cells"))
       {
-        spawner.BuildRandomProductionNewBorn(false, 0);
+        foreach (GameObject agent in GameObject.FindGameObjectsWithTag("agent"))
+        {
+          spawner.BuildRandomProductionNewBorn(agent.transform);
+        }
       }
 
       if (GUILayout.Button("Delete NewBorn Cells"))

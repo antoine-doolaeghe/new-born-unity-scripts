@@ -171,10 +171,9 @@ namespace Gene
       atBehaviour.brain.brainParameters.vectorObservationSize = Agents[agentId].transform.GetComponent<NewBornBuilder>().cellNb * 13 - 4;
     }
 
-    public void BuildRandomProductionNewBorn(bool buildFromPost, int agentId = 0)
+    public void BuildRandomProductionNewBorn(Transform agent)
     {
       // Handle starting/communication with api data
-      Transform agent = Agents[agentId].transform;
       AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
       NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
       NewbornService newbornService = agent.GetComponent<NewbornService>();
@@ -183,8 +182,8 @@ namespace Gene
       newBornBuilder.initNewBorn(agentConfig.layerNumber, agentConfig.threshold);
       atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
       atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
-      atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { Agents[agentId].transform.GetComponent<NewBornBuilder>().cellNb * 3 };
-      atBehaviour.brain.brainParameters.vectorObservationSize = Agents[agentId].transform.GetComponent<NewBornBuilder>().cellNb * 13 - 4;
+      atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { newBornBuilder.cellNb * 3 };
+      atBehaviour.brain.brainParameters.vectorObservationSize = newBornBuilder.cellNb * 13 - 4;
     }
 
     public void BuildRandomGeneration()
@@ -232,7 +231,10 @@ namespace Gene
 
     public void RequestProductionAgentInfo()
     {
-      // REQUEST PRODUCTION AGENT
+      foreach (GameObject fooObj in GameObject.FindGameObjectsWithTag("agent"))
+      {
+        Debug.Log(fooObj.name);
+      }
     }
 
     public void DeleteCell()
