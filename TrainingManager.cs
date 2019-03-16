@@ -74,12 +74,10 @@ namespace Gene
           floor++;
           squarePosition = 0;
           trainingFloor = CreateTrainingFloor(floor);
-          // CreateFloorCamera(trainingFloor, floor);
         }
 
         AddTrainer(trainingFloor, floor, squarePosition, out newBornTrainer);
         SetSquarePosition(squarePosition, newBornTrainer);
-        // AddAgentCamera(newBornTrainer);
         SetBrainParams(brain, Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""));
 
         if (!isTargetDynamic)
@@ -157,7 +155,23 @@ namespace Gene
       }
     }
 
-    public void BuildRandomNewBorn(bool buildFromPost, int agentId = 0)
+    public void BuildRandomTrainingNewBorn(bool buildFromPost, int agentId = 0)
+    {
+      // Handle starting/communication with api data
+      Transform agent = Agents[agentId].transform;
+      AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
+      NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
+      NewbornService newbornService = agent.GetComponent<NewbornService>();
+
+      newBornBuilder.requestApiData = false;
+      newBornBuilder.initNewBorn(agentConfig.layerNumber, agentConfig.threshold);
+      atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
+      atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
+      atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { Agents[agentId].transform.GetComponent<NewBornBuilder>().cellNb * 3 };
+      atBehaviour.brain.brainParameters.vectorObservationSize = Agents[agentId].transform.GetComponent<NewBornBuilder>().cellNb * 13 - 4;
+    }
+
+    public void BuildRandomProductionNewBorn(bool buildFromPost, int agentId = 0)
     {
       // Handle starting/communication with api data
       Transform agent = Agents[agentId].transform;
@@ -206,7 +220,7 @@ namespace Gene
       }
     }
 
-    public void RequestAgentInfo()
+    public void RequestTrainingAgentInfo()
     {
       Debug.Log("Requesting Agent info from server...");
       for (int a = 0; a < Agents.Count; a++)
@@ -214,6 +228,11 @@ namespace Gene
         NewbornService newbornService = Agents[a].transform.GetComponent<NewbornService>();
         StartCoroutine(newbornService.getNewborn(cellId, a, false));
       }
+    }
+
+    public void RequestProductionAgentInfo()
+    {
+      // REQUEST PRODUCTION AGENT
     }
 
     public void DeleteCell()
@@ -310,7 +329,6 @@ namespace Gene
       trainingFloor.name = "Floor" + floor;
       trainingFloor.transform.parent = transform;
     }
-
 
     private void AddMinCellNb(NewBornBuilder newBornBuilder, int minCellNb)
     {

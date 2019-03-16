@@ -31,12 +31,17 @@ namespace Gene
 
       EditorGUILayout.LabelField("Random NewBorn Builds");
 
-      if (GUILayout.Button("Build NewBorn Cells"))
+      if (GUILayout.Button("Build NewBorn Training Cells"))
       {
         for (int i = 0; i < spawner.Agents.Count; i++)
         {
-          spawner.BuildRandomNewBorn(false, i);
+          spawner.BuildRandomTrainingNewBorn(false, i);
         }
+      }
+
+      if (GUILayout.Button("Build NewBorn Production Cells"))
+      {
+        spawner.BuildRandomProductionNewBorn(false, 0);
       }
 
       if (GUILayout.Button("Delete NewBorn Cells"))
@@ -51,26 +56,36 @@ namespace Gene
 
       EditorGUILayout.LabelField("Serviced Newborn Builds");
 
-      if (GUILayout.Button("Request NewBorn (all generation)"))
+      if (GUILayout.Button("Request Training NewBorn"))
       {
-        spawner.RequestAgentInfo();
+        spawner.RequestTrainingAgentInfo();
       }
 
-      if (GUILayout.Button("Request NewBorn (target generation)"))
+      if (GUILayout.Button("Request Production NewBorn"))
       {
-        spawner.RequestAgentInfo();
+        spawner.RequestProductionAgentInfo();
+      }
+
+      if (GUILayout.Button("Request Training NewBorn (target generation)"))
+      {
+        spawner.RequestTrainingAgentInfo();
+      }
+
+      if (GUILayout.Button("Request Production NewBorn (target generation)"))
+      {
+        spawner.RequestProductionAgentInfo();
       }
 
       EditorGUILayout.LabelField("API Post request");
 
-      if (GUILayout.Button("Post NewBorn"))
+      if (GUILayout.Button("Post Training NewBorn"))
       {
         spawner.PostAgents();
       }
 
-      if (GUILayout.Button("Update NewBorn"))
+      if (GUILayout.Button("Update Training NewBorn"))
       {
-        spawner.RequestAgentInfo();
+        spawner.RequestTrainingAgentInfo();
       }
     }
   }
