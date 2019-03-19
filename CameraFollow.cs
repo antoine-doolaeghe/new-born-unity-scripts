@@ -21,8 +21,8 @@ namespace MLAgents
         void Update()
         {
             // gameObject.transform.position = target.position + offset;
-            Vector3 newPosition = new Vector3(target.position.x + offset.x, transform.position.y,
-                target.position.z + offset.z);
+            Vector3 newPosition = new Vector3(target.position.x, transform.position.y + 0.1f,
+                target.position.z);
             gameObject.transform.position = newPosition;
         }
     }
