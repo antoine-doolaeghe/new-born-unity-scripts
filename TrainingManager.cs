@@ -83,7 +83,7 @@ namespace Gene
         } else {
           PositionTrainingSpawner(squarePosition, spawner);
         }
-
+        
         SetBrainParams(brain, Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""));
 
         if (!isTargetDynamic && !isProductionMode)
