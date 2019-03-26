@@ -21,7 +21,7 @@ namespace Gene
 
       if (GUILayout.Button("Build training environment"))
       {
-        spawner.BuildAgents();
+        spawner.BuildSpawners();
       }
 
       if (GUILayout.Button("Delete training environment"))

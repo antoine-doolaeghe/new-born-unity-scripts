@@ -6,6 +6,6 @@ public class CameraController : MonoBehaviour
 {
     void Update()
     {
-        transform.Rotate(0,6f*Time.deltaTime,0);
+        transform.Rotate(Vector3.up, 1f * Time.deltaTime, Space.Self);
     }
 }

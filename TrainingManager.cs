@@ -13,9 +13,9 @@ namespace Gene
     [Header("Production Mode")]
     public bool isProductionMode;
     [Header("Environment parameters")]
-    public int agentTrainerNumber;
+    public int spawnerNumber;
     public int agentNumber;
-    public GameObject camera;
+    public GameObject Camera;
     public GameObject TrainingPrefab;
     public Vector3 agentScale;
     public Vector3 groundScale;
@@ -55,34 +55,40 @@ namespace Gene
       academy.broadcastHub.broadcastingBrains.Clear();
     }
 
-    public void BuildAgents()
+    public void BuildSpawners()
     {
-      GameObject trainingFloor = new GameObject();
+      GameObject parent = transform.gameObject;
       int floor = 0;
       int squarePosition = 0;
 
-      NameTrainingEnv(trainingFloor, floor);
-
-      for (var i = 0; i < agentTrainerNumber; i++)
+      for (var i = 0; i < spawnerNumber; i++)
       {
         List<GameObject> newBornAgents = new List<GameObject>();
-        GameObject newBornTrainer;
+        GameObject spawner;
         Brain brain = Resources.Load<Brain>("Brains/agentBrain" + i);
 
-        if (i != 0 && i % 4 == 0)
+        if (!isProductionMode && i % 4 == 0)
         {
+          parent = new GameObject();
+          NameFloor(parent, floor);
           floor++;
           squarePosition = 0;
-          trainingFloor = CreateTrainingFloor(floor);
+          parent = CreateTrainingFloor(floor);
         }
 
-        AddTrainer(trainingFloor, floor, squarePosition, out newBornTrainer);
-        SetSquarePosition(squarePosition, newBornTrainer);
+        InstantiateSpawner(parent, floor, squarePosition, out spawner);
+
+        if(isProductionMode) {
+          // Randomly place the agents.
+        } else {
+          PositionTrainingSpawner(squarePosition, spawner);
+        }
+        
         SetBrainParams(brain, Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""));
 
-        if (!isTargetDynamic)
+        if (!isTargetDynamic && !isProductionMode)
         {
-          Instantiate(StaticTarget, newBornTrainer.transform);
+          Instantiate(StaticTarget, spawner.transform);
         }
 
         for (int y = 0; y < agentNumber; y++)
@@ -90,36 +96,39 @@ namespace Gene
           AgentTrainBehaviour atBehaviour;
           NewBornBuilder newBornBuilder;
           GameObject newBornAgent;
-          newBornAgents.Add(AddAgent(newBornTrainer, out newBornAgent, out atBehaviour, out newBornBuilder));
+          newBornAgents.Add(AddAgent(spawner, out newBornAgent, out atBehaviour, out newBornBuilder));
           AddBrainToAgentBehaviour(atBehaviour, brain);
           SetRequestApi(newBornBuilder, atBehaviour, requestApiData);
           AddMinCellNb(newBornBuilder, minCellNb);
         }
 
-
-        for (int y = 0; y < newBornAgents.Count; y++)
-        {
-          if (isTargetDynamic)
-          {
-            if (y != newBornAgents.Count - 1)
-            {
-              newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = newBornAgents[y + 1].transform;
-            }
-            else
-            {
-              newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = newBornAgents[0].transform;
-            }
-          }
-          else
-          {
-            newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = StaticTarget.transform;
-          }
-        }
+        AssignTarget(newBornAgents);
 
         squarePosition++;
       }
     }
 
+    private void AssignTarget(List<GameObject> newBornAgents)
+    {
+      for (int y = 0; y < newBornAgents.Count; y++)
+      {
+        if (isTargetDynamic)
+        {
+          if (y != newBornAgents.Count - 1)
+          {
+            newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = newBornAgents[y + 1].transform;
+          }
+          else
+          {
+            newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = newBornAgents[0].transform;
+          }
+        }
+        else
+        {
+          newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = StaticTarget.transform;
+        }
+      }
+    }
 
     public void BuildNewBornFromFetch(bool buildFromPost, string responseId, int agentId = 0)
     {
@@ -260,15 +269,6 @@ namespace Gene
       academy.broadcastHub.SetControlled(brain, control);
     }
 
-    private void CreateFloorCamera(GameObject trainingFloor, int floor)
-    {
-      GameObject cam = Instantiate(camera, trainingFloor.transform);
-      transform.GetComponent<CameraSwitch>().cameraList.Add(cam);
-      cam.name = "Camera" + floor;
-      cam.SetActive(false);
-      cam.transform.localPosition = new Vector3(cam.transform.localPosition.x, floorHeight - 30f, cam.transform.localPosition.z);
-    }
-
     private GameObject CreateTrainingFloor(int floor)
     {
       GameObject trainingFloor = new GameObject();
@@ -278,35 +278,42 @@ namespace Gene
       return trainingFloor;
     }
 
-    private static void SetSquarePosition(int squarePosition, GameObject a)
+    private static void PositionTrainingSpawner(int squarePosition, GameObject spawner)
     {
+      Transform spawnerTransform = spawner.transform;
+      Vector3 spawnerTransformGroundScale = spawnerTransform.Find("Ground").transform.localScale;
       switch (squarePosition)
       {
         case 0:
-          a.transform.localPosition = new Vector3(0f, 0f, 0f);
+          spawnerTransform.localPosition = new Vector3(0f, 0f, 0f);
           break;
         case 1:
-          a.transform.localPosition = new Vector3(a.transform.Find("Ground").transform.localScale.x, 0f, 0f);
+          spawnerTransform.localPosition = new Vector3(spawnerTransformGroundScale.x, 0f, 0f);
           break;
         case 2:
-          a.transform.localPosition = new Vector3(0f, 0f, a.transform.Find("Ground").transform.localScale.z);
+          spawnerTransform.localPosition = new Vector3(0f, 0f, spawnerTransformGroundScale.z);
           break;
         case 3:
-          a.transform.localPosition = new Vector3(a.transform.Find("Ground").transform.localScale.x, 0f, a.transform.Find("Ground").transform.localScale.z);
+          spawnerTransform.localPosition = new Vector3(spawnerTransformGroundScale.x, 0f, spawnerTransformGroundScale.z);
           break;
       }
     }
 
-    private void AddTrainer(GameObject trainingFloor, int floor, int squarePosition, out GameObject newBornTrainer)
+    private static void PositionProductionSpawner()
     {
-      newBornTrainer = Instantiate(TrainingPrefab, trainingFloor.transform);
-      newBornTrainer.name = "trainer" + floor + "." + squarePosition;
-      newBornTrainer.transform.localScale = groundScale;
+      Debug.Log("TO-DO: Position the production spawner");
     }
 
-    private GameObject AddAgent(GameObject newBornTrainer, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder)
+    private void InstantiateSpawner(GameObject parent, int floor, int squarePosition, out GameObject spawner)
     {
-      newBornAgent = Instantiate(AgentPrefab, newBornTrainer.transform);
+      spawner = Instantiate(TrainingPrefab, parent.transform);
+      spawner.name = isProductionMode ? ("Spawner") : ("Trainer" + floor + "." + squarePosition);
+      spawner.transform.localScale = groundScale;
+    }
+
+    private GameObject AddAgent(GameObject spawner, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder)
+    {
+      newBornAgent = Instantiate(AgentPrefab, spawner.transform);
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
       newBornBuilder.CellPrefab = CellPrefab;
@@ -315,18 +322,7 @@ namespace Gene
       return newBornAgent;
     }
 
-    private void AddAgentCamera(GameObject a)
-    {
-      GameObject c = Instantiate(camera, a.transform);
-      transform.GetComponent<CameraSwitch>().cameraList.Add(c);
-      c.name = "Camera" + a.name;
-      c.SetActive(false);
-      c.transform.localPosition = new Vector3(0f, floorHeight - 30f, 0f);
-      c.GetComponent<Camera>().orthographic = false;
-      c.GetComponent<Camera>().fieldOfView = fieldOfView;
-    }
-
-    private void NameTrainingEnv(GameObject trainingFloor, int floor)
+    private void NameFloor(GameObject trainingFloor, int floor)
     {
       trainingFloor.name = "Floor" + floor;
       trainingFloor.transform.parent = transform;
