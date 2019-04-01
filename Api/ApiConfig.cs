@@ -6,6 +6,6 @@ public class ApiConfig : ScriptableObject
 {
     public string url;
   public string newBornGraphQlMutation;
-  public string generationGraphQlMutation;
+  public string modelGraphQlMutation;
   public string newBornGraphQlQuery;
 }

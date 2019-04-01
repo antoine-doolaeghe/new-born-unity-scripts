@@ -12,11 +12,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 30d07f09a8bda44baa0e4f2f96b629e0, type: 3}
   m_Name: Api Config
   m_EditorClassIdentifier: 
-  url: https://oyahtl2jibczvphcfmvxtjiqy4.appsync-api.eu-west-1.amazonaws.com/graphql
+  url: https://ilhzglf4sfgepcagdzuviwewy4.appsync-api.eu-west-1.amazonaws.com/graphql
   newBornGraphQlMutation: 'mutation PutPost {createNewborn(input: {id: "$id^", name:
     $name^}) {id, name}}'
-  generationGraphQlMutation: 'mutation PutPost {createGeneration(input:{ id: $id^,
-    generationNewbornId: $generationNewbornId^, cellInfos: $cellInfos^, cellPositions:
-    $cellPositions^}) {cellInfos, cellPositions, id}}'
+  modelGraphQlMutation: 'mutation PutPost {createModel(input: {id: "$id^", cellInfos:
+    $cellInfos^, cellPositions: $cellPositions^, modelNewbornId: "$modelNewbornId^"})
+    {id, cellInfos}}'
   newBornGraphQlQuery: 'query getNewBorn {getNewborn(id: $id^) {id, name, generations
     {items {cellInfos}}}}'
