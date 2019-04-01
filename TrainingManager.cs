@@ -5,21 +5,22 @@ using System.Linq;
 using MLAgents;
 using UnityEditor;
 using UnityEngine;
+using MyBox;
 
 namespace Gene
 {
   public class TrainingManager : MonoBehaviour
   {
-    [Header("Production Mode")]
-    public bool isProductionMode;
+    [Header("Environment Mode")]
+    public bool isTrainingMode;
     [Header("Environment parameters")]
     public int spawnerNumber;
     public int agentNumber;
     public GameObject Camera;
     public GameObject TrainingPrefab;
-    public Vector3 agentScale;
-    public Vector3 groundScale;
-    public float floorHeight;
+    [ConditionalField("isTrainingMode")] public Vector3 agentScale;
+    [ConditionalField("isTrainingMode")] public Vector3 groundScale;
+    [ConditionalField("isTrainingMode")] public float floorHeight;
     [Header("Agent parameters")]
     public GameObject AgentPrefab;
     public GameObject CellPrefab;
@@ -29,9 +30,9 @@ namespace Gene
     public AgentConfig agentConfig;
     public float randomPositionIndex;
     [Header("Target parameters")]
-    public GameObject StaticTarget;
-    public bool isTargetDynamic;
-    public Vector3 targetPosition;
+    [ConditionalField("isTrainingMode")] public GameObject StaticTarget;
+    [ConditionalField("isTrainingMode")] public bool isTargetDynamic;
+    [ConditionalField("isTrainingMode")] public Vector3 targetPosition;
     [Header("Academy parameters")]
     public Academy academy;
     public bool control;
@@ -40,7 +41,6 @@ namespace Gene
     public int vectorActionSize;
     public TextAsset brainModel;
     [Header("Camera parameters")]
-    public float fieldOfView;
 
     [HideInInspector] public List<GameObject> Agents = new List<GameObject>();
 
@@ -67,7 +67,7 @@ namespace Gene
         GameObject spawner;
         Brain brain = Resources.Load<Brain>("Brains/agentBrain" + i);
 
-        if (!isProductionMode && i % 4 == 0)
+        if (isTrainingMode && i % 4 == 0)
         {
           parent = new GameObject();
           NameFloor(parent, floor);
@@ -78,15 +78,15 @@ namespace Gene
 
         InstantiateSpawner(parent, floor, squarePosition, out spawner);
 
-        if(isProductionMode) {
-          // Randomly place the agents.
-        } else {
+        if(isTrainingMode) {
           PositionTrainingSpawner(squarePosition, spawner);
+        } else {
+          // Randomly place the agents.
         }
         
         SetBrainParams(brain, Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""));
 
-        if (!isTargetDynamic && !isProductionMode)
+        if (!isTargetDynamic && isTrainingMode)
         {
           Instantiate(StaticTarget, spawner.transform);
         }
@@ -307,7 +307,7 @@ namespace Gene
     private void InstantiateSpawner(GameObject parent, int floor, int squarePosition, out GameObject spawner)
     {
       spawner = Instantiate(TrainingPrefab, parent.transform);
-      spawner.name = isProductionMode ? ("Spawner") : ("Trainer" + floor + "." + squarePosition);
+      spawner.name = !isTrainingMode ? ("Spawner") : ("Trainer" + floor + "." + squarePosition);
       spawner.transform.localScale = groundScale;
     }
 
@@ -355,3 +355,4 @@ namespace Gene
     }
   }
 }
+

@@ -69,7 +69,6 @@ namespace Gene
       string jsonData;
       byte[] postData;
       Dictionary<string, string> postHeader;
-
       string modelGraphQlMutation = apiConfig.modelGraphQlMutation;
       NewbornService.variable["id"] = generationPostData.id;
       NewbornService.variable["modelNewbornId"] = modelId;
@@ -93,8 +92,8 @@ namespace Gene
         DestroyAgent(childs);
         response = new List<float>();
         Debug.Log(JSON.Parse(www.text));
-        string responseId = JSON.Parse(www.text)["data"]["createGeneration"]["id"];
-        foreach (var cellInfo in JSON.Parse(www.text)["data"]["createGeneration"]["cellInfos"].AsArray)
+        string responseId = JSON.Parse(www.text)["data"]["createModel"]["id"];
+        foreach (var cellInfo in JSON.Parse(www.text)["data"]["createModel"]["cellInfos"].AsArray)
         {
           response.Add(cellInfo.Value.AsFloat);
         }
