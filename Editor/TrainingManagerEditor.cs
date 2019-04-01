@@ -87,13 +87,14 @@ namespace Gene
         }
       }
 
-      if (!spawner.isTrainingMode)
-      {
-        if (GUILayout.Button("Request Production NewBorn (target generation)"))
-        {
-          spawner.RequestProductionAgentInfo();
-        }
-      }
+      // TO-DO 
+      // if (!spawner.isTrainingMode)
+      // {
+      //   if (GUILayout.Button("Request Production NewBorn (target generation)"))
+      //   {
+      //     spawner.RequestProductionAgentInfo();
+      //   }
+      // }
 
       EditorGUILayout.LabelField("API Post request");
 
@@ -102,10 +103,12 @@ namespace Gene
         spawner.PostAgents();
       }
 
-      if (GUILayout.Button("Update Training NewBorn"))
-      {
-        spawner.RequestTrainingAgentInfo();
-      }
+
+      // TO-DO
+      // if (GUILayout.Button("Update Training NewBorn"))
+      // {
+      //   // this will need to be the possibility to load a specific model number
+      // }
     }
   }
 }
