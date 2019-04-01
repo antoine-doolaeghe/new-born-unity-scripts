@@ -60,7 +60,7 @@ namespace Gene
       GameObject parent = transform.gameObject;
       int floor = 0;
       int squarePosition = 0;
-
+      
       for (var i = 0; i < spawnerNumber; i++)
       {
         List<GameObject> newBornAgents = new List<GameObject>();
