@@ -56,7 +56,7 @@ namespace graphQLClient
 			jsonData = JsonUtility.ToJson(query);
 			byte[] postData = Encoding.ASCII.GetBytes(jsonData);
 			Dictionary<string, string> postHeader = form.headers;
-      postHeader.Add("X-Api-Key", "da2-sejfb2ls6vcqxmbxezdmms73rq");
+      postHeader.Add("X-Api-Key", "da2-rbxq3r664bapfeghuz2znft5r4");
 			if (postHeader.ContainsKey("Content-Type"))
 				postHeader["Content-Type"] = "application/json";
 			else
