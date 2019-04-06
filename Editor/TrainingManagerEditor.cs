@@ -2,15 +2,13 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using MyBox;
 
 namespace Gene
 {
   [CustomEditor(typeof(TrainingManager))]
   public class TrainingManagerBuildEditor : Editor
   {
-    public int agentNumber;
-    public GameObject agent;
-    public Vector3 agentScale;
 
     public override void OnInspectorGUI()
     {
@@ -19,31 +17,37 @@ namespace Gene
 
       EditorGUILayout.LabelField("Environmnet Parameters");
 
-      if (GUILayout.Button("Build training environment"))
+      if (GUILayout.Button("Build environment"))
       {
         spawner.BuildSpawners();
       }
 
-      if (GUILayout.Button("Delete training environment"))
+      if (GUILayout.Button("Delete environment"))
       {
         spawner.Delete();
       }
 
       EditorGUILayout.LabelField("Random NewBorn Builds");
 
-      if (GUILayout.Button("Build NewBorn Training Cells"))
+      if (spawner.isTrainingMode)
       {
-        for (int i = 0; i < spawner.Agents.Count; i++)
+        if (GUILayout.Button("Build NewBorn Training Cells"))
         {
-          spawner.BuildRandomTrainingNewBorn(false, i);
+          for (int i = 0; i < spawner.Agents.Count; i++)
+          {
+            spawner.BuildRandomTrainingNewBorn(false, i);
+          }
         }
       }
 
-      if (GUILayout.Button("Build NewBorn Production Cells"))
+      if (!spawner.isTrainingMode)
       {
-        foreach (GameObject agent in GameObject.FindGameObjectsWithTag("agent"))
+        if (GUILayout.Button("Build NewBorn Production Cells"))
         {
-          spawner.BuildRandomProductionNewBorn(agent.transform);
+          foreach (GameObject agent in GameObject.FindGameObjectsWithTag("agent"))
+          {
+            spawner.BuildRandomProductionNewBorn(agent.transform);
+          }
         }
       }
 
@@ -59,25 +63,38 @@ namespace Gene
 
       EditorGUILayout.LabelField("Serviced Newborn Builds");
 
-      if (GUILayout.Button("Request Training NewBorn"))
+      if (spawner.isTrainingMode)
       {
-        spawner.RequestTrainingAgentInfo();
+        if (GUILayout.Button("Request Training NewBorn"))
+        {
+          spawner.RequestTrainingAgentInfo();
+        }
       }
 
-      if (GUILayout.Button("Request Production NewBorn"))
+      if (!spawner.isTrainingMode)
       {
-        spawner.RequestProductionAgentInfo();
+        if (GUILayout.Button("Request Production NewBorn"))
+        {
+          spawner.RequestProductionAgentInfo();
+        }
       }
 
-      if (GUILayout.Button("Request Training NewBorn (target generation)"))
+      if (spawner.isTrainingMode)
       {
-        spawner.RequestTrainingAgentInfo();
+        if (GUILayout.Button("Request Training NewBorn (target generation)"))
+        {
+          spawner.RequestTrainingAgentInfo();
+        }
       }
 
-      if (GUILayout.Button("Request Production NewBorn (target generation)"))
-      {
-        spawner.RequestProductionAgentInfo();
-      }
+      // TO-DO 
+      // if (!spawner.isTrainingMode)
+      // {
+      //   if (GUILayout.Button("Request Production NewBorn (target generation)"))
+      //   {
+      //     spawner.RequestProductionAgentInfo();
+      //   }
+      // }
 
       EditorGUILayout.LabelField("API Post request");
 
@@ -86,10 +103,12 @@ namespace Gene
         spawner.PostAgents();
       }
 
-      if (GUILayout.Button("Update Training NewBorn"))
-      {
-        spawner.RequestTrainingAgentInfo();
-      }
+
+      // TO-DO
+      // if (GUILayout.Button("Update Training NewBorn"))
+      // {
+      //   // this will need to be the possibility to load a specific model number
+      // }
     }
   }
 }

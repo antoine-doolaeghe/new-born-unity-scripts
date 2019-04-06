@@ -64,19 +64,18 @@ namespace Gene
     }
 
 
-    public IEnumerator postGeneration(GenerationPostData generationPostData, string newbornId, int agentId)
+    public IEnumerator postGeneration(GenerationPostData generationPostData, string modelId, int agentId)
     {
       string jsonData;
       byte[] postData;
       Dictionary<string, string> postHeader;
-
-      string generationGraphQlMutation = apiConfig.generationGraphQlMutation;
+      string modelGraphQlMutation = apiConfig.modelGraphQlMutation;
       NewbornService.variable["id"] = generationPostData.id;
-      NewbornService.variable["generationNewbornId"] = newbornId;
+      NewbornService.variable["modelNewbornId"] = modelId;
       NewbornService.variable["cellPositions"] = JSON.Parse(JsonUtility.ToJson(generationPostData))["cellPositions"].ToString();
       NewbornService.variable["cellInfos"] = JSON.Parse(JsonUtility.ToJson(generationPostData))["cellInfos"].ToString();
-      generationGraphQlMutation = QuerySorter(generationGraphQlMutation);
-      jsonData = NewbornServiceHelpers.ReturnJsonData(generationGraphQlMutation);
+      modelGraphQlMutation = QuerySorter(modelGraphQlMutation);
+      jsonData = NewbornServiceHelpers.ReturnJsonData(modelGraphQlMutation);
       NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
 
       WWW www = new WWW(apiConfig.url, postData, postHeader);
@@ -92,8 +91,9 @@ namespace Gene
         Transform[] childs = transform.Cast<Transform>().ToArray();
         DestroyAgent(childs);
         response = new List<float>();
-        string responseId = JSON.Parse(www.text)["data"]["createGeneration"]["id"];
-        foreach (var cellInfo in JSON.Parse(www.text)["data"]["createGeneration"]["cellInfos"].AsArray)
+        Debug.Log(JSON.Parse(www.text));
+        string responseId = JSON.Parse(www.text)["data"]["createModel"]["id"];
+        foreach (var cellInfo in JSON.Parse(www.text)["data"]["createModel"]["cellInfos"].AsArray)
         {
           response.Add(cellInfo.Value.AsFloat);
         }
