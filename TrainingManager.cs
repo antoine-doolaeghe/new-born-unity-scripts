@@ -37,6 +37,7 @@ namespace Gene
     public Academy academy;
     public bool control;
     [Header("Brain parameters")]
+    public Brain brainObject;
     public int vectorObservationSize;
     public int vectorActionSize;
     public TextAsset brainModel;
@@ -60,12 +61,12 @@ namespace Gene
       GameObject parent = transform.gameObject;
       int floor = 0;
       int squarePosition = 0;
-      
+
       for (var i = 0; i < spawnerNumber; i++)
       {
         List<GameObject> newBornAgents = new List<GameObject>();
         GameObject spawner;
-        Brain brain = Resources.Load<Brain>("Brains/agentBrain" + i);
+        Brain brain = Instantiate(brainObject);
 
         if (isTrainingMode && i % 4 == 0)
         {
@@ -78,12 +79,15 @@ namespace Gene
 
         InstantiateSpawner(parent, floor, squarePosition, out spawner);
 
-        if(isTrainingMode) {
+        if (isTrainingMode)
+        {
           PositionTrainingSpawner(squarePosition, spawner);
-        } else {
+        }
+        else
+        {
           // Randomly place the agents.
         }
-        
+
         SetBrainParams(brain, Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""));
 
         if (!isTargetDynamic && isTrainingMode)
@@ -351,7 +355,7 @@ namespace Gene
       atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
       atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { newBornBuilder.cellNb * 3 };
       atBehaviour.brain.brainParameters.vectorObservationSize = newBornBuilder.cellNb * 13 - 4;
-      atBehaviour.brain.name = "NewBorn" + newbornService.responseUuid;
+      atBehaviour.brain.name = newbornService.responseUuid;
     }
   }
 }
