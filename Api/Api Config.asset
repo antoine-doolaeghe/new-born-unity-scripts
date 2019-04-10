@@ -13,10 +13,9 @@ MonoBehaviour:
   m_Name: Api Config
   m_EditorClassIdentifier: 
   url: https://ilhzglf4sfgepcagdzuviwewy4.appsync-api.eu-west-1.amazonaws.com/graphql
-  newBornGraphQlMutation: 'mutation PutPost {createNewborn(input: {id: "$id^", name:
-    $name^}) {id, name}}'
-  modelGraphQlMutation: 'mutation PutPost {createModel(input: {id: "$id^", cellInfos:
-    $cellInfos^, cellPositions: $cellPositions^, modelNewbornId: "$modelNewbornId^"})
-    {id, cellInfos}}'
+  newBornGraphQlMutation: 'mutation NewbornPost {createNewborn(input: {id: "$id^",
+    name: $name^}) {id, name}}'
+  modelGraphQlMutation: 'mutation ModelPost {createModel(input: {id: "$id^", cellInfos:
+    $cellInfos^, modelNewbornId: "$modelNewbornId^"}) {id, cellInfos}}'
   newBornGraphQlQuery: 'query getNewBorn {getNewborn(id: $id^) {id, name, generations
     {items {cellInfos}}}}'

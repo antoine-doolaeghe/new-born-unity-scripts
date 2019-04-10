@@ -42,14 +42,14 @@ namespace Gene
       byte[] postData;
       Dictionary<string, string> postHeader;
 
-      string newBornGraphQlMutation = apiConfig.newBornGraphQlMutation; 
+      string newBornGraphQlMutation = apiConfig.newBornGraphQlMutation;
       NewbornService.variable["id"] = newBornPostData.id;
       NewbornService.variable["name"] = newBornPostData.name;
       newBornGraphQlMutation = QuerySorter(newBornGraphQlMutation);
       jsonData = NewbornServiceHelpers.ReturnJsonData(newBornGraphQlMutation);
       NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
       WWW www = new WWW(apiConfig.url, postData, postHeader);
-      yield return www; 
+      yield return www;
       Debug.Log(newBornGraphQlMutation);
       Debug.Log(www.text);
       if (www.error != null)
@@ -79,7 +79,7 @@ namespace Gene
       NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
 
       WWW www = new WWW(apiConfig.url, postData, postHeader);
-
+      Debug.Log(modelGraphQlMutation);
       yield return www;
       if (www.error != null)
       {
@@ -109,14 +109,14 @@ namespace Gene
       byte[] postData;
       Dictionary<string, string> postHeader;
 
-      string newBornGraphQlQuery = apiConfig.newBornGraphQlQuery; 
+      string newBornGraphQlQuery = apiConfig.newBornGraphQlQuery;
       NewbornService.variable["id"] = id;
       newBornGraphQlQuery = QuerySorter(newBornGraphQlQuery);
       jsonData = NewbornServiceHelpers.ReturnJsonData(newBornGraphQlQuery);
       NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
 
       WWW www = new WWW(apiConfig.url, postData, postHeader);
-      yield return www; 
+      yield return www;
       if (www.error != null)
       {
         throw new Exception("There was an error sending request: " + www.error);
