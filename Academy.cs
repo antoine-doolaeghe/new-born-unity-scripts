@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using System.Linq;
 #if UNITY_EDITOR
 using UnityEditor;
+
 
 #endif
 
@@ -229,6 +231,15 @@ namespace MLAgents
     /// </summary>
     void Awake()
     {
+      string[] arguments = Environment.GetCommandLineArgs();
+      for (int x = 0; x < arguments.Length; x++)
+      {
+        Debug.Log(arguments[x]);
+      }
+    }
+
+    void OnEnable()
+    {
       InitializeEnvironment();
     }
 
@@ -255,7 +266,6 @@ namespace MLAgents
     {
       InitializeAcademy();
       Communicator communicator = null;
-
       var exposedBrains = broadcastHub.broadcastingBrains.Where(x => x != null).ToList(); ;
       var controlledBrains = broadcastHub.broadcastingBrains.Where(
           x => x != null && x is LearningBrain && broadcastHub.IsControlled(x));
@@ -321,7 +331,7 @@ namespace MLAgents
         }
 
         var pythonParameters = brainBatcher.SendAcademyParameters(academyParameters);
-        Random.InitState(pythonParameters.Seed);
+        UnityEngine.Random.InitState(pythonParameters.Seed);
         Application.logMessageReceived += HandleLog;
         logPath = Path.GetFullPath(".") + "/UnitySDK.log";
         logWriter = new StreamWriter(logPath, false);
