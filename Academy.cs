@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 #if UNITY_EDITOR
 using UnityEditor;
+using Gene;
 
 
 #endif
@@ -98,6 +99,8 @@ namespace MLAgents
   {
     [SerializeField]
     public BroadcastHub broadcastHub = new BroadcastHub();
+
+    public Gene.TrainingManager spawner;
 
     private const string kApiVersion = "API-6";
 
@@ -232,9 +235,10 @@ namespace MLAgents
     void Awake()
     {
       string[] arguments = Environment.GetCommandLineArgs();
-      for (int x = 0; x < arguments.Length; x++)
+      if (arguments.Length > 0)
       {
-        Debug.Log(arguments[x]);
+        spawner.cellId = arguments[1];
+        spawner.RequestTrainingAgentInfo();
       }
     }
 

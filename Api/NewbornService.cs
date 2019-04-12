@@ -113,7 +113,6 @@ namespace Gene
       NewbornService.variable["id"] = id;
       newBornGraphQlQuery = QuerySorter(newBornGraphQlQuery);
       jsonData = NewbornServiceHelpers.ReturnJsonData(newBornGraphQlQuery);
-      Debug.Log(newBornGraphQlQuery);
       NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
 
       WWW www = new WWW(apiConfig.url, postData, postHeader);
@@ -121,12 +120,10 @@ namespace Gene
       yield return www;
       if (www.error != null)
       {
-        Debug.Log(JSON.Parse(www.text));
         throw new Exception("There was an error sending request: " + www.error);
       }
       else
       {
-        Debug.Log(JSON.Parse(www.text));
         Debug.Log("NewBorn successfully requested!");
         response = new List<float>();
         string responseId = JSON.Parse(www.text)["data"]["createGeneration"]["id"];
