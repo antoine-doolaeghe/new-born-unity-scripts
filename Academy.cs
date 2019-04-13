@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using UnityEngine;
 using System.IO;
 using System.Linq;
 #if UNITY_EDITOR
 using UnityEditor;
+using Gene;
+
 
 #endif
 
@@ -96,6 +99,8 @@ namespace MLAgents
   {
     [SerializeField]
     public BroadcastHub broadcastHub = new BroadcastHub();
+
+    public Gene.TrainingManager spawner;
 
     private const string kApiVersion = "API-6";
 
@@ -229,6 +234,22 @@ namespace MLAgents
     /// </summary>
     void Awake()
     {
+      string[] arguments = Environment.GetCommandLineArgs();
+      for (int x = 0; x < arguments.Length; x++)
+      {
+        Debug.Log(arguments[x]);
+        if (arguments[x] == "--newborn-id")
+        {
+          Debug.Log(arguments[x + 1]);
+          spawner.newbornId = arguments[x + 1];
+          spawner.RequestTrainingAgentInfo();
+          return;
+        }
+      }
+    }
+
+    void OnEnable()
+    {
       InitializeEnvironment();
     }
 
@@ -255,7 +276,6 @@ namespace MLAgents
     {
       InitializeAcademy();
       Communicator communicator = null;
-
       var exposedBrains = broadcastHub.broadcastingBrains.Where(x => x != null).ToList(); ;
       var controlledBrains = broadcastHub.broadcastingBrains.Where(
           x => x != null && x is LearningBrain && broadcastHub.IsControlled(x));
@@ -321,7 +341,7 @@ namespace MLAgents
         }
 
         var pythonParameters = brainBatcher.SendAcademyParameters(academyParameters);
-        Random.InitState(pythonParameters.Seed);
+        UnityEngine.Random.InitState(pythonParameters.Seed);
         Application.logMessageReceived += HandleLog;
         logPath = Path.GetFullPath(".") + "/UnitySDK.log";
         logWriter = new StreamWriter(logPath, false);

@@ -17,5 +17,5 @@ MonoBehaviour:
     name: $name^}) {id, name}}'
   modelGraphQlMutation: 'mutation ModelPost {createModel(input: {id: "$id^", cellInfos:
     $cellInfos^, modelNewbornId: "$modelNewbornId^"}) {id, cellInfos}}'
-  newBornGraphQlQuery: 'query getNewBorn {getNewborn(id: $id^) {id, name, generations
+  newBornGraphQlQuery: 'query getNewBorn {getNewborn(id: "$id^") {id, name, models
     {items {cellInfos}}}}'
