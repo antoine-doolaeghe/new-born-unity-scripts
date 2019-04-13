@@ -235,10 +235,16 @@ namespace MLAgents
     void Awake()
     {
       string[] arguments = Environment.GetCommandLineArgs();
-      if (arguments.Length > 0)
+      for (int x = 0; x < arguments.Length; x++)
       {
-        spawner.cellId = arguments[1];
-        spawner.RequestTrainingAgentInfo();
+        Debug.Log(arguments[x]);
+        if (arguments[x] == "--newborn-id")
+        {
+          Debug.Log(arguments[x + 1]);
+          spawner.newbornId = arguments[x + 1];
+          spawner.RequestTrainingAgentInfo();
+          return;
+        }
       }
     }
 

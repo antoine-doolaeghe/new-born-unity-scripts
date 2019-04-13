@@ -26,7 +26,7 @@ namespace Gene
     public GameObject CellPrefab;
     public int minCellNb;
     public bool requestApiData;
-    public string cellId;
+    public string newbornId;
     public AgentConfig agentConfig;
     public float randomPositionIndex;
     [Header("Target parameters")]
@@ -238,7 +238,7 @@ namespace Gene
       for (int a = 0; a < Agents.Count; a++)
       {
         NewbornService newbornService = Agents[a].transform.GetComponent<NewbornService>();
-        StartCoroutine(newbornService.getNewborn(cellId, a, false));
+        StartCoroutine(newbornService.getNewborn(newbornId, a, false));
       }
     }
 

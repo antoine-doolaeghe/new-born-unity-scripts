@@ -116,7 +116,7 @@ namespace Gene
       NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
 
       WWW www = new WWW(apiConfig.url, postData, postHeader);
-
+      Debug.Log(newBornGraphQlQuery);
       yield return www;
       if (www.error != null)
       {
@@ -127,7 +127,6 @@ namespace Gene
         Debug.Log("NewBorn successfully requested!");
         response = new List<float>();
         string responseId = JSON.Parse(www.text)["data"]["createGeneration"]["id"];
-
         foreach (var cellInfo in JSON.Parse(www.text)["data"]["getNewborn"]["models"]["items"][0]["cellInfos"].AsArray)
         {
           response.Add(cellInfo.Value.AsFloat);
