@@ -149,6 +149,7 @@ namespace Gene
 
       newBornBuilder.requestApiData = true;
       newBornBuilder.handleResponseData();
+
       if (buildFromPost)
       {
         atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
@@ -159,11 +160,16 @@ namespace Gene
       }
       else if (agentId == 0) // INIT FIRST BRAIN
       {
-        setBrainParameters(academy, atBehaviour, newBornBuilder, newbornService);
+        Debug.Log(newBornBuilder.cellNb);
+        Debug.Log(newBornBuilder.cellNb * 3);
+        Debug.Log(newBornBuilder.cellNb * 4);
+        ClearBroadCastingBrains(academy);
+        setBrainParameters(atBehaviour, newBornBuilder, newbornService);
         academy.broadcastHub.broadcastingBrains.Add(atBehaviour.brain);
       }
       else // ASSIGN ALL TO THE SAME BRAIN
       {
+        Debug.Log(newBornBuilder.cellNb);
         atBehaviour.brain = Agents[0].transform.GetComponent<AgentTrainBehaviour>().brain;
       }
     }
@@ -232,14 +238,17 @@ namespace Gene
       }
     }
 
-    public void RequestTrainingAgentInfo()
+    public IEnumerator RequestTrainingAgentInfo()
     {
       Debug.Log("Requesting Agent info from server...");
       for (int a = 0; a < Agents.Count; a++)
       {
         NewbornService newbornService = Agents[a].transform.GetComponent<NewbornService>();
-        StartCoroutine(newbornService.getNewborn(newbornId, a, false));
+        yield return StartCoroutine(newbornService.getNewborn(newbornId, a, false));
       }
+      Debug.Log("Finished to build Agetns");
+      academy.InitializeEnvironment();
+      academy.initialized = true;
     }
 
     public void RequestProductionAgentInfo()
@@ -348,9 +357,13 @@ namespace Gene
       atBehaviour.brain = brain;
     }
 
-    private void setBrainParameters(Academy academy, AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, NewbornService newbornService)
+    private void ClearBroadCastingBrains(Academy academy)
     {
       academy.broadcastHub.broadcastingBrains.Clear();
+    }
+
+    private void setBrainParameters(AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, NewbornService newbornService)
+    {
       atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
       atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
       atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { newBornBuilder.cellNb * 3 };
