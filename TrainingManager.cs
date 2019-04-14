@@ -241,7 +241,7 @@ namespace Gene
       for (int a = 0; a < Agents.Count; a++)
       {
         NewbornService newbornService = Agents[a].transform.GetComponent<NewbornService>();
-        yield return StartCoroutine(newbornService.getNewborn(newbornId, a, false));
+        yield return StartCoroutine(newbornService.GetNewborn(newbornId, a, false));
       }
       Debug.Log("Finished to build Agetns");
       academy.InitializeEnvironment();

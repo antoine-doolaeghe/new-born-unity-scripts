@@ -15,6 +15,7 @@ using UnityEngine.UI;
 
 namespace Gene
 {
+  [ExecuteInEditMode]
   public class NewbornService : MonoBehaviour
   {
     public List<float> response;
@@ -30,28 +31,29 @@ namespace Gene
     public static Dictionary<string, string[]> array = new Dictionary<string, string[]>();
 
     private TrainingManager trainingManager;
+    private NewBornBuilder newBornBuilder;
+
+    private String graphQlInput;
 
     void Awake()
     {
       trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
+      newBornBuilder = transform.GetComponent<NewBornBuilder>();
     }
 
-    public IEnumerator postNewborn(NewBornPostData newBornPostData, int agentId)
+    public IEnumerator PostNewborn(NewBornPostData newBornPostData, int agentId)
     {
       string jsonData;
       byte[] postData;
       Dictionary<string, string> postHeader;
 
-      string newBornGraphQlMutation = apiConfig.newBornGraphQlMutation;
       NewbornService.variable["id"] = newBornPostData.id;
       NewbornService.variable["name"] = newBornPostData.name;
-      newBornGraphQlMutation = QuerySorter(newBornGraphQlMutation);
-      jsonData = NewbornServiceHelpers.ReturnJsonData(newBornGraphQlMutation);
-      NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
-      WWW www = new WWW(apiConfig.url, postData, postHeader);
+
+      WWW www;
+      graphQlApiRequest(out jsonData, out postData, out postHeader, out www);
+
       yield return www;
-      Debug.Log(newBornGraphQlMutation);
-      Debug.Log(www.text);
       if (www.error != null)
       {
         throw new Exception("There was an error sending request: " + www.error);
@@ -59,27 +61,26 @@ namespace Gene
       else
       {
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
-        transform.GetComponent<NewBornBuilder>().PostGeneration(createdNewBornId, 0, agentId); // will it always be first generation
+        newBornBuilder.PostNewbornModel(createdNewBornId, 0, agentId); // will it always be first generation
       }
     }
 
 
-    public IEnumerator postGeneration(GenerationPostData generationPostData, string modelId, int agentId)
+    public IEnumerator PostNewbornModel(GenerationPostData generationPostData, string modelId, int agentId)
     {
       string jsonData;
       byte[] postData;
+
       Dictionary<string, string> postHeader;
-      string modelGraphQlMutation = apiConfig.modelGraphQlMutation;
+
       NewbornService.variable["id"] = generationPostData.id;
       NewbornService.variable["modelNewbornId"] = modelId;
       NewbornService.variable["cellPositions"] = JSON.Parse(JsonUtility.ToJson(generationPostData))["cellPositions"].ToString();
       NewbornService.variable["cellInfos"] = JSON.Parse(JsonUtility.ToJson(generationPostData))["cellInfos"].ToString();
-      modelGraphQlMutation = QuerySorter(modelGraphQlMutation);
-      jsonData = NewbornServiceHelpers.ReturnJsonData(modelGraphQlMutation);
-      NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
 
-      WWW www = new WWW(apiConfig.url, postData, postHeader);
-      Debug.Log(modelGraphQlMutation);
+      WWW www;
+      graphQlApiRequest(out jsonData, out postData, out postHeader, out www);
+
       yield return www;
       if (www.error != null)
       {
@@ -91,32 +92,29 @@ namespace Gene
         Transform[] childs = transform.Cast<Transform>().ToArray();
         DestroyAgent(childs);
         response = new List<float>();
-        Debug.Log(JSON.Parse(www.text));
-        string responseId = JSON.Parse(www.text)["data"]["createModel"]["id"];
-        foreach (var cellInfo in JSON.Parse(www.text)["data"]["createModel"]["cellInfos"].AsArray)
+        JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
+        string responseId = responseData["id"];
+        foreach (var cellInfo in responseData["cellInfos"].AsArray)
         {
           response.Add(cellInfo.Value.AsFloat);
         }
 
-        GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>().requestApiData = true;
-        GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>().BuildNewBornFromFetch(true, responseId, agentId);
+        trainingManager.requestApiData = true;
+        trainingManager.BuildNewBornFromFetch(true, responseId, agentId);
       }
     }
 
-    public IEnumerator getNewborn(string id, int agentId, bool IsGetAfterPost)
+    public IEnumerator GetNewborn(string id, int agentId, bool IsGetAfterPost)
     {
       string jsonData;
       byte[] postData;
       Dictionary<string, string> postHeader;
 
-      string newBornGraphQlQuery = apiConfig.newBornGraphQlQuery;
       NewbornService.variable["id"] = id;
-      newBornGraphQlQuery = QuerySorter(newBornGraphQlQuery);
-      jsonData = NewbornServiceHelpers.ReturnJsonData(newBornGraphQlQuery);
-      NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
 
-      WWW www = new WWW(apiConfig.url, postData, postHeader);
-      Debug.Log(newBornGraphQlQuery);
+      WWW www;
+      graphQlApiRequest(out jsonData, out postData, out postHeader, out www);
+
       yield return www;
       if (www.error != null)
       {
@@ -132,9 +130,17 @@ namespace Gene
           response.Add(cellInfo.Value.AsFloat);
         }
 
-        GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>().requestApiData = true;
-        GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>().BuildNewBornFromFetch(false, responseId, agentId);
+        trainingManager.requestApiData = true;
+        trainingManager.BuildNewBornFromFetch(false, responseId, agentId);
       }
+    }
+
+    private void graphQlApiRequest(out string jsonData, out byte[] postData, out Dictionary<string, string> postHeader, out WWW www)
+    {
+      graphQlInput = QuerySorter(apiConfig.newBornGraphQlMutation);
+      jsonData = NewbornServiceHelpers.ReturnJsonData(graphQlInput);
+      NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
+      www = new WWW(apiConfig.url, postData, postHeader);
     }
 
     public static string QuerySorter(string query)

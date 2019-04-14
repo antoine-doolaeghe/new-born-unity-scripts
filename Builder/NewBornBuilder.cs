@@ -246,16 +246,16 @@ namespace Gene
       string newBornName = "\"cellName\"";
       string nexBornHexColor = "\"red\"";
       NewBornPostData newBornPostData = new NewBornPostData(newBornName, newbornId, nexBornHexColor);
-      StartCoroutine(newbornService.postNewborn(newBornPostData, agentId));
+      StartCoroutine(newbornService.PostNewborn(newBornPostData, agentId));
     }
 
-    public void PostGeneration(string newbornId, int generationId, int agentId)
+    public void PostNewbornModel(string newbornId, int generationId, int agentId)
     {
       List<float> cellInfos = ReturnGenerationInfos(generationId);
       List<List<float>> cellPositions = ReturnGenerationPositions();
       string id = Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
       GenerationPostData generationPostData = new GenerationPostData(newbornId, cellPositions, cellInfos);
-      StartCoroutine(newbornService.postGeneration(generationPostData, newbornId, agentId));
+      StartCoroutine(newbornService.PostNewbornModel(generationPostData, newbornId, agentId));
     }
 
     private void HandleStoreCell(GameObject cell, Vector3 cellPosition, Vector3 cellLocalPosition)
@@ -337,25 +337,36 @@ namespace Gene
 
     private void handleAngularLimit(ConfigurableJoint cj, Vector3 jointAnchor)
     {
-      if(jointAnchor.y == -1) {
+      if (jointAnchor.y == -1)
+      {
         cj.lowAngularXLimit = new SoftJointLimit() { limit = -agentConfig.highLimit, bounciness = agentConfig.bounciness };
         cj.highAngularXLimit = new SoftJointLimit() { limit = -agentConfig.lowLimit, bounciness = agentConfig.bounciness };
-      } else if(jointAnchor.y == 1) {
+      }
+      else if (jointAnchor.y == 1)
+      {
         cj.highAngularXLimit = new SoftJointLimit() { limit = agentConfig.highLimit, bounciness = agentConfig.bounciness };
         cj.lowAngularXLimit = new SoftJointLimit() { limit = agentConfig.lowLimit, bounciness = agentConfig.bounciness };
-      } else if(jointAnchor.x == 1) {
+      }
+      else if (jointAnchor.x == 1)
+      {
         cj.highAngularXLimit = new SoftJointLimit() { limit = agentConfig.highLimit, bounciness = agentConfig.bounciness };
         cj.lowAngularXLimit = new SoftJointLimit() { limit = agentConfig.lowLimit, bounciness = agentConfig.bounciness };
         cj.axis = new Vector3(0f, -1f, 0f);
-      } else if(jointAnchor.x == -1) {
+      }
+      else if (jointAnchor.x == -1)
+      {
         cj.lowAngularXLimit = new SoftJointLimit() { limit = -agentConfig.highLimit, bounciness = agentConfig.bounciness };
         cj.highAngularXLimit = new SoftJointLimit() { limit = -agentConfig.highLimit, bounciness = agentConfig.bounciness };
         cj.axis = new Vector3(0f, -1f, 0f);
-      } else if(jointAnchor.z == 1) {
+      }
+      else if (jointAnchor.z == 1)
+      {
         cj.axis = new Vector3(0f, -1f, 0f);
         cj.highAngularXLimit = new SoftJointLimit() { limit = agentConfig.lowLimit, bounciness = agentConfig.bounciness };
         cj.lowAngularXLimit = new SoftJointLimit() { limit = -agentConfig.lowLimit, bounciness = agentConfig.bounciness };
-      } else if(jointAnchor.z == -1) {
+      }
+      else if (jointAnchor.z == -1)
+      {
         cj.axis = new Vector3(-1f, 0f, 0f);
         cj.highAngularXLimit = new SoftJointLimit() { limit = agentConfig.lowLimit, bounciness = agentConfig.bounciness };
         cj.lowAngularXLimit = new SoftJointLimit() { limit = -agentConfig.lowLimit, bounciness = agentConfig.bounciness };
@@ -368,13 +379,14 @@ namespace Gene
       aTBehaviour.initPart = Cells[0].transform;
       for (int i = 1; i < cellNb; i++)
       {
-        if(aTBehaviour.parts.Count < i) {
+        if (aTBehaviour.parts.Count < i)
+        {
           aTBehaviour.parts.Add(Cells[i].transform);
         }
       }
       if (init)
       {
-        aTBehaviour.initBodyParts();   
+        aTBehaviour.initBodyParts();
       }
     }
   }
