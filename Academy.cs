@@ -238,7 +238,6 @@ namespace MLAgents
       string[] arguments = Environment.GetCommandLineArgs();
       for (int x = 0; x < arguments.Length; x++)
       {
-        Debug.Log(arguments[x]);
         if (arguments[x] == "--newborn-id")
         {
           Debug.Log(arguments[x + 1]);
@@ -246,11 +245,7 @@ namespace MLAgents
           return;
         }
       }
-      Debug.Log("Requesting Training Agent Info");
       StartCoroutine(spawner.RequestTrainingAgentInfo());
-
-      Debug.Log("Initialize environment");
-
     }
 
     // Used to read Python-provided environment parameters
