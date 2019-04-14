@@ -126,7 +126,7 @@ namespace Gene
       {
         Debug.Log("NewBorn successfully requested!");
         response = new List<float>();
-        string responseId = JSON.Parse(www.text)["data"]["createGeneration"]["id"];
+        string responseId = JSON.Parse(www.text)["data"]["getNewborn"]["id"];
         foreach (var cellInfo in JSON.Parse(www.text)["data"]["getNewborn"]["models"]["items"][0]["cellInfos"].AsArray)
         {
           response.Add(cellInfo.Value.AsFloat);

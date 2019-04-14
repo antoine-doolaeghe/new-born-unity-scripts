@@ -160,16 +160,13 @@ namespace Gene
       }
       else if (agentId == 0) // INIT FIRST BRAIN
       {
-        Debug.Log(newBornBuilder.cellNb);
-        Debug.Log(newBornBuilder.cellNb * 3);
-        Debug.Log(newBornBuilder.cellNb * 4);
         ClearBroadCastingBrains(academy);
-        setBrainParameters(atBehaviour, newBornBuilder, newbornService);
+        setBrainParameters(atBehaviour, newBornBuilder, responseId);
+        Debug.Log(responseId);
         academy.broadcastHub.broadcastingBrains.Add(atBehaviour.brain);
       }
       else // ASSIGN ALL TO THE SAME BRAIN
       {
-        Debug.Log(newBornBuilder.cellNb);
         atBehaviour.brain = Agents[0].transform.GetComponent<AgentTrainBehaviour>().brain;
       }
     }
@@ -362,13 +359,13 @@ namespace Gene
       academy.broadcastHub.broadcastingBrains.Clear();
     }
 
-    private void setBrainParameters(AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, NewbornService newbornService)
+    private void setBrainParameters(AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, string responseId)
     {
       atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
       atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
       atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { newBornBuilder.cellNb * 3 };
       atBehaviour.brain.brainParameters.vectorObservationSize = newBornBuilder.cellNb * 13 - 4;
-      atBehaviour.brain.name = newbornService.responseUuid;
+      atBehaviour.brain.name = responseId;
     }
   }
 }
