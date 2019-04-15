@@ -18,7 +18,7 @@ namespace Gene
   [ExecuteInEditMode]
   public class NewbornService : MonoBehaviour
   {
-    public List<float> response;
+    public List<float> cellInfoResponse;
     public string responseUuid;
     public GameObject cell;
     public ApiConfig apiConfig;
@@ -51,7 +51,7 @@ namespace Gene
       NewbornService.variable["name"] = newBornPostData.name;
 
       WWW www;
-      graphQlApiRequest(out jsonData, out postData, out postHeader, out www);
+      graphQlApiRequest(out jsonData, out postData, out postHeader, out www, apiConfig.newBornGraphQlMutation);
 
       yield return www;
       if (www.error != null)
@@ -79,7 +79,7 @@ namespace Gene
       NewbornService.variable["cellInfos"] = JSON.Parse(JsonUtility.ToJson(generationPostData))["cellInfos"].ToString();
 
       WWW www;
-      graphQlApiRequest(out jsonData, out postData, out postHeader, out www);
+      graphQlApiRequest(out jsonData, out postData, out postHeader, out www, apiConfig.modelGraphQlMutation);
 
       yield return www;
       if (www.error != null)
@@ -91,12 +91,12 @@ namespace Gene
         Debug.Log("New Generation successfully posted!");
         Transform[] childs = transform.Cast<Transform>().ToArray();
         DestroyAgent(childs);
-        response = new List<float>();
+        cellInfoResponse = new List<float>();
         JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
         string responseId = responseData["id"];
         foreach (var cellInfo in responseData["cellInfos"].AsArray)
         {
-          response.Add(cellInfo.Value.AsFloat);
+          cellInfoResponse.Add(cellInfo.Value.AsFloat);
         }
 
         trainingManager.requestApiData = true;
@@ -113,7 +113,7 @@ namespace Gene
       NewbornService.variable["id"] = id;
 
       WWW www;
-      graphQlApiRequest(out jsonData, out postData, out postHeader, out www);
+      graphQlApiRequest(out jsonData, out postData, out postHeader, out www, apiConfig.newBornGraphQlQuery);
 
       yield return www;
       if (www.error != null)
@@ -123,11 +123,12 @@ namespace Gene
       else
       {
         Debug.Log("NewBorn successfully requested!");
-        response = new List<float>();
-        string responseId = JSON.Parse(www.text)["data"]["getNewborn"]["id"];
-        foreach (var cellInfo in JSON.Parse(www.text)["data"]["getNewborn"]["models"]["items"][0]["cellInfos"].AsArray)
+        cellInfoResponse = new List<float>();
+        JSONNode responseData = JSON.Parse(www.text)["data"]["getNewborn"];
+        string responseId = responseData["id"];
+        foreach (var cellInfo in responseData["models"]["items"][0]["cellInfos"].AsArray)
         {
-          response.Add(cellInfo.Value.AsFloat);
+          cellInfoResponse.Add(cellInfo.Value.AsFloat);
         }
 
         trainingManager.requestApiData = true;
@@ -135,9 +136,9 @@ namespace Gene
       }
     }
 
-    private void graphQlApiRequest(out string jsonData, out byte[] postData, out Dictionary<string, string> postHeader, out WWW www)
+    private void graphQlApiRequest(out string jsonData, out byte[] postData, out Dictionary<string, string> postHeader, out WWW www, string input)
     {
-      graphQlInput = QuerySorter(apiConfig.newBornGraphQlMutation);
+      graphQlInput = QuerySorter(input);
       jsonData = NewbornServiceHelpers.ReturnJsonData(graphQlInput);
       NewbornServiceHelpers.ConfigureForm(jsonData, out postData, out postHeader);
       www = new WWW(apiConfig.url, postData, postHeader);

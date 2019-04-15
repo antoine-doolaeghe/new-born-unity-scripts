@@ -18,7 +18,7 @@ namespace Gene
     public int cellNb = 0;
     public int minCellNb;
     private int cellInfoIndex = 0;
-    private bool initialised;
+    private bool Initialised;
     public List<List<GameObject>> NewBornGenerations;
     public List<GameObject> Cells;
     public List<Vector3> CellPositions;
@@ -42,13 +42,13 @@ namespace Gene
     [HideInInspector] public bool isRequestDone;
     [HideInInspector] public float threshold;
     [HideInInspector] public int partNb;
-    [HideInInspector] public List<List<float>> GenerationInfos = new List<List<float>>();
+    [HideInInspector] public List<List<float>> ModelInfosList = new List<List<float>>();
 
 
     void Awake()
     {
       trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
-      initialised = false;
+      Initialised = false;
     }
 
     void Update()
@@ -69,23 +69,23 @@ namespace Gene
       CellPositions.Clear();
       CelllocalPositions.Clear();
       cellInfoIndex = 0;
-      initialised = false;
-      GenerationInfos.Clear();
+      Initialised = false;
+      ModelInfosList.Clear();
       cellNb = 0;
     }
 
-    public void handleResponseData()
+    public void handleCellInfoResponse()
     {
-      List<float> response = newbornService.response;
-      if (response.Count != 0 && !initialised)
+      List<float> cellInfoResponse = newbornService.cellInfoResponse;
+      if (cellInfoResponse.Count != 0 && !Initialised)
       {
-        GenerationInfos.Add(new List<float>());
-        for (int i = 0; i < response.Count; i++)
+        ModelInfosList.Add(new List<float>());
+        for (int i = 0; i < cellInfoResponse.Count; i++)
         {
-          GenerationInfos[0].Add(response[i]);
+          ModelInfosList[0].Add(cellInfoResponse[i]);
         }
         initNewBorn(partNb, threshold);
-        initialised = true;
+        Initialised = true;
       }
     }
 
@@ -96,9 +96,9 @@ namespace Gene
       Cells = new List<GameObject>();
       CellPositions = new List<Vector3>();
       CelllocalPositions = new List<Vector3>();
-      if (GenerationInfos.Count == 0)
+      if (ModelInfosList.Count == 0)
       {
-        GenerationInfos.Add(new List<float>());
+        ModelInfosList.Add(new List<float>());
       }
       NewBornGenerations.Add(new List<GameObject>());
       GameObject initCell = InitBaseShape(NewBornGenerations[0], 0);
@@ -113,7 +113,7 @@ namespace Gene
         {
           for (int z = 0; z < sides.Count; z++)
           {
-            if (!requestApiData || cellInfoIndex < GenerationInfos[0].Count)
+            if (!requestApiData || cellInfoIndex < ModelInfosList[0].Count)
             {
               bool isValid = true;
               float cellInfo = 0f;
@@ -173,7 +173,7 @@ namespace Gene
       }
       if (!isAfterRequest)
       {
-        GenerationInfos.Add(new List<float>());
+        ModelInfosList.Add(new List<float>());
       }
 
       NewBornGenerations.Add(new List<GameObject>());
@@ -186,7 +186,7 @@ namespace Gene
           float cellInfo = 0f;
           Vector3 cellPosition = NewBornGenerations[germNb][i].transform.position + sides[z];
           isValid = CheckIsValid(isValid, cellPosition);
-          cellInfo = HandleCellInfos(GenerationInfos.Count - 1, indexInfo);
+          cellInfo = HandleCellInfos(ModelInfosList.Count - 1, indexInfo);
           indexInfo++;
           if (isValid)
           {
@@ -215,19 +215,19 @@ namespace Gene
       }
     }
 
-    public List<float> ReturnGenerationInfos(int generationId)
+    public List<float> ReturnModelInfosList(int modelId)
     {
-      List<float> generationInfos = new List<float>();
+      List<float> ModelInfos = new List<float>();
 
-      for (int i = 0; i < GenerationInfos[generationId].Count; i++)
+      for (int i = 0; i < ModelInfosList[modelId].Count; i++)
       {
-        generationInfos.Add(GenerationInfos[generationId][i]);
+        ModelInfos.Add(ModelInfosList[modelId][i]);
       }
 
-      return generationInfos;
+      return ModelInfos;
     }
 
-    public List<List<float>> ReturnGenerationPositions()
+    public List<List<float>> ReturnModelPositions()
     {
       List<List<float>> positions = new List<List<float>>();
       for (int i = 0; i < CelllocalPositions.Count; i++)
@@ -251,10 +251,10 @@ namespace Gene
 
     public void PostNewbornModel(string newbornId, int generationId, int agentId)
     {
-      List<float> cellInfos = ReturnGenerationInfos(generationId);
-      List<List<float>> cellPositions = ReturnGenerationPositions();
+      List<float> ModelInfos = ReturnModelInfosList(generationId);
+      List<List<float>> cellPositions = ReturnModelPositions();
       string id = Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
-      GenerationPostData generationPostData = new GenerationPostData(newbornId, cellPositions, cellInfos);
+      GenerationPostData generationPostData = new GenerationPostData(newbornId, cellPositions, ModelInfos);
       StartCoroutine(newbornService.PostNewbornModel(generationPostData, newbornId, agentId));
     }
 
@@ -269,13 +269,13 @@ namespace Gene
     {
       if (requestApiData)
       {
-        float cellInfo = GenerationInfos[generationIndex][cellIndex];
+        float cellInfo = ModelInfosList[generationIndex][cellIndex];
         return cellInfo;
       }
       else
       {
         float cellInfo = Random.Range(0f, 1f);
-        GenerationInfos[generationIndex].Add(cellInfo);
+        ModelInfosList[generationIndex].Add(cellInfo);
         return cellInfo;
       }
     }

@@ -13,6 +13,7 @@ namespace Gene
   {
     [Header("Environment Mode")]
     public bool isTrainingMode;
+
     [Header("Environment parameters")]
     public int spawnerNumber;
     public int agentNumber;
@@ -102,7 +103,7 @@ namespace Gene
           GameObject newBornAgent;
           newBornAgents.Add(AddAgent(spawner, out newBornAgent, out atBehaviour, out newBornBuilder));
           AddBrainToAgentBehaviour(atBehaviour, brain);
-          SetRequestApi(newBornBuilder, atBehaviour, requestApiData);
+          SetApiRequestParameter(newBornBuilder, atBehaviour, requestApiData);
           AddMinCellNb(newBornBuilder, minCellNb);
         }
 
@@ -136,6 +137,7 @@ namespace Gene
 
     public void BuildNewBornFromFetch(bool buildFromPost, string responseId, int agentId = 0)
     {
+      Debug.Log("Building Newborn From Fetch");
       Transform agent = Agents[agentId].transform;
       AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
       NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
@@ -148,7 +150,7 @@ namespace Gene
       }
 
       newBornBuilder.requestApiData = true;
-      newBornBuilder.handleResponseData();
+      newBornBuilder.handleCellInfoResponse();
 
       if (buildFromPost)
       {
@@ -197,11 +199,12 @@ namespace Gene
       academy.broadcastHub.broadcastingBrains.Clear();
       for (int a = 0; a < Agents.Count; a++)
       {
+
         NewBornBuilder newBornBuilder = Agents[a].transform.GetComponent<NewBornBuilder>();
-        newBornBuilder.threshold = agentConfig.threshold;
         AgentTrainBehaviour atBehaviour = Agents[a].transform.GetComponent<AgentTrainBehaviour>();
-        SetRequestApi(newBornBuilder, atBehaviour, false);
-        newBornBuilder.BuildGeneration(newBornBuilder.GenerationInfos.Count, false);
+        newBornBuilder.threshold = agentConfig.threshold;
+        SetApiRequestParameter(newBornBuilder, atBehaviour, false);
+        newBornBuilder.BuildGeneration(newBornBuilder.ModelInfosList.Count, false);
         Brain brain = Resources.Load<Brain>("Brains/agentBrain" + a);
         SetBrainParams(brain, brain.name);
         Agents[a].gameObject.name = brain + "";
@@ -233,7 +236,7 @@ namespace Gene
         NewbornService newbornService = Agents[a].transform.GetComponent<NewbornService>();
         yield return StartCoroutine(newbornService.GetNewborn(newbornId, a, false));
       }
-      Debug.Log("Finished to build Agetns");
+      Debug.Log("Finished to build Agents");
       academy.InitializeEnvironment();
       academy.initialized = true;
     }
@@ -333,7 +336,7 @@ namespace Gene
       newBornBuilder.minCellNb = minCellNb;
     }
 
-    private void SetRequestApi(NewBornBuilder newBornBuilder, AgentTrainBehaviour atBehaviour, bool requestApiData)
+    private void SetApiRequestParameter(NewBornBuilder newBornBuilder, AgentTrainBehaviour atBehaviour, bool requestApiData)
     {
       atBehaviour.requestApiData = requestApiData;
       newBornBuilder.requestApiData = requestApiData;
