@@ -18,7 +18,7 @@ namespace Gene
     public int cellNb = 0;
     public int minCellNb;
     private int cellInfoIndex = 0;
-    private bool initialised;
+    private bool Initialised;
     public List<List<GameObject>> NewBornGenerations;
     public List<GameObject> Cells;
     public List<Vector3> CellPositions;
@@ -42,13 +42,13 @@ namespace Gene
     [HideInInspector] public bool isRequestDone;
     [HideInInspector] public float threshold;
     [HideInInspector] public int partNb;
-    [HideInInspector] public List<List<float>> GenerationInfos = new List<List<float>>();
+    [HideInInspector] public List<List<float>> ModelInfosList = new List<List<float>>();
 
 
     void Awake()
     {
       trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
-      initialised = false;
+      Initialised = false;
     }
 
     void Update()
@@ -69,23 +69,23 @@ namespace Gene
       CellPositions.Clear();
       CelllocalPositions.Clear();
       cellInfoIndex = 0;
-      initialised = false;
-      GenerationInfos.Clear();
+      Initialised = false;
+      ModelInfosList.Clear();
       cellNb = 0;
     }
 
-    public void handleResponseData()
+    public void handleCellInfoResponse()
     {
-      List<float> response = newbornService.response;
-      if (response.Count != 0 && !initialised)
+      List<float> cellInfoResponse = newbornService.cellInfoResponse;
+      if (cellInfoResponse.Count != 0 && !Initialised)
       {
-        GenerationInfos.Add(new List<float>());
-        for (int i = 0; i < response.Count; i++)
+        ModelInfosList.Add(new List<float>());
+        for (int i = 0; i < cellInfoResponse.Count; i++)
         {
-          GenerationInfos[0].Add(response[i]);
+          ModelInfosList[0].Add(cellInfoResponse[i]);
         }
         initNewBorn(partNb, threshold);
-        initialised = true;
+        Initialised = true;
       }
     }
 
@@ -96,9 +96,9 @@ namespace Gene
       Cells = new List<GameObject>();
       CellPositions = new List<Vector3>();
       CelllocalPositions = new List<Vector3>();
-      if (GenerationInfos.Count == 0)
+      if (ModelInfosList.Count == 0)
       {
-        GenerationInfos.Add(new List<float>());
+        ModelInfosList.Add(new List<float>());
       }
       NewBornGenerations.Add(new List<GameObject>());
       GameObject initCell = InitBaseShape(NewBornGenerations[0], 0);
@@ -113,7 +113,7 @@ namespace Gene
         {
           for (int z = 0; z < sides.Count; z++)
           {
-            if (!requestApiData || cellInfoIndex < GenerationInfos[0].Count)
+            if (!requestApiData || cellInfoIndex < ModelInfosList[0].Count)
             {
               bool isValid = true;
               float cellInfo = 0f;
@@ -173,7 +173,7 @@ namespace Gene
       }
       if (!isAfterRequest)
       {
-        GenerationInfos.Add(new List<float>());
+        ModelInfosList.Add(new List<float>());
       }
 
       NewBornGenerations.Add(new List<GameObject>());
@@ -186,7 +186,7 @@ namespace Gene
           float cellInfo = 0f;
           Vector3 cellPosition = NewBornGenerations[germNb][i].transform.position + sides[z];
           isValid = CheckIsValid(isValid, cellPosition);
-          cellInfo = HandleCellInfos(GenerationInfos.Count - 1, indexInfo);
+          cellInfo = HandleCellInfos(ModelInfosList.Count - 1, indexInfo);
           indexInfo++;
           if (isValid)
           {
@@ -215,19 +215,19 @@ namespace Gene
       }
     }
 
-    public List<float> ReturnGenerationInfos(int generationId)
+    public List<float> ReturnModelInfosList(int modelId)
     {
-      List<float> generationInfos = new List<float>();
+      List<float> ModelInfos = new List<float>();
 
-      for (int i = 0; i < GenerationInfos[generationId].Count; i++)
+      for (int i = 0; i < ModelInfosList[modelId].Count; i++)
       {
-        generationInfos.Add(GenerationInfos[generationId][i]);
+        ModelInfos.Add(ModelInfosList[modelId][i]);
       }
 
-      return generationInfos;
+      return ModelInfos;
     }
 
-    public List<List<float>> ReturnGenerationPositions()
+    public List<List<float>> ReturnModelPositions()
     {
       List<List<float>> positions = new List<List<float>>();
       for (int i = 0; i < CelllocalPositions.Count; i++)
@@ -246,16 +246,16 @@ namespace Gene
       string newBornName = "\"cellName\"";
       string nexBornHexColor = "\"red\"";
       NewBornPostData newBornPostData = new NewBornPostData(newBornName, newbornId, nexBornHexColor);
-      StartCoroutine(newbornService.postNewborn(newBornPostData, agentId));
+      StartCoroutine(newbornService.PostNewborn(newBornPostData, agentId));
     }
 
-    public void PostGeneration(string newbornId, int generationId, int agentId)
+    public void PostNewbornModel(string newbornId, int generationId, int agentId)
     {
-      List<float> cellInfos = ReturnGenerationInfos(generationId);
-      List<List<float>> cellPositions = ReturnGenerationPositions();
+      List<float> ModelInfos = ReturnModelInfosList(generationId);
+      List<List<float>> cellPositions = ReturnModelPositions();
       string id = Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
-      GenerationPostData generationPostData = new GenerationPostData(newbornId, cellPositions, cellInfos);
-      StartCoroutine(newbornService.postGeneration(generationPostData, newbornId, agentId));
+      GenerationPostData generationPostData = new GenerationPostData(newbornId, cellPositions, ModelInfos);
+      StartCoroutine(newbornService.PostNewbornModel(generationPostData, newbornId, agentId));
     }
 
     private void HandleStoreCell(GameObject cell, Vector3 cellPosition, Vector3 cellLocalPosition)
@@ -269,13 +269,13 @@ namespace Gene
     {
       if (requestApiData)
       {
-        float cellInfo = GenerationInfos[generationIndex][cellIndex];
+        float cellInfo = ModelInfosList[generationIndex][cellIndex];
         return cellInfo;
       }
       else
       {
         float cellInfo = Random.Range(0f, 1f);
-        GenerationInfos[generationIndex].Add(cellInfo);
+        ModelInfosList[generationIndex].Add(cellInfo);
         return cellInfo;
       }
     }
@@ -337,25 +337,36 @@ namespace Gene
 
     private void handleAngularLimit(ConfigurableJoint cj, Vector3 jointAnchor)
     {
-      if(jointAnchor.y == -1) {
+      if (jointAnchor.y == -1)
+      {
         cj.lowAngularXLimit = new SoftJointLimit() { limit = -agentConfig.highLimit, bounciness = agentConfig.bounciness };
         cj.highAngularXLimit = new SoftJointLimit() { limit = -agentConfig.lowLimit, bounciness = agentConfig.bounciness };
-      } else if(jointAnchor.y == 1) {
+      }
+      else if (jointAnchor.y == 1)
+      {
         cj.highAngularXLimit = new SoftJointLimit() { limit = agentConfig.highLimit, bounciness = agentConfig.bounciness };
         cj.lowAngularXLimit = new SoftJointLimit() { limit = agentConfig.lowLimit, bounciness = agentConfig.bounciness };
-      } else if(jointAnchor.x == 1) {
+      }
+      else if (jointAnchor.x == 1)
+      {
         cj.highAngularXLimit = new SoftJointLimit() { limit = agentConfig.highLimit, bounciness = agentConfig.bounciness };
         cj.lowAngularXLimit = new SoftJointLimit() { limit = agentConfig.lowLimit, bounciness = agentConfig.bounciness };
         cj.axis = new Vector3(0f, -1f, 0f);
-      } else if(jointAnchor.x == -1) {
+      }
+      else if (jointAnchor.x == -1)
+      {
         cj.lowAngularXLimit = new SoftJointLimit() { limit = -agentConfig.highLimit, bounciness = agentConfig.bounciness };
         cj.highAngularXLimit = new SoftJointLimit() { limit = -agentConfig.highLimit, bounciness = agentConfig.bounciness };
         cj.axis = new Vector3(0f, -1f, 0f);
-      } else if(jointAnchor.z == 1) {
+      }
+      else if (jointAnchor.z == 1)
+      {
         cj.axis = new Vector3(0f, -1f, 0f);
         cj.highAngularXLimit = new SoftJointLimit() { limit = agentConfig.lowLimit, bounciness = agentConfig.bounciness };
         cj.lowAngularXLimit = new SoftJointLimit() { limit = -agentConfig.lowLimit, bounciness = agentConfig.bounciness };
-      } else if(jointAnchor.z == -1) {
+      }
+      else if (jointAnchor.z == -1)
+      {
         cj.axis = new Vector3(-1f, 0f, 0f);
         cj.highAngularXLimit = new SoftJointLimit() { limit = agentConfig.lowLimit, bounciness = agentConfig.bounciness };
         cj.lowAngularXLimit = new SoftJointLimit() { limit = -agentConfig.lowLimit, bounciness = agentConfig.bounciness };
@@ -368,13 +379,14 @@ namespace Gene
       aTBehaviour.initPart = Cells[0].transform;
       for (int i = 1; i < cellNb; i++)
       {
-        if(aTBehaviour.parts.Count < i) {
+        if (aTBehaviour.parts.Count < i)
+        {
           aTBehaviour.parts.Add(Cells[i].transform);
         }
       }
       if (init)
       {
-        aTBehaviour.initBodyParts();   
+        aTBehaviour.initBodyParts();
       }
     }
   }

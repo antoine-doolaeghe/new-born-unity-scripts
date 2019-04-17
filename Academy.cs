@@ -98,6 +98,7 @@ namespace MLAgents
   public abstract class Academy : MonoBehaviour
   {
     [SerializeField]
+    [HideInInspector] public bool initialized;
     public BroadcastHub broadcastHub = new BroadcastHub();
 
     public Gene.TrainingManager spawner;
@@ -234,23 +235,25 @@ namespace MLAgents
     /// </summary>
     void Awake()
     {
+      bool hasNewbornId = false;
       string[] arguments = Environment.GetCommandLineArgs();
       for (int x = 0; x < arguments.Length; x++)
       {
-        Debug.Log(arguments[x]);
         if (arguments[x] == "--newborn-id")
         {
-          Debug.Log(arguments[x + 1]);
+          hasNewbornId = true;
           spawner.newbornId = arguments[x + 1];
-          spawner.RequestTrainingAgentInfo();
-          return;
         }
       }
-    }
 
-    void OnEnable()
-    {
-      InitializeEnvironment();
+      if (hasNewbornId)
+      {
+        StartCoroutine(spawner.RequestTrainingAgentInfo());
+      }
+      else
+      {
+        InitializeEnvironment();
+      }
     }
 
     // Used to read Python-provided environment parameters
@@ -272,7 +275,7 @@ namespace MLAgents
     /// <summary>
     /// Initializes the environment, configures it and initialized the Academy.
     /// </summary>
-    private void InitializeEnvironment()
+    public void InitializeEnvironment()
     {
       InitializeAcademy();
       Communicator communicator = null;
@@ -630,7 +633,10 @@ namespace MLAgents
     /// </summary>
     void FixedUpdate()
     {
-      EnvironmentStep();
+      if (initialized)
+      {
+        EnvironmentStep();
+      }
     }
   }
 }

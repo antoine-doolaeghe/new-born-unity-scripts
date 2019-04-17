@@ -13,6 +13,7 @@ namespace Gene
   {
     [Header("Environment Mode")]
     public bool isTrainingMode;
+
     [Header("Environment parameters")]
     public int spawnerNumber;
     public int agentNumber;
@@ -102,7 +103,7 @@ namespace Gene
           GameObject newBornAgent;
           newBornAgents.Add(AddAgent(spawner, out newBornAgent, out atBehaviour, out newBornBuilder));
           AddBrainToAgentBehaviour(atBehaviour, brain);
-          SetRequestApi(newBornBuilder, atBehaviour, requestApiData);
+          SetApiRequestParameter(newBornBuilder, atBehaviour, requestApiData);
           AddMinCellNb(newBornBuilder, minCellNb);
         }
 
@@ -136,6 +137,7 @@ namespace Gene
 
     public void BuildNewBornFromFetch(bool buildFromPost, string responseId, int agentId = 0)
     {
+      Debug.Log("Building Newborn From Fetch");
       Transform agent = Agents[agentId].transform;
       AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
       NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
@@ -148,18 +150,18 @@ namespace Gene
       }
 
       newBornBuilder.requestApiData = true;
-      newBornBuilder.handleResponseData();
+      newBornBuilder.handleCellInfoResponse();
+
       if (buildFromPost)
       {
-        atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
-        atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
-        atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { newBornBuilder.cellNb * 3 };
-        atBehaviour.brain.brainParameters.vectorObservationSize = newBornBuilder.cellNb * 13 - 4;
-        atBehaviour.brain.name = responseId;
+        setBrainParameters(atBehaviour, newBornBuilder);
+        setBrainName(atBehaviour, responseId);
       }
       else if (agentId == 0) // INIT FIRST BRAIN
       {
-        setBrainParameters(academy, atBehaviour, newBornBuilder, newbornService);
+        ClearBroadCastingBrains(academy);
+        setBrainParameters(atBehaviour, newBornBuilder);
+        setBrainName(atBehaviour, responseId);
         academy.broadcastHub.broadcastingBrains.Add(atBehaviour.brain);
       }
       else // ASSIGN ALL TO THE SAME BRAIN
@@ -170,7 +172,6 @@ namespace Gene
 
     public void BuildRandomTrainingNewBorn(bool buildFromPost, int agentId = 0)
     {
-      // Handle starting/communication with api data
       Transform agent = Agents[agentId].transform;
       AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
       NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
@@ -178,10 +179,7 @@ namespace Gene
 
       newBornBuilder.requestApiData = false;
       newBornBuilder.initNewBorn(agentConfig.layerNumber, agentConfig.threshold);
-      atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
-      atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
-      atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { Agents[agentId].transform.GetComponent<NewBornBuilder>().cellNb * 3 };
-      atBehaviour.brain.brainParameters.vectorObservationSize = Agents[agentId].transform.GetComponent<NewBornBuilder>().cellNb * 13 - 4;
+      setBrainParameters(atBehaviour, newBornBuilder);
     }
 
     public void BuildRandomProductionNewBorn(Transform agent)
@@ -193,10 +191,7 @@ namespace Gene
 
       newBornBuilder.requestApiData = false;
       newBornBuilder.initNewBorn(agentConfig.layerNumber, agentConfig.threshold);
-      atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
-      atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
-      atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { newBornBuilder.cellNb * 3 };
-      atBehaviour.brain.brainParameters.vectorObservationSize = newBornBuilder.cellNb * 13 - 4;
+      setBrainParameters(atBehaviour, newBornBuilder);
     }
 
     public void BuildRandomGeneration()
@@ -204,11 +199,12 @@ namespace Gene
       academy.broadcastHub.broadcastingBrains.Clear();
       for (int a = 0; a < Agents.Count; a++)
       {
+
         NewBornBuilder newBornBuilder = Agents[a].transform.GetComponent<NewBornBuilder>();
-        newBornBuilder.threshold = agentConfig.threshold;
         AgentTrainBehaviour atBehaviour = Agents[a].transform.GetComponent<AgentTrainBehaviour>();
-        SetRequestApi(newBornBuilder, atBehaviour, false);
-        newBornBuilder.BuildGeneration(newBornBuilder.GenerationInfos.Count, false);
+        newBornBuilder.threshold = agentConfig.threshold;
+        SetApiRequestParameter(newBornBuilder, atBehaviour, false);
+        newBornBuilder.BuildGeneration(newBornBuilder.ModelInfosList.Count, false);
         Brain brain = Resources.Load<Brain>("Brains/agentBrain" + a);
         SetBrainParams(brain, brain.name);
         Agents[a].gameObject.name = brain + "";
@@ -232,21 +228,24 @@ namespace Gene
       }
     }
 
-    public void RequestTrainingAgentInfo()
+    public IEnumerator RequestTrainingAgentInfo()
     {
       Debug.Log("Requesting Agent info from server...");
       for (int a = 0; a < Agents.Count; a++)
       {
         NewbornService newbornService = Agents[a].transform.GetComponent<NewbornService>();
-        StartCoroutine(newbornService.getNewborn(newbornId, a, false));
+        yield return StartCoroutine(newbornService.GetNewborn(newbornId, a, false));
       }
+      Debug.Log("Finished to build Agents");
+      academy.InitializeEnvironment();
+      academy.initialized = true;
     }
 
     public void RequestProductionAgentInfo()
     {
-      foreach (GameObject fooObj in GameObject.FindGameObjectsWithTag("agent"))
+      foreach (GameObject agent in GameObject.FindGameObjectsWithTag("agent"))
       {
-        Debug.Log(fooObj.name);
+        Debug.Log(agent.name);
       }
     }
 
@@ -337,7 +336,7 @@ namespace Gene
       newBornBuilder.minCellNb = minCellNb;
     }
 
-    private void SetRequestApi(NewBornBuilder newBornBuilder, AgentTrainBehaviour atBehaviour, bool requestApiData)
+    private void SetApiRequestParameter(NewBornBuilder newBornBuilder, AgentTrainBehaviour atBehaviour, bool requestApiData)
     {
       atBehaviour.requestApiData = requestApiData;
       newBornBuilder.requestApiData = requestApiData;
@@ -348,14 +347,22 @@ namespace Gene
       atBehaviour.brain = brain;
     }
 
-    private void setBrainParameters(Academy academy, AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, NewbornService newbornService)
+    private void ClearBroadCastingBrains(Academy academy)
     {
       academy.broadcastHub.broadcastingBrains.Clear();
+    }
+
+    private void setBrainParameters(AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder)
+    {
       atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
       atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
       atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { newBornBuilder.cellNb * 3 };
       atBehaviour.brain.brainParameters.vectorObservationSize = newBornBuilder.cellNb * 13 - 4;
-      atBehaviour.brain.name = newbornService.responseUuid;
+    }
+
+    private void setBrainName(AgentTrainBehaviour atBehaviour, string responseId)
+    {
+      atBehaviour.brain.name = responseId;
     }
   }
 }
