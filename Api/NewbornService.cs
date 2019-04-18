@@ -39,7 +39,6 @@ namespace Gene {
     }
 
     public IEnumerator PostNewborn (NewBornPostData newBornPostData, int agentId) {
-      string jsonData;
       byte[] postData;
       Dictionary<string, string> postHeader;
 
@@ -47,7 +46,7 @@ namespace Gene {
       NewbornService.variable["name"] = newBornPostData.name;
 
       WWW www;
-      ServiceHelpers.graphQlApiRequest (out jsonData, out postData, out postHeader, out www, apiConfig.newBornGraphQlMutation);
+      ServiceHelpers.graphQlApiRequest (variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.newBornGraphQlMutation);
 
       yield return www;
       if (www.error != null) {
@@ -60,7 +59,6 @@ namespace Gene {
 
 
     public IEnumerator PostNewbornModel (GenerationPostData generationPostData, string modelId, int agentId) {
-      string jsonData;
       byte[] postData;
 
       Dictionary<string, string> postHeader;
@@ -71,7 +69,7 @@ namespace Gene {
       NewbornService.variable["cellInfos"] = JSON.Parse (JsonUtility.ToJson (generationPostData)) ["cellInfos"].ToString ();
 
       WWW www;
-      ServiceHelpers.graphQlApiRequest (out jsonData, out postData, out postHeader, out www, apiConfig.modelGraphQlMutation);
+      ServiceHelpers.graphQlApiRequest (variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.modelGraphQlMutation);
 
       yield return www;
       if (www.error != null) {
@@ -93,14 +91,13 @@ namespace Gene {
     }
 
     public IEnumerator GetNewborn (string id, int agentId, bool IsGetAfterPost) {
-      string jsonData;
       byte[] postData;
       Dictionary<string, string> postHeader;
 
       NewbornService.variable["id"] = id;
 
       WWW www;
-      ServiceHelpers.graphQlApiRequest (out jsonData, out postData, out postHeader, out www, apiConfig.newBornGraphQlQuery);
+      ServiceHelpers.graphQlApiRequest (variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.newBornGraphQlQuery);
 
       yield return www;
       if (www.error != null) {

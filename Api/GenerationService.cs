@@ -16,13 +16,17 @@ using UnityEngine.UI;
 namespace Gene {
     [ExecuteInEditMode]
     public class GenerationService : MonoBehaviour {
+        public ApiConfig apiConfig;
+        private String graphQlInput;
+        public static Dictionary<string, string> variable = new Dictionary<string, string> ();
+        public static Dictionary<string, string[]> array = new Dictionary<string, string[]> ();
+
         public IEnumerator GetGeneration () {
-            string jsonData;
             byte[] postData;
             Dictionary<string, string> postHeader;
 
             WWW www;
-            ServiceHelpers.graphQlApiRequest (out jsonData, out postData, out postHeader, out www, apiConfig.generationsGraphQlQuery);
+            ServiceHelpers.graphQlApiRequest (variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.generationsGraphQlQuery);
 
             yield return www;
             if (www.error != null) {
@@ -34,14 +38,13 @@ namespace Gene {
         }
 
         public IEnumerator PostGeneration (string generationId) {
-            string jsonData;
             byte[] postData;
             Dictionary<string, string> postHeader;
 
             NewbornService.variable["id"] = generationId;
 
             WWW www;
-            ServiceHelpers.graphQlApiRequest (out jsonData, out postData, out postHeader, out www, apiConfig.generationsGraphQlMutation);
+            ServiceHelpers.graphQlApiRequest (variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.generationsGraphQlMutation);
 
             yield return www;
             if (www.error != null) {

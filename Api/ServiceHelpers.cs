@@ -12,7 +12,7 @@ using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 public class ServiceHelpers {
-
+  public static ApiConfig apiConfig;
   public class Query {
     public string query;
   }
@@ -45,14 +45,15 @@ public class ServiceHelpers {
     }
   }
 
-  public static void graphQlApiRequest (out string jsonData, out byte[] postData, out Dictionary<string, string> postHeader, out WWW www, string input) {
-    graphQlInput = QuerySorter (input);
+  public static void graphQlApiRequest (Dictionary<string, string> variable, Dictionary<string, string[]> array, out byte[] postData, out Dictionary<string, string> postHeader, out WWW www, out string graphQlInput, string input) {
+    string jsonData;
+    graphQlInput = QuerySorter (input, variable, array);
     jsonData = ServiceHelpers.ReturnJsonData (graphQlInput);
-    ServiceHelpers.ConfigureForm (jsonData, apiConfig.apiKey, out postData, out postHeader);
+    ConfigureForm (jsonData, apiConfig.apiKey, out postData, out postHeader);
     www = new WWW (apiConfig.url, postData, postHeader);
   }
 
-  public static string QuerySorter (string query) {
+  public static string QuerySorter (string query, Dictionary<string, string> variable, Dictionary<string, string[]> array) {
     string finalString;
     string[] splitString;
     string[] separators = { "$", "^" };
@@ -65,14 +66,14 @@ public class ServiceHelpers {
         if (!splitString[i].Contains ("[]")) {
           finalString += variable[splitString[i]];
         } else {
-          finalString += ArraySorter (splitString[i]);
+          finalString += ArraySorter (splitString[i], array);
         }
       }
     }
     return finalString;
   }
 
-  public static string ArraySorter (string theArray) {
+  public static string ArraySorter (string theArray, Dictionary<string, string[]> array) {
     string[] anArray;
     string solution;
     anArray = array[theArray];
