@@ -241,7 +241,7 @@ namespace MLAgents {
       }
 
       if (hasNewbornId) {
-        StartCoroutine (spawner.RequestTrainingAgentInfo ());
+        StartCoroutine (spawner.RequestNewbornAgentInfo ());
       } else {
         InitializeEnvironment ();
       }
