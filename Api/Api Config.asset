@@ -13,6 +13,9 @@ MonoBehaviour:
   m_Name: Api Config
   m_EditorClassIdentifier: 
   url: https://ilhzglf4sfgepcagdzuviwewy4.appsync-api.eu-west-1.amazonaws.com/graphql
+  apiKey: da2-smch6kbkszebtoawtoncrpmhmm
+  generationsGraphQlQuery: query getGenerations {getGenerations() { id }}
+  generationsGraphQlMutation: generationsGraphQlMutation
   newBornGraphQlMutation: 'mutation NewbornPost {createNewborn(input: {id: "$id^",
     name: $name^}) {id, name}}'
   modelGraphQlMutation: 'mutation ModelPost {createModel(input: {id: "$id^", cellInfos:

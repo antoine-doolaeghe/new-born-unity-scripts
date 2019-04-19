@@ -26,7 +26,7 @@ namespace Gene {
             Dictionary<string, string> postHeader;
 
             WWW www;
-            ServiceHelpers.graphQlApiRequest (variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.generationsGraphQlQuery);
+            ServiceHelpers.graphQlApiRequest (variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.generationsGraphQlQuery, apiConfig.apiKey, apiConfig.url);
 
             yield return www;
             if (www.error != null) {
@@ -44,7 +44,7 @@ namespace Gene {
             NewbornService.variable["id"] = generationId;
 
             WWW www;
-            ServiceHelpers.graphQlApiRequest (variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.generationsGraphQlMutation);
+            ServiceHelpers.graphQlApiRequest (variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.generationsGraphQlMutation, apiConfig.apiKey, apiConfig.url);
 
             yield return www;
             if (www.error != null) {

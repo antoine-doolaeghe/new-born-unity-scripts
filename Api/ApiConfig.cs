@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class ApiConfig : ScriptableObject {
   public string url = "https://ilhzglf4sfgepcagdzuviwewy4.appsync-api.eu-west-1.amazonaws.com/graphql";
-  public string apiKey = "da2-i732yxi7qng65jnaphvfsyozqu";
+  public string apiKey = "da2-smch6kbkszebtoawtoncrpmhmm";
   public string generationsGraphQlQuery = "query getGenerations {getGenerations() { id }}";
   public string generationsGraphQlMutation = "mutation createGenerations {createGenerations(input: {id: '$id^'}) { id }}";
   public string newBornGraphQlMutation = "mutation NewbornPost {createNewborn(input: {id: '$id^', name: $name^}) {id, name}}";
