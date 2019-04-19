@@ -8,6 +8,7 @@ using UnityEditor;
 using UnityEngine;
 
 namespace Gene {
+  [ExecuteInEditMode]
   public class TrainingManager : MonoBehaviour {
     [Header ("Environment Mode")]
     public bool isTrainingMode;
@@ -43,6 +44,11 @@ namespace Gene {
     [Header ("Camera parameters")]
 
     [HideInInspector] public List<GameObject> Agents = new List<GameObject> ();
+    private GenerationService generationService;
+
+    void Awake () {
+      generationService = transform.GetComponent<GenerationService> ();
+    }
 
     public void Delete () {
       Transform[] childs = transform.Cast<Transform> ().ToArray ();
@@ -189,15 +195,11 @@ namespace Gene {
 
     public IEnumerator PostNewborns () {
       Debug.Log ("Posting training NewBorns to the server...");
-      // Check if it has a generation
-      GenerationService generationService = transform.GetComponent<GenerationService> ();
-
       yield return StartCoroutine (RequestGenerations ());
       if (generationService.generations.Count == 0) {
-        Debug.Log ("Posting generation");
         yield return StartCoroutine (PostGeneration ());
       }
-      Debug.Log ("Posted Generation");
+
       string generationId = generationService.generations[0];
 
       for (int agent = 0; agent < Agents.Count; agent++) {
@@ -213,14 +215,10 @@ namespace Gene {
     }
 
     public IEnumerator PostGeneration () {
-      GenerationService generationService = transform.GetComponent<GenerationService> ();
       yield return StartCoroutine (generationService.PostGeneration (Regex.Replace (System.Guid.NewGuid ().ToString (), @"[^0-9]", "")));
-      Debug.Log (generationService.generations[0]);
     }
 
     public IEnumerator RequestGenerations () {
-      GenerationService generationService = transform.GetComponent<GenerationService> ();
-      Debug.Log ("Request Agent info from server...");
       yield return StartCoroutine (generationService.GetGenerations ());
     }
 
