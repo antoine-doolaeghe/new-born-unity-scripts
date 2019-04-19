@@ -54,7 +54,7 @@ namespace Gene {
 
       if (spawner.isTrainingMode) {
         if (GUILayout.Button ("Request Training NewBorn")) {
-          spawner.RequestNewbornAgentInfo ();
+          spawner.RequestNewborn ();
         }
       }
 
@@ -66,7 +66,7 @@ namespace Gene {
 
       if (spawner.isTrainingMode) {
         if (GUILayout.Button ("Request Training NewBorn (target generation)")) {
-          spawner.RequestNewbornAgentInfo ();
+          spawner.RequestNewborn ();
         }
       }
 

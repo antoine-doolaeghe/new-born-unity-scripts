@@ -18,22 +18,23 @@ namespace Gene {
     public class GenerationService : MonoBehaviour {
         public ApiConfig apiConfig;
         private String graphQlInput;
+        public List<string> generations;
         public static Dictionary<string, string> variable = new Dictionary<string, string> ();
         public static Dictionary<string, string[]> array = new Dictionary<string, string[]> ();
 
-        public IEnumerator GetGeneration () {
+        public IEnumerator GetGenerations () {
             byte[] postData;
             Dictionary<string, string> postHeader;
-
             WWW www;
+            generations = new List<string> ();
             ServiceHelpers.graphQlApiRequest (variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.generationsGraphQlQuery, apiConfig.apiKey, apiConfig.url);
-
             yield return www;
             if (www.error != null) {
                 throw new Exception ("There was an error sending request: " + www.error);
             } else {
-                // create newborn if the it has a generation, 
-                // if it doesn't have a generation, then create a newborn. 
+                foreach (var generation in JSON.Parse (www.text) ["data"]["listGenerations"]["items"].AsArray) {
+                    generations.Add (generation.Value["id"]);
+                }
             }
         }
 
@@ -41,16 +42,16 @@ namespace Gene {
             byte[] postData;
             Dictionary<string, string> postHeader;
 
-            NewbornService.variable["id"] = generationId;
+            GenerationService.variable["id"] = generationId;
 
             WWW www;
-            ServiceHelpers.graphQlApiRequest (variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.generationsGraphQlMutation, apiConfig.apiKey, apiConfig.url);
-
+            ServiceHelpers.graphQlApiRequest (GenerationService.variable, GenerationService.array, out postData, out postHeader, out www, out graphQlInput, apiConfig.generationsGraphQlMutation, apiConfig.apiKey, apiConfig.url);
             yield return www;
             if (www.error != null) {
                 throw new Exception ("There was an error sending request: " + www.error);
             } else {
-                // POST new born ? 
+                Debug.Log (JSON.Parse (www.text) ["data"]["createGeneration"]["id"]);
+                generations.Add (JSON.Parse (www.text) ["data"]["createGeneration"]["id"]);
             }
         }
     }

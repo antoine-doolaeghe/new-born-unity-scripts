@@ -44,11 +44,10 @@ namespace Gene {
 
       NewbornService.variable["id"] = newBornPostData.id;
       NewbornService.variable["name"] = newBornPostData.name;
+      NewbornService.variable["newbornGenerationId"] = newBornPostData.generationId;
 
       WWW www;
       ServiceHelpers.graphQlApiRequest (variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.newBornGraphQlMutation, apiConfig.apiKey, apiConfig.url);
-      Debug.Log (postHeader["X-Api-Key"]);
-      Debug.Log (graphQlInput);
       yield return www;
       if (www.error != null) {
         throw new Exception ("There was an error sending request: " + www.error);
@@ -70,7 +69,7 @@ namespace Gene {
       NewbornService.variable["cellInfos"] = JSON.Parse (JsonUtility.ToJson (generationPostData)) ["cellInfos"].ToString ();
 
       WWW www;
-      ServiceHelpers.graphQlApiRequest (variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.modelGraphQlMutation, apiConfig.apiKey, apiConfig.url);
+      ServiceHelpers.graphQlApiRequest (NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, apiConfig.modelGraphQlMutation, apiConfig.apiKey, apiConfig.url);
 
       yield return www;
       if (www.error != null) {
@@ -98,7 +97,7 @@ namespace Gene {
       NewbornService.variable["id"] = id;
 
       WWW www;
-      ServiceHelpers.graphQlApiRequest (variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.newBornGraphQlQuery, apiConfig.apiKey, apiConfig.url);
+      ServiceHelpers.graphQlApiRequest (NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, apiConfig.newBornGraphQlQuery, apiConfig.apiKey, apiConfig.url);
 
       yield return www;
       if (www.error != null) {

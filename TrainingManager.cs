@@ -187,15 +187,41 @@ namespace Gene {
       }
     }
 
-    public void PostTrainingNewborns () {
+    public IEnumerator PostNewborns () {
       Debug.Log ("Posting training NewBorns to the server...");
       // Check if it has a generation
+      GenerationService generationService = transform.GetComponent<GenerationService> ();
+
+      yield return StartCoroutine (RequestGenerations ());
+      if (generationService.generations.Count == 0) {
+        Debug.Log ("Posting generation");
+        yield return StartCoroutine (PostGeneration ());
+      }
+      Debug.Log ("Posted Generation");
+      string generationId = generationService.generations[0];
+
       for (int agent = 0; agent < Agents.Count; agent++) {
         NewBornBuilder newBornBuilder = Agents[agent].transform.GetComponent<NewBornBuilder> ();
         AgentTrainBehaviour agentTrainBehaviour = Agents[agent].transform.GetComponent<AgentTrainBehaviour> ();
-        string brainName = agentTrainBehaviour.brain.name;
-        newBornBuilder.HandlePostNewborn (brainName, agent);
+        string newbornId = agentTrainBehaviour.brain.name;
+        newBornBuilder.HandlePostNewborn (generationId, newbornId, agent);
       }
+    }
+
+    public void PostTrainingNewborns () {
+      StartCoroutine (PostNewborns ());
+    }
+
+    public IEnumerator PostGeneration () {
+      GenerationService generationService = transform.GetComponent<GenerationService> ();
+      yield return StartCoroutine (generationService.PostGeneration (Regex.Replace (System.Guid.NewGuid ().ToString (), @"[^0-9]", "")));
+      Debug.Log (generationService.generations[0]);
+    }
+
+    public IEnumerator RequestGenerations () {
+      GenerationService generationService = transform.GetComponent<GenerationService> ();
+      Debug.Log ("Request Agent info from server...");
+      yield return StartCoroutine (generationService.GetGenerations ());
     }
 
     public IEnumerator RequestNewbornAgentInfo () {
@@ -207,6 +233,10 @@ namespace Gene {
       Debug.Log ("Finished to build Agents");
       academy.InitializeEnvironment ();
       academy.initialized = true;
+    }
+
+    public void RequestNewborn () {
+      StartCoroutine (RequestNewbornAgentInfo ());
     }
 
     public void RequestProductionAgentInfo () {
