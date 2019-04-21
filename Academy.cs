@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using UnityEngine;
 using System.IO;
 using System.Linq;
+using UnityEngine;
 #if UNITY_EDITOR
-using UnityEditor;
 using Gene;
+using UnityEditor;
 
 
 #endif
@@ -23,8 +23,7 @@ using Gene;
  * https://github.com/Unity-Technologies/ml-agents/blob/master/docs/
  */
 
-namespace MLAgents
-{
+namespace MLAgents {
   /// <summary>
   /// Wraps the environment-level parameters that are provided within the
   /// Editor. These parameters can be provided for training and inference
@@ -32,23 +31,22 @@ namespace MLAgents
   /// frame rate.
   /// </summary>
   [System.Serializable]
-  public class EnvironmentConfiguration
-  {
-    [Tooltip("Width of the environment window in pixels.")]
+  public class EnvironmentConfiguration {
+    [Tooltip ("Width of the environment window in pixels.")]
     public int width;
 
-    [Tooltip("Height of the environment window in pixels.")]
+    [Tooltip ("Height of the environment window in pixels.")]
     public int height;
 
-    [Tooltip("Rendering quality of environment. (Higher is better quality.)")]
-    [Range(0, 5)]
+    [Tooltip ("Rendering quality of environment. (Higher is better quality.)")]
+    [Range (0, 5)]
     public int qualityLevel;
 
-    [Tooltip("Speed at which environment is run. (Higher is faster.)")]
-    [Range(1f, 100f)]
+    [Tooltip ("Speed at which environment is run. (Higher is faster.)")]
+    [Range (1f, 100f)]
     public float timeScale;
 
-    [Tooltip("Frames per second (FPS) engine attempts to maintain.")]
+    [Tooltip ("Frames per second (FPS) engine attempts to maintain.")]
     public int targetFrameRate;
 
     /// Initializes a new instance of the 
@@ -65,10 +63,9 @@ namespace MLAgents
     /// <param name="targetFrameRate">
     /// Target frame rate (per second) that the engine tries to maintain.
     /// </param>
-    public EnvironmentConfiguration(
-        int width, int height, int qualityLevel,
-        float timeScale, int targetFrameRate)
-    {
+    public EnvironmentConfiguration (
+      int width, int height, int qualityLevel,
+      float timeScale, int targetFrameRate) {
       this.width = width;
       this.height = height;
       this.qualityLevel = qualityLevel;
@@ -93,13 +90,12 @@ namespace MLAgents
   /// inference mode where the agent behavior is determined by the brain
   /// attached to it (which may be internal, heuristic or player).
   /// </remarks>
-  [HelpURL("https://github.com/Unity-Technologies/ml-agents/blob/master/" +
-           "docs/Learning-Environment-Design-Academy.md")]
-  public abstract class Academy : MonoBehaviour
-  {
+  [HelpURL ("https://github.com/Unity-Technologies/ml-agents/blob/master/" +
+    "docs/Learning-Environment-Design-Academy.md")]
+  public abstract class Academy : MonoBehaviour {
     [SerializeField]
     [HideInInspector] public bool initialized;
-    public BroadcastHub broadcastHub = new BroadcastHub();
+    public BroadcastHub broadcastHub = new BroadcastHub ();
 
     public Gene.TrainingManager spawner;
 
@@ -108,23 +104,23 @@ namespace MLAgents
     // Fields provided in the Inspector
 
     [SerializeField]
-    [Tooltip("Total number of steps per global episode.\nNon-positive " +
-             "values correspond to episodes without a maximum number of \n" +
-             "steps. Once the step counter reaches this maximum value, the " +
-             "environment will reset.")]
+    [Tooltip ("Total number of steps per global episode.\nNon-positive " +
+      "values correspond to episodes without a maximum number of \n" +
+      "steps. Once the step counter reaches this maximum value, the " +
+      "environment will reset.")]
     int maxSteps;
 
     [SerializeField]
-    [Tooltip("The engine-level settings which correspond to rendering " +
-             "quality and engine speed during Training.")]
+    [Tooltip ("The engine-level settings which correspond to rendering " +
+      "quality and engine speed during Training.")]
     EnvironmentConfiguration trainingConfiguration =
-        new EnvironmentConfiguration(80, 80, 1, 100.0f, -1);
+      new EnvironmentConfiguration (80, 80, 1, 100.0f, -1);
 
     [SerializeField]
-    [Tooltip("The engine-level settings which correspond to rendering " +
-             "quality and engine speed during Inference.")]
+    [Tooltip ("The engine-level settings which correspond to rendering " +
+      "quality and engine speed during Inference.")]
     EnvironmentConfiguration inferenceConfiguration =
-        new EnvironmentConfiguration(1280, 720, 5, 1.0f, 60);
+      new EnvironmentConfiguration (1280, 720, 5, 1.0f, 60);
 
     /// <summary>
     /// Contains a mapping from parameter names to float values. They are
@@ -137,8 +133,8 @@ namespace MLAgents
     /// dictionary at reset. 
     /// </remarks>
     [SerializeField]
-    [Tooltip("List of custom parameters that can be changed in the " +
-             "environment when it resets.")]
+    [Tooltip ("List of custom parameters that can be changed in the " +
+      "environment when it resets.")]
     public ResetParameters resetParameters;
 
     // Fields not provided in the Inspector.
@@ -233,124 +229,105 @@ namespace MLAgents
     /// structures, initialize the environment and check for the existence
     /// of a communicator.
     /// </summary>
-    void Awake()
-    {
+    void Awake () {
       bool hasNewbornId = false;
-      string[] arguments = Environment.GetCommandLineArgs();
-      for (int x = 0; x < arguments.Length; x++)
-      {
-        if (arguments[x] == "--newborn-id")
-        {
+      string[] arguments = Environment.GetCommandLineArgs ();
+      for (int x = 0; x < arguments.Length; x++) {
+        if (arguments[x] == "--newborn-id") {
+          Debug.Log ("Initalising with external newborn id");
           hasNewbornId = true;
           spawner.newbornId = arguments[x + 1];
         }
       }
 
-      if (hasNewbornId)
-      {
-        StartCoroutine(spawner.RequestTrainingAgentInfo());
-      }
-      else
-      {
-        InitializeEnvironment();
+      if (hasNewbornId) {
+        StartCoroutine (spawner.RequestNewbornAgentInfo ());
+      } else {
+        InitializeEnvironment ();
       }
     }
 
     // Used to read Python-provided environment parameters
-    private int ReadArgs()
-    {
-      var args = System.Environment.GetCommandLineArgs();
+    private int ReadArgs () {
+      var args = System.Environment.GetCommandLineArgs ();
       var inputPort = "";
-      for (var i = 0; i < args.Length; i++)
-      {
-        if (args[i] == "--port")
-        {
+      for (var i = 0; i < args.Length; i++) {
+        if (args[i] == "--port") {
           inputPort = args[i + 1];
         }
       }
 
-      return int.Parse(inputPort);
+      return int.Parse (inputPort);
     }
 
     /// <summary>
     /// Initializes the environment, configures it and initialized the Academy.
     /// </summary>
-    public void InitializeEnvironment()
-    {
-      InitializeAcademy();
+    public void InitializeEnvironment () {
+      InitializeAcademy ();
       Communicator communicator = null;
-      var exposedBrains = broadcastHub.broadcastingBrains.Where(x => x != null).ToList(); ;
-      var controlledBrains = broadcastHub.broadcastingBrains.Where(
-          x => x != null && x is LearningBrain && broadcastHub.IsControlled(x));
-      foreach (LearningBrain brain in controlledBrains)
-      {
-        brain.SetToControlledExternally();
+      var exposedBrains = broadcastHub.broadcastingBrains.Where (x => x != null).ToList ();;
+      var controlledBrains = broadcastHub.broadcastingBrains.Where (
+        x => x != null && x is LearningBrain && broadcastHub.IsControlled (x));
+      foreach (LearningBrain brain in controlledBrains) {
+        brain.SetToControlledExternally ();
       }
 
       // Try to launch the communicator by usig the arguments passed at launch
-      try
-      {
-        communicator = new RPCCommunicator(
-            new CommunicatorParameters
-            {
-              port = ReadArgs()
-            });
+      try {
+        communicator = new RPCCommunicator (
+          new CommunicatorParameters {
+            port = ReadArgs ()
+          });
       }
       // If it fails, we check if there are any external brains in the scene
       // If there are : Launch the communicator on the default port
       // If there arn't, there is no need for a communicator and it is set
       // to null
-      catch
-      {
+      catch {
         communicator = null;
-        if (controlledBrains.ToList().Count > 0)
-        {
-          communicator = new RPCCommunicator(
-              new CommunicatorParameters
-              {
-                port = 5005
-              });
+        if (controlledBrains.ToList ().Count > 0) {
+          communicator = new RPCCommunicator (
+            new CommunicatorParameters {
+              port = 5005
+            });
         }
       }
 
-      brainBatcher = new Batcher(communicator);
+      brainBatcher = new Batcher (communicator);
 
-      foreach (var trainingBrain in exposedBrains)
-      {
-        trainingBrain.SetBatcher(brainBatcher);
+      foreach (var trainingBrain in exposedBrains) {
+        trainingBrain.SetBatcher (brainBatcher);
       }
 
-      if (communicator != null)
-      {
+      if (communicator != null) {
         isCommunicatorOn = true;
 
         var academyParameters =
-            new CommunicatorObjects.UnityRLInitializationOutput();
+          new CommunicatorObjects.UnityRLInitializationOutput ();
         academyParameters.Name = gameObject.name;
         academyParameters.Version = kApiVersion;
-        foreach (var brain in exposedBrains)
-        {
+        foreach (var brain in exposedBrains) {
           var bp = brain.brainParameters;
-          academyParameters.BrainParameters.Add(
-              bp.ToProto(brain.name, broadcastHub.IsControlled(brain)));
+          academyParameters.BrainParameters.Add (
+            bp.ToProto (brain.name, broadcastHub.IsControlled (brain)));
         }
         academyParameters.EnvironmentParameters =
-            new CommunicatorObjects.EnvironmentParametersProto();
-        foreach (var key in resetParameters.Keys)
-        {
-          academyParameters.EnvironmentParameters.FloatParameters.Add(
-              key, resetParameters[key]
+          new CommunicatorObjects.EnvironmentParametersProto ();
+        foreach (var key in resetParameters.Keys) {
+          academyParameters.EnvironmentParameters.FloatParameters.Add (
+            key, resetParameters[key]
           );
         }
 
-        var pythonParameters = brainBatcher.SendAcademyParameters(academyParameters);
-        UnityEngine.Random.InitState(pythonParameters.Seed);
+        var pythonParameters = brainBatcher.SendAcademyParameters (academyParameters);
+        UnityEngine.Random.InitState (pythonParameters.Seed);
         Application.logMessageReceived += HandleLog;
-        logPath = Path.GetFullPath(".") + "/UnitySDK.log";
-        logWriter = new StreamWriter(logPath, false);
-        logWriter.WriteLine(System.DateTime.Now.ToString());
-        logWriter.WriteLine(" ");
-        logWriter.Close();
+        logPath = Path.GetFullPath (".") + "/UnitySDK.log";
+        logWriter = new StreamWriter (logPath, false);
+        logWriter.WriteLine (System.DateTime.Now.ToString ());
+        logWriter.WriteLine (" ");
+        logWriter.Close ();
       }
 
       // If a communicator is enabled/provided, then we assume we are in
@@ -367,46 +344,38 @@ namespace MLAgents
 
       // Configure the environment using the configurations provided by
       // the developer in the Editor.
-      SetIsInference(!brainBatcher.GetIsTraining());
-      ConfigureEnvironment();
+      SetIsInference (!brainBatcher.GetIsTraining ());
+      ConfigureEnvironment ();
     }
 
-    private void UpdateResetParameters()
-    {
-      var newResetParameters = brainBatcher.GetEnvironmentParameters();
-      if (newResetParameters != null)
-      {
-        foreach (var kv in newResetParameters.FloatParameters)
-        {
+    private void UpdateResetParameters () {
+      var newResetParameters = brainBatcher.GetEnvironmentParameters ();
+      if (newResetParameters != null) {
+        foreach (var kv in newResetParameters.FloatParameters) {
           resetParameters[kv.Key] = kv.Value;
         }
       }
     }
 
-    void HandleLog(string logString, string stackTrace, LogType type)
-    {
-      logWriter = new StreamWriter(logPath, true);
-      logWriter.WriteLine(type.ToString());
-      logWriter.WriteLine(logString);
-      logWriter.WriteLine(stackTrace);
-      logWriter.Close();
+    void HandleLog (string logString, string stackTrace, LogType type) {
+      logWriter = new StreamWriter (logPath, true);
+      logWriter.WriteLine (type.ToString ());
+      logWriter.WriteLine (logString);
+      logWriter.WriteLine (stackTrace);
+      logWriter.Close ();
     }
 
     /// <summary>
     /// Configures the environment settings depending on the training/inference
     /// mode and the corresponding parameters passed in the Editor.
     /// </summary>
-    void ConfigureEnvironment()
-    {
-      if (isInference)
-      {
-        ConfigureEnvironmentHelper(inferenceConfiguration);
-        Monitor.SetActive(true);
-      }
-      else
-      {
-        ConfigureEnvironmentHelper(trainingConfiguration);
-        Monitor.SetActive(false);
+    void ConfigureEnvironment () {
+      if (isInference) {
+        ConfigureEnvironmentHelper (inferenceConfiguration);
+        Monitor.SetActive (true);
+      } else {
+        ConfigureEnvironmentHelper (trainingConfiguration);
+        Monitor.SetActive (false);
       }
     }
 
@@ -417,10 +386,9 @@ namespace MLAgents
     /// <param name="config">
     /// Environment configuration (specified in the Editor).
     /// </param>
-    static void ConfigureEnvironmentHelper(EnvironmentConfiguration config)
-    {
-      Screen.SetResolution(config.width, config.height, false);
-      QualitySettings.SetQualityLevel(config.qualityLevel, true);
+    static void ConfigureEnvironmentHelper (EnvironmentConfiguration config) {
+      Screen.SetResolution (config.width, config.height, false);
+      QualitySettings.SetQualityLevel (config.qualityLevel, true);
       Time.timeScale = config.timeScale;
       Time.captureFramerate = 60;
       Application.targetFrameRate = config.targetFrameRate;
@@ -431,24 +399,18 @@ namespace MLAgents
     /// phase of the environment before any of the scene objects/agents have
     /// been initialized.
     /// </summary>
-    public virtual void InitializeAcademy()
-    {
-    }
+    public virtual void InitializeAcademy () { }
 
     /// <summary>
     /// Specifies the academy behavior at every step of the environment.
     /// </summary>
-    public virtual void AcademyStep()
-    {
-    }
+    public virtual void AcademyStep () { }
 
     /// <summary>
     /// Specifies the academy behavior when being reset (i.e. at the completion
     /// of a global episode).
     /// </summary>
-    public virtual void AcademyReset()
-    {
-    }
+    public virtual void AcademyReset () { }
 
     /// <summary>
     /// Returns the <see cref="isInference"/> flag.
@@ -456,8 +418,7 @@ namespace MLAgents
     /// <returns>
     /// <c>true</c>, if current mode is inference, <c>false</c> if training.
     /// </returns>
-    public bool GetIsInference()
-    {
+    public bool GetIsInference () {
       return isInference;
     }
 
@@ -469,10 +430,8 @@ namespace MLAgents
     /// <param name="isInference">
     /// Environment mode, if true then inference, otherwise training.
     /// </param>
-    public void SetIsInference(bool isInference)
-    {
-      if (this.isInference != isInference)
-      {
+    public void SetIsInference (bool isInference) {
+      if (this.isInference != isInference) {
         this.isInference = isInference;
 
         // This signals to the academy that at the next environment step
@@ -488,8 +447,7 @@ namespace MLAgents
     /// <returns>
     /// Current episode number.
     /// </returns>
-    public int GetEpisodeCount()
-    {
+    public int GetEpisodeCount () {
       return episodeCount;
     }
 
@@ -499,16 +457,14 @@ namespace MLAgents
     /// <returns>
     /// Current episode number.
     /// </returns>
-    public int GetStepCount()
-    {
+    public int GetStepCount () {
       return stepCount;
     }
 
     /// <summary>
     /// Sets the done flag to true.
     /// </summary>
-    public void Done()
-    {
+    public void Done () {
       done = true;
     }
 
@@ -518,8 +474,7 @@ namespace MLAgents
     /// <returns>
     /// <c>true</c>, if academy is done, <c>false</c> otherwise.
     /// </returns>
-    public bool IsDone()
-    {
+    public bool IsDone () {
       return done;
     }
 
@@ -529,8 +484,7 @@ namespace MLAgents
     /// <returns>
     /// <c>true</c>, if communicator is on, <c>false</c> otherwise.
     /// </returns>
-    public bool IsCommunicatorOn()
-    {
+    public bool IsCommunicatorOn () {
       return isCommunicatorOn;
     }
 
@@ -539,10 +493,9 @@ namespace MLAgents
     /// called the first reset at inference and every external reset
     /// at training.
     /// </summary>
-    void ForcedFullReset()
-    {
-      EnvironmentReset();
-      AgentForceReset();
+    void ForcedFullReset () {
+      EnvironmentReset ();
+      AgentForceReset ();
       firstAcademyReset = true;
     }
 
@@ -550,68 +503,59 @@ namespace MLAgents
     /// Performs a single environment update to the Academy, Brain and Agent
     /// objects within the environment.
     /// </summary>
-    void EnvironmentStep()
-    {
-      if (modeSwitched)
-      {
-        ConfigureEnvironment();
+    void EnvironmentStep () {
+      if (modeSwitched) {
+        ConfigureEnvironment ();
         modeSwitched = false;
       }
 
       if ((isCommunicatorOn) &&
-          (lastCommunicatorMessageNumber != brainBatcher.GetNumberMessageReceived()))
-      {
-        lastCommunicatorMessageNumber = brainBatcher.GetNumberMessageReceived();
-        if (brainBatcher.GetCommand() ==
-            CommunicatorObjects.CommandProto.Reset)
-        {
-          UpdateResetParameters();
+        (lastCommunicatorMessageNumber != brainBatcher.GetNumberMessageReceived ())) {
+        lastCommunicatorMessageNumber = brainBatcher.GetNumberMessageReceived ();
+        if (brainBatcher.GetCommand () ==
+          CommunicatorObjects.CommandProto.Reset) {
+          UpdateResetParameters ();
 
-          SetIsInference(!brainBatcher.GetIsTraining());
+          SetIsInference (!brainBatcher.GetIsTraining ());
 
-          ForcedFullReset();
+          ForcedFullReset ();
         }
 
-        if (brainBatcher.GetCommand() ==
-            CommunicatorObjects.CommandProto.Quit)
-        {
+        if (brainBatcher.GetCommand () ==
+          CommunicatorObjects.CommandProto.Quit) {
 #if UNITY_EDITOR
           EditorApplication.isPlaying = false;
 #endif
-          Application.Quit();
+          Application.Quit ();
           return;
         }
-      }
-      else if (!firstAcademyReset)
-      {
-        UpdateResetParameters();
-        ForcedFullReset();
+      } else if (!firstAcademyReset) {
+        UpdateResetParameters ();
+        ForcedFullReset ();
       }
 
-      if ((stepCount >= maxSteps) && maxSteps > 0)
-      {
+      if ((stepCount >= maxSteps) && maxSteps > 0) {
         maxStepReached = true;
-        Done();
+        Done ();
       }
 
-      AgentSetStatus(maxStepReached, done, stepCount);
+      AgentSetStatus (maxStepReached, done, stepCount);
 
-      brainBatcher.RegisterAcademyDoneFlag(done);
+      brainBatcher.RegisterAcademyDoneFlag (done);
 
-      if (done)
-      {
-        EnvironmentReset();
+      if (done) {
+        EnvironmentReset ();
       }
 
-      AgentResetIfDone();
+      AgentResetIfDone ();
 
-      AgentSendState();
+      AgentSendState ();
 
-      BrainDecideAction();
+      BrainDecideAction ();
 
-      AcademyStep();
+      AcademyStep ();
 
-      AgentAct();
+      AgentAct ();
 
       stepCount += 1;
     }
@@ -619,23 +563,20 @@ namespace MLAgents
     /// <summary>
     /// Resets the environment, including the Academy.
     /// </summary>
-    void EnvironmentReset()
-    {
+    void EnvironmentReset () {
       stepCount = 0;
       episodeCount++;
       done = false;
       maxStepReached = false;
-      AcademyReset();
+      AcademyReset ();
     }
 
     /// <summary>
     /// Monobehavior function that dictates each environment step.
     /// </summary>
-    void FixedUpdate()
-    {
-      if (initialized)
-      {
-        EnvironmentStep();
+    void FixedUpdate () {
+      if (initialized) {
+        EnvironmentStep ();
       }
     }
   }
