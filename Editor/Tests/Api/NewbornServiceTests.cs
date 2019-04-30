@@ -12,7 +12,7 @@ namespace Gene
     {
       string modelId = "TestId";
       int agentId = 12345;
-      GenerationPostData generationPostData = new GenerationPostData("newbornId", new List<List<float>>(), new List<float>());
+      GenerationPostData generationPostData = new GenerationPostData("newbornId", new List<PositionPostData>(), new List<float>());
       NewbornService newbornService = new NewbornService();
       newbornService.PostNewbornModel(generationPostData, modelId, agentId);
     }
