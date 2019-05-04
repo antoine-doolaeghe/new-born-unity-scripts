@@ -7,6 +7,6 @@ namespace Gene
 {
   public class GeneBuilder
   {
-
+    public string gene;
   }
 }
