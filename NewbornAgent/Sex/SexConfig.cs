@@ -5,5 +5,5 @@ using UnityEngine;
 [CreateAssetMenu(fileName = "Sex config", menuName = "agentConfig")]
 public class SexConfig : ScriptableObject
 {
-  public List<string> bounciness = new List<string>() { "male", "female" };
+  public static List<string> sexes = new List<string>() { "male", "female" };
 }

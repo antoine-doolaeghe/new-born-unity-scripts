@@ -12,9 +12,7 @@ namespace Gene
     [Header("Connection to API Service")]
     public NewbornService newbornService;
     public AgentConfig agentConfig;
-    public bool postApiData;
     public bool requestApiData;
-    public string cellId;
     public int cellNb = 0;
     public int minCellNb;
     private int cellInfoIndex = 0;
@@ -40,7 +38,6 @@ namespace Gene
     private Vector3 childPositionSum = new Vector3(0f, 0f, 0f);
 
     [HideInInspector] public Vector3 center;
-    [HideInInspector] public bool isRequestDone;
     [HideInInspector] public float threshold;
     [HideInInspector] public int partNb;
     [HideInInspector] public List<List<float>> ModelInfosList = new List<List<float>>();
