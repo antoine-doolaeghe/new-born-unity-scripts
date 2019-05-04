@@ -6,7 +6,6 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.RegularExpressions;
-using graphQLClient;
 using Gene;
 using SimpleJSON;
 using UnityEngine;
