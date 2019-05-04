@@ -47,6 +47,7 @@ namespace Gene
 
       NewbornService.variable["id"] = newBornPostData.id;
       NewbornService.variable["name"] = newBornPostData.name;
+      NewbornService.variable["sex"] = newBornPostData.sex;
       NewbornService.variable["newbornGenerationId"] = newBornPostData.generationId;
 
       WWW www;

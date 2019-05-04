@@ -238,7 +238,7 @@ public class AgentTrainBehaviour : Agent
   public void TouchedNewborn()
   {
     AddReward(15f);
-    // Init the newborn reproducion
+
   }
   public void TouchedFood()
   {

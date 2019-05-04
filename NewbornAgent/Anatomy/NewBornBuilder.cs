@@ -19,6 +19,7 @@ namespace Gene
     public int minCellNb;
     private int cellInfoIndex = 0;
     private bool Initialised;
+    public string Sex;
     public List<List<GameObject>> NewBornGenerations;
     public List<GameObject> Cells;
     public List<Vector3> CellPositions;
@@ -245,7 +246,7 @@ namespace Gene
     {
       string newBornName = "\"cellName\"";
       string nexBornHexColor = "\"red\"";
-      NewBornPostData newBornPostData = new NewBornPostData(newBornName, newbornId, generationId, nexBornHexColor);
+      NewBornPostData newBornPostData = new NewBornPostData(newBornName, newbornId, generationId, Sex, nexBornHexColor);
       StartCoroutine(newbornService.PostNewborn(newBornPostData, agentId));
     }
 
