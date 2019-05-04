@@ -8,22 +8,22 @@ using UnityEngine.UI;
 [RequireComponent(typeof(JointDriveController))] // Required to set joint forces
 public class AgentTrainBehaviour : Agent
 {
-  [Header("Morphology Parts")]
+  [Header("Morphology")]
   public AgentConfig agentConfig;
 
   [SerializeField] public List<Transform> parts;
   [SerializeField] public Transform initPart;
-  [Header("Connection to API Service")]
+  [Header("API Service")]
   public bool requestApiData;
   public string cellId;
   public NewbornService newbornService;
-  [Header("Target To Walk Towards")]
+
+  [Header("Target")]
   [Space(10)]
   public Transform target;
   public Transform ground;
-  public bool detectTargets;
-  public bool respawnTargetWhenTouched;
-  public float targetSpawnRadius;
+  public bool respawnFoodWhenTouched;
+  public float foodSpawnRadius;
 
   [Header("Joint Settings")]
   [Space(10)]
@@ -33,7 +33,7 @@ public class AgentTrainBehaviour : Agent
   float movingTowardsDot;
   float facingDot;
 
-  [Header("Reward Functions To Use")]
+  [Header("Reward Functions")]
   [Space(10)]
   public bool rewardMovingTowardsTarget; // Agent should move towards target
   public bool rewardFacingTarget; // Agent should face the target
@@ -115,39 +115,18 @@ public class AgentTrainBehaviour : Agent
     }
   }
 
-  /// <summary>
-  /// Agent touched the target
-  /// </summary>
-  public void TouchedTarget()
-  {
-    AddReward(15f);
-    AgentReset();
-    if (respawnTargetWhenTouched)
-    {
-      GetRandomTargetPos();
-    }
-  }
-
-  /// <summary>
-  /// Moves target to a random position within specified radius.
-  /// </summary>
-  public void GetRandomTargetPos()
-  {
-    Vector3 newTargetPos = Random.insideUnitSphere * targetSpawnRadius;
-    newTargetPos.y = 5;
-    target.position = newTargetPos + ground.position;
-  }
-
   public override void AgentAction(float[] vectorAction, string textAction)
   {
-    if (detectTargets)
+    foreach (var bodyPart in jdController.bodyPartsDict.Values)
     {
-      foreach (var bodyPart in jdController.bodyPartsDict.Values)
+      if (bodyPart.collisionController && !IsDone() && bodyPart.collisionController.touchingNewborn)
       {
-        if (bodyPart.targetContact && !IsDone() && bodyPart.targetContact.touchingTarget)
-        {
-          TouchedTarget();
-        }
+        TouchedNewborn();
+      }
+
+      if (bodyPart.collisionController && !IsDone() && bodyPart.collisionController.touchingNewborn)
+      {
+        TouchedFood();
       }
     }
 
@@ -251,5 +230,33 @@ public class AgentTrainBehaviour : Agent
 
     isNewDecisionStep = true;
     currentDecisionStep = 1;
+  }
+
+  /// <summary>
+  /// Agent touched the target
+  /// </summary>
+  public void TouchedNewborn()
+  {
+    AddReward(15f);
+    // Init the newborn reproducion
+  }
+  public void TouchedFood()
+  {
+    AddReward(15f);
+    AgentReset();
+    if (respawnFoodWhenTouched)
+    {
+      GetRandomFoodPos();
+    }
+  }
+
+  /// <summary>
+  /// Moves target to a random position within specified radius.
+  /// </summary>
+  public void GetRandomFoodPos()
+  {
+    Vector3 newTargetPos = Random.insideUnitSphere * foodSpawnRadius;
+    newTargetPos.y = 5;
+    target.position = newTargetPos + ground.position;
   }
 }
