@@ -45,6 +45,7 @@ public class AgentTrainBehaviour : Agent
 
   public override void InitializeAgent()
   {
+    Debug.Log("AGENT");
     initBodyParts();
     currentDecisionStep = 1;
   }
@@ -117,6 +118,7 @@ public class AgentTrainBehaviour : Agent
 
   public override void AgentAction(float[] vectorAction, string textAction)
   {
+    Debug.Log("HERE action");
     foreach (var bodyPart in jdController.bodyPartsDict.Values)
     {
       if (bodyPart.collisionController && !IsDone() && bodyPart.collisionController.touchingNewborn)
@@ -238,7 +240,7 @@ public class AgentTrainBehaviour : Agent
   public void TouchedNewborn()
   {
     AddReward(15f);
-
+    Debug.Log("HERE");
   }
   public void TouchedFood()
   {

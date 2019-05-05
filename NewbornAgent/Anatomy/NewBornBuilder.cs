@@ -283,7 +283,7 @@ namespace Gene
 
     private static void InitRigidBody(GameObject cell)
     {
-      cell.AddComponent<Rigidbody>();
+      // cell.AddComponent<Rigidbody>();
       cell.GetComponent<Rigidbody>().useGravity = true;
       cell.GetComponent<Rigidbody>().mass = 1f;
     }
