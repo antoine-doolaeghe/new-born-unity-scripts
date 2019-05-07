@@ -118,9 +118,10 @@ public class AgentTrainBehaviour : Agent
 
   public override void AgentAction(float[] vectorAction, string textAction)
   {
+
     foreach (var bodyPart in jdController.bodyPartsDict.Values)
     {
-      if (bodyPart.collisionController && !IsDone() && bodyPart.collisionController.touchingNewborn != null)
+      if (bodyPart.collisionController && !IsDone() && !transform.gameObject.GetComponent<Newborn>().isGestating && bodyPart.collisionController.touchingNewborn != null)
       {
         TouchedNewborn(bodyPart.collisionController.touchingNewborn);
       }
@@ -246,7 +247,9 @@ public class AgentTrainBehaviour : Agent
     int partnerGenerationIndex = transform.gameObject.GetComponent<Newborn>().GenerationIndex;
     if (sex == "female" && partnerSex == "male" && generationIndex == partnerGenerationIndex) // Generation must be equal ? 
     {
+
       Debug.Log("Compatible partner");
+      transform.gameObject.GetComponent<Newborn>().isGestating = true;
       List<GeneInformation> femaleGene = transform.gameObject.GetComponent<NewBornBuilder>().GeneInformations;
       List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewBornBuilder>().GeneInformations;
       List<GeneInformation> newGene = GeneHelper.returnMixedForReproduction(femaleGene, maleGene);

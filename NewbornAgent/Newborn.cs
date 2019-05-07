@@ -10,6 +10,7 @@ public class Newborn : MonoBehaviour
   private string id;
   public string title;
   public string Sex;
+  public bool isGestating;
   public int GenerationIndex;
   public GameObject CellPrefab;
   public List<List<GameObject>> NewBornGenerations;
