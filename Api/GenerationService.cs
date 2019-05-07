@@ -45,15 +45,17 @@ namespace Gene
       }
     }
 
-    public IEnumerator PostGeneration(string generationId)
+    public IEnumerator PostGeneration(string generationId, int generationIndex)
     {
       byte[] postData;
       Dictionary<string, string> postHeader;
 
       GenerationService.variable["id"] = generationId;
+      GenerationService.variable["index"] = generationIndex.ToString();
 
       WWW www;
       ServiceHelpers.graphQlApiRequest(GenerationService.variable, GenerationService.array, out postData, out postHeader, out www, out graphQlInput, apiConfig.generationsGraphQlMutation, apiConfig.apiKey, apiConfig.url);
+      Debug.Log(graphQlInput);
       yield return www;
       if (www.error != null)
       {
@@ -61,7 +63,7 @@ namespace Gene
       }
       else
       {
-        Debug.Log(JSON.Parse(www.text)["data"]["createGeneration"]["id"]);
+        Debug.Log(JSON.Parse(www.text));
         generations.Add(JSON.Parse(www.text)["data"]["createGeneration"]["id"]);
       }
     }

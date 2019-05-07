@@ -20,10 +20,6 @@ namespace Gene
     private int cellInfoIndex = 0;
     private bool Initialised;
     public string Sex;
-    public List<List<GameObject>> NewBornGenerations;
-    public List<GameObject> Cells;
-    public List<Vector3> CellPositions;
-    public List<Vector3> CelllocalPositions;
     private AgentTrainBehaviour aTBehaviour;
     private TrainingManager trainingManager;
     private List<Vector3> sides = new List<Vector3> {
@@ -60,10 +56,10 @@ namespace Gene
 
     public void DeleteCells()
     {
-      Cells.Clear();
-      NewBornGenerations.Clear();
-      CellPositions.Clear();
-      CelllocalPositions.Clear();
+      newborn.Cells.Clear();
+      newborn.NewBornGenerations.Clear();
+      newborn.CellPositions.Clear();
+      newborn.CelllocalPositions.Clear();
       cellInfoIndex = 0;
       Initialised = false;
       GeneInformations.Clear();
@@ -88,24 +84,23 @@ namespace Gene
     public void initNewBorn(int generationNumber, float threshold)
     {
       transform.gameObject.name = transform.GetComponent<AgentTrainBehaviour>().brain + "";
-      NewBornGenerations = new List<List<GameObject>>();
-      Cells = new List<GameObject>();
-      CellPositions = new List<Vector3>();
-      CelllocalPositions = new List<Vector3>();
-      GeneInformations = new List<GeneInformation>();
+      newborn.NewBornGenerations = new List<List<GameObject>>();
+      newborn.Cells = new List<GameObject>();
+      newborn.CellPositions = new List<Vector3>();
+      newborn.CelllocalPositions = new List<Vector3>();
       if (GeneInformations.Count == 0)
       {
         GeneInformations.Add(new GeneInformation(new List<float>()));
       }
-      NewBornGenerations.Add(new List<GameObject>());
-      GameObject initCell = InitBaseShape(NewBornGenerations[0], 0);
+      newborn.NewBornGenerations.Add(new List<GameObject>());
+      GameObject initCell = InitBaseShape(newborn.NewBornGenerations[0], 0);
       initCell.transform.parent = transform;
       InitRigidBody(initCell);
       HandleStoreCell(initCell, initCell.transform.position, initCell.transform.position);
       for (int y = 1; y < generationNumber; y++)
       {
-        int previousGenerationCellNumber = NewBornGenerations[y - 1].Count;
-        NewBornGenerations.Add(new List<GameObject>());
+        int previousGenerationCellNumber = newborn.NewBornGenerations[y - 1].Count;
+        newborn.NewBornGenerations.Add(new List<GameObject>());
         for (int i = 0; i < previousGenerationCellNumber; i++)
         {
           for (int z = 0; z < sides.Count; z++)
@@ -114,7 +109,7 @@ namespace Gene
             {
               bool isValid = true;
               float cellInfo = 0f;
-              Vector3 cellPosition = NewBornGenerations[y - 1][i].transform.position + sides[z];
+              Vector3 cellPosition = newborn.NewBornGenerations[y - 1][i].transform.position + sides[z];
               isValid = CheckIsValid(isValid, cellPosition);
               cellInfo = HandleCellInfos(0, cellInfoIndex);
               cellInfoIndex++;
@@ -122,10 +117,10 @@ namespace Gene
               {
                 if (cellInfo > threshold)
                 {
-                  GameObject cell = InitBaseShape(NewBornGenerations[y], y);
+                  GameObject cell = InitBaseShape(newborn.NewBornGenerations[y], y);
                   InitPosition(sides, y, i, z, cell);
                   InitRigidBody(cell);
-                  initJoint(cell, NewBornGenerations[y - 1][i], sides[z], y, z);
+                  initJoint(cell, newborn.NewBornGenerations[y - 1][i], sides[z], y, z);
                   cell.transform.parent = transform;
                   HandleStoreCell(cell, cellPosition, cellPosition);
                 }
@@ -136,13 +131,13 @@ namespace Gene
       }
 
 
-      foreach (var cell in Cells)
+      foreach (var cell in newborn.Cells)
       {
         cell.transform.parent = transform; // RESET CELL TO MAIN TRANSFORM
         cell.GetComponent<SphereCollider>().radius /= 2f;
       }
 
-      cellNb = Cells.Count;
+      cellNb = newborn.Cells.Count;
 
       checkMinCellNb();
       BuildAgentPart(true);
@@ -156,16 +151,16 @@ namespace Gene
       partNb += 1;
 
 
-      for (int i = 0; i < NewBornGenerations.Count; i++)
+      for (int i = 0; i < newborn.NewBornGenerations.Count; i++)
       {
-        if (NewBornGenerations[i].Count > 0)
+        if (newborn.NewBornGenerations[i].Count > 0)
         {
-          previousGenerationCellNumber = NewBornGenerations[i].Count;
+          previousGenerationCellNumber = newborn.NewBornGenerations[i].Count;
           germNb = i;
         }
         else
         {
-          NewBornGenerations.RemoveAt(i);
+          newborn.NewBornGenerations.RemoveAt(i);
         }
       }
       if (!isAfterRequest)
@@ -173,7 +168,7 @@ namespace Gene
         GeneInformations.Add(new GeneInformation(new List<float>()));
       }
 
-      NewBornGenerations.Add(new List<GameObject>());
+      newborn.NewBornGenerations.Add(new List<GameObject>());
 
       for (int i = 0; i < previousGenerationCellNumber; i++)
       {
@@ -181,7 +176,7 @@ namespace Gene
         {
           bool isValid = true;
           float cellInfo = 0f;
-          Vector3 cellPosition = NewBornGenerations[germNb][i].transform.position + sides[z];
+          Vector3 cellPosition = newborn.NewBornGenerations[germNb][i].transform.position + sides[z];
           isValid = CheckIsValid(isValid, cellPosition);
           cellInfo = HandleCellInfos(GeneInformations.Count - 1, indexInfo);
           indexInfo++;
@@ -189,17 +184,17 @@ namespace Gene
           {
             if (cellInfo > threshold)
             {
-              GameObject cell = InitBaseShape(NewBornGenerations[germNb + 1], germNb + 1);
+              GameObject cell = InitBaseShape(newborn.NewBornGenerations[germNb + 1], germNb + 1);
               InitPosition(sides, germNb + 1, i, z, cell);
               InitRigidBody(cell);
-              initJoint(cell, NewBornGenerations[germNb][i], sides[z], germNb + 1, z);
+              initJoint(cell, newborn.NewBornGenerations[germNb][i], sides[z], germNb + 1, z);
               cell.transform.parent = transform;
               HandleStoreCell(cell, cellPosition, cellPosition);
             }
           }
         }
       }
-      cellNb = Cells.Count;
+      cellNb = newborn.Cells.Count;
       BuildAgentPart(false);
     }
 
@@ -227,12 +222,12 @@ namespace Gene
     public List<PositionPostData> ReturnModelPositions()
     {
       List<PositionPostData> positions = new List<PositionPostData>();
-      for (int i = 0; i < CelllocalPositions.Count; i++)
+      for (int i = 0; i < newborn.CelllocalPositions.Count; i++)
       {
         List<float> position = new List<float>();
-        position.Add(CelllocalPositions[i].x);
-        position.Add(CelllocalPositions[i].y);
-        position.Add(CelllocalPositions[i].z);
+        position.Add(newborn.CelllocalPositions[i].x);
+        position.Add(newborn.CelllocalPositions[i].y);
+        position.Add(newborn.CelllocalPositions[i].z);
         positions.Add(new PositionPostData(position));
       }
       return positions;
@@ -242,7 +237,7 @@ namespace Gene
     {
       string newBornName = "\"cellName\"";
       string nexBornHexColor = "\"red\"";
-      NewBornPostData newBornPostData = new NewBornPostData(newBornName, newbornId, generationId, Sex, nexBornHexColor);
+      NewBornPostData newBornPostData = new NewBornPostData(newBornName, newbornId, generationId, newborn.Sex, nexBornHexColor);
       StartCoroutine(newbornService.PostNewborn(newBornPostData, agentId));
     }
 
@@ -257,9 +252,9 @@ namespace Gene
 
     private void HandleStoreCell(GameObject cell, Vector3 cellPosition, Vector3 cellLocalPosition)
     {
-      Cells.Add(cell);
-      CellPositions.Add(cellPosition);
-      CelllocalPositions.Add(cellLocalPosition);
+      newborn.Cells.Add(cell);
+      newborn.CellPositions.Add(cellPosition);
+      newborn.CelllocalPositions.Add(cellLocalPosition);
     }
 
     private float HandleCellInfos(int generationIndex, int cellIndex)
@@ -288,21 +283,21 @@ namespace Gene
 
     private void InitPosition(List<Vector3> sides, int y, int i, int z, GameObject cell)
     {
-      cell.transform.parent = NewBornGenerations[y - 1][i].transform;
+      cell.transform.parent = newborn.NewBornGenerations[y - 1][i].transform;
       cell.transform.localPosition = sides[z];
     }
 
     private GameObject InitBaseShape(List<GameObject> NewBornGeneration, int y)
     {
       NewBornGeneration.Add(Instantiate(newborn.CellPrefab));
-      GameObject cell = NewBornGenerations[y][NewBornGenerations[y].Count - 1];
+      GameObject cell = newborn.NewBornGenerations[y][newborn.NewBornGenerations[y].Count - 1];
       cell.transform.position = transform.position;
       return cell;
     }
 
     private bool CheckIsValid(bool isValid, Vector3 cellPosition)
     {
-      foreach (var position in CellPositions)
+      foreach (var position in newborn.CellPositions)
       {
         if (cellPosition == position)
         {
@@ -374,12 +369,12 @@ namespace Gene
     {
       Debug.Log(GeneInformations.Count);
       aTBehaviour = transform.gameObject.GetComponent<AgentTrainBehaviour>();
-      aTBehaviour.initPart = Cells[0].transform;
+      aTBehaviour.initPart = newborn.Cells[0].transform;
       for (int i = 1; i < cellNb; i++)
       {
         if (aTBehaviour.parts.Count < i)
         {
-          aTBehaviour.parts.Add(Cells[i].transform);
+          aTBehaviour.parts.Add(newborn.Cells[i].transform);
         }
       }
       if (init)

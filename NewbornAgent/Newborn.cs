@@ -4,6 +4,7 @@ using UnityEngine;
 
 public class Newborn : MonoBehaviour
 {
+  public string Sex;
   public GameObject CellPrefab;
   public List<List<GameObject>> NewBornGenerations;
   public List<GameObject> Cells;

@@ -106,8 +106,9 @@ namespace Gene
         {
           AgentTrainBehaviour atBehaviour;
           NewBornBuilder newBornBuilder;
+          Newborn newborn;
           GameObject newBornAgent;
-          newBornAgents.Add(BuildAgent(spawner, out newBornAgent, out atBehaviour, out newBornBuilder));
+          newBornAgents.Add(BuildAgent(spawner, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn));
           AddBrainToAgentBehaviour(atBehaviour, brain);
           SetApiRequestParameter(newBornBuilder, atBehaviour, requestApiData);
           AddMinCellNb(newBornBuilder, minCellNb);
@@ -228,7 +229,7 @@ namespace Gene
       yield return StartCoroutine(RequestGenerations());
       if (generationService.generations.Count == 0)
       {
-        yield return StartCoroutine(PostGeneration());
+        yield return StartCoroutine(PostGeneration(1));
       }
 
       string generationId = generationService.generations[0];
@@ -247,9 +248,9 @@ namespace Gene
       StartCoroutine(PostNewborns());
     }
 
-    public IEnumerator PostGeneration()
+    public IEnumerator PostGeneration(int generationIndex)
     {
-      yield return StartCoroutine(generationService.PostGeneration(Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "")));
+      yield return StartCoroutine(generationService.PostGeneration(Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""), generationIndex));
     }
 
     public IEnumerator RequestGenerations()
@@ -348,12 +349,13 @@ namespace Gene
       spawner.transform.localScale = groundScale;
     }
 
-    private GameObject BuildAgent(GameObject spawner, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder)
+    private GameObject BuildAgent(GameObject spawner, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out Newborn newborn)
     {
       newBornAgent = Instantiate(AgentPrefab, spawner.transform);
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
-      newBornBuilder.Sex = SexConfig.sexes[Random.Range(0, 2)]; // Randomly select male or female
+      newborn = newBornAgent.transform.GetComponent<Newborn>();
+      newborn.Sex = SexConfig.sexes[Random.Range(0, 2)]; // Randomly select male or female
       Agents.Add(newBornAgent);
       newBornAgent.transform.localPosition = new Vector3(Random.Range(-randomPositionIndex, randomPositionIndex), 0f, Random.Range(-randomPositionIndex, randomPositionIndex));
       return newBornAgent;
