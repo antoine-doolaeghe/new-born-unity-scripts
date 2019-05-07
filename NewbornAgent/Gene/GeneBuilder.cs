@@ -9,8 +9,28 @@ namespace Gene
   {
     public static void returnMixedForReproduction(List<GeneInformation> femaleGene, List<GeneInformation> maleGene)
     {
-      Debug.Log(maleGene[0].info.Count);
-      Debug.Log(femaleGene[0].info.Count);
+      List<GeneInformation> newGeneInformation = new List<GeneInformation>();
+      newGeneInformation.Add(new GeneInformation(new List<float>()));
+      int longerGeneLength = maleGene[0].info.Count > femaleGene[0].info.Count ? maleGene[0].info.Count : femaleGene[0].info.Count;
+      for (int i = 0; i < longerGeneLength; i++)
+      {
+        if (maleGene[0].info.Count > i && femaleGene[0].info.Count > i)
+        {
+          float info = (maleGene[0].info[i] + femaleGene[0].info[i]) / 2;
+          newGeneInformation[0].info.Add(info);
+        }
+        else if (maleGene[0].info.Count > i && femaleGene[0].info.Count < i)
+        {
+          float info = maleGene[0].info[i] - 0.3f;
+          newGeneInformation[0].info.Add(info);
+        }
+        else if (maleGene[0].info.Count < i && femaleGene[0].info.Count > i)
+        {
+          float info = femaleGene[0].info[i] - 0.3f;
+          newGeneInformation[0].info.Add(info);
+        }
+      }
+      Debug.Log(newGeneInformation[0].info.Count);
     }
   }
 }
