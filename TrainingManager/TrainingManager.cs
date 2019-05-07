@@ -211,7 +211,7 @@ namespace Gene
         AgentTrainBehaviour atBehaviour = Agents[a].transform.GetComponent<AgentTrainBehaviour>();
         newBornBuilder.threshold = agentConfig.threshold;
         SetApiRequestParameter(newBornBuilder, atBehaviour, false);
-        newBornBuilder.BuildGeneration(newBornBuilder.ModelInfosList.Count, false);
+        newBornBuilder.BuildGeneration(newBornBuilder.GeneInformations.Count, false);
         Brain brain = Resources.Load<Brain>("Brains/agentBrain" + a);
         SetBrainParams(brain, brain.name);
         Agents[a].gameObject.name = brain + "";
@@ -345,7 +345,7 @@ namespace Gene
     private void InstantiateSpawner(GameObject parent, int floor, int squarePosition, out GameObject spawner)
     {
       spawner = Instantiate(TrainingPrefab, parent.transform);
-      spawner.name = !isTrainingMode ? ("Spawner") : ("Trainer" + floor + "." + squarePosition);
+      spawner.name = ("Spawner" + squarePosition);
       spawner.transform.localScale = groundScale;
     }
 

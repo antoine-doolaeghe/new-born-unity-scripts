@@ -7,7 +7,7 @@ public class CollisionController : MonoBehaviour
 {
   public Transform target;
   [Header("Detect Targets")]
-  public bool touchingNewborn;
+  public GameObject touchingNewborn;
   public bool touchingFood;
   private const string NewbornTag = "newborn";
 
@@ -15,9 +15,9 @@ public class CollisionController : MonoBehaviour
 
   void OnCollisionEnter(Collision col)
   {
-    if (col.transform.CompareTag(NewbornTag))
+    if (col.transform.CompareTag(NewbornTag) && col.transform.parent != transform.parent)
     {
-      touchingNewborn = true;
+      touchingNewborn = col.transform.parent.gameObject;
     }
     if (col.transform.CompareTag(FoodTag))
     {
@@ -29,7 +29,7 @@ public class CollisionController : MonoBehaviour
   {
     if (other.transform.CompareTag(NewbornTag))
     {
-      touchingNewborn = false;
+      touchingNewborn = null;
     }
     if (other.transform.CompareTag(FoodTag))
     {

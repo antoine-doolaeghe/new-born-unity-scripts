@@ -53,7 +53,7 @@ namespace MLAgents
 
       if (bp.collisionController)
       {
-        bp.collisionController.touchingNewborn = false;
+        bp.collisionController.touchingNewborn = null;
         bp.collisionController.touchingFood = false;
       }
     }

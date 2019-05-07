@@ -5,8 +5,12 @@ using UnityEngine;
 
 namespace Gene
 {
-  public class GeneBuilder
+  public class GeneHelper
   {
-
+    public static void returnMixedForReproduction(List<GeneInformation> femaleGene, List<GeneInformation> maleGene)
+    {
+      Debug.Log(maleGene[0].info.Count);
+      Debug.Log(femaleGene[0].info.Count);
+    }
   }
 }

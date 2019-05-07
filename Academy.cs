@@ -235,7 +235,6 @@ namespace MLAgents
     /// </summary>
     void Awake()
     {
-      Debug.Log("HERE academy");
       bool hasNewbornId = false;
       string[] arguments = Environment.GetCommandLineArgs();
       for (int x = 0; x < arguments.Length; x++)
@@ -255,6 +254,7 @@ namespace MLAgents
       else
       {
         InitializeEnvironment();
+        initialized = true;
       }
     }
 

@@ -45,7 +45,6 @@ public class AgentTrainBehaviour : Agent
 
   public override void InitializeAgent()
   {
-    Debug.Log("AGENT");
     initBodyParts();
     currentDecisionStep = 1;
   }
@@ -118,15 +117,14 @@ public class AgentTrainBehaviour : Agent
 
   public override void AgentAction(float[] vectorAction, string textAction)
   {
-    Debug.Log("HERE action");
     foreach (var bodyPart in jdController.bodyPartsDict.Values)
     {
-      if (bodyPart.collisionController && !IsDone() && bodyPart.collisionController.touchingNewborn)
+      if (bodyPart.collisionController && !IsDone() && bodyPart.collisionController.touchingNewborn != null)
       {
-        TouchedNewborn();
+        TouchedNewborn(bodyPart.collisionController.touchingNewborn);
       }
 
-      if (bodyPart.collisionController && !IsDone() && bodyPart.collisionController.touchingNewborn)
+      if (bodyPart.collisionController && !IsDone() && bodyPart.collisionController.touchingFood)
       {
         TouchedFood();
       }
@@ -220,6 +218,7 @@ public class AgentTrainBehaviour : Agent
   /// </summary>
   public override void AgentReset()
   {
+
     if (dirToTarget != Vector3.zero)
     {
       transform.rotation = Quaternion.LookRotation(dirToTarget);
@@ -237,10 +236,21 @@ public class AgentTrainBehaviour : Agent
   /// <summary>
   /// Agent touched the target
   /// </summary>
-  public void TouchedNewborn()
+  public void TouchedNewborn(GameObject touchingNewborn)
   {
     AddReward(15f);
-    Debug.Log("HERE");
+    string sex = transform.gameObject.GetComponent<NewBornBuilder>().Sex;
+    string partnerSex = touchingNewborn.GetComponent<NewBornBuilder>().Sex;
+    if (sex == "female" && partnerSex == "male") // AND the sex of the other is male
+    {
+      List<GeneInformation> femaleGene = transform.gameObject.GetComponent<NewBornBuilder>().GeneInformations;
+      List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewBornBuilder>().GeneInformations;
+
+      GeneHelper.returnMixedForReproduction(femaleGene, maleGene);
+    }
+    else
+    {
+    }
   }
   public void TouchedFood()
   {
