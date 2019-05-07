@@ -240,8 +240,8 @@ public class AgentTrainBehaviour : Agent
   public void TouchedNewborn(GameObject touchingNewborn)
   {
     AddReward(15f);
-    string sex = transform.gameObject.GetComponent<NewBornBuilder>().Sex;
-    string partnerSex = touchingNewborn.GetComponent<NewBornBuilder>().Sex;
+    string sex = transform.gameObject.GetComponent<Newborn>().Sex;
+    string partnerSex = touchingNewborn.GetComponent<Newborn>().Sex;
     if (sex == "female" && partnerSex == "male") // AND the sex of the other is male
     {
       List<GeneInformation> femaleGene = transform.gameObject.GetComponent<NewBornBuilder>().GeneInformations;

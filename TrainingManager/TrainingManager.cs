@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
@@ -177,25 +178,41 @@ namespace Gene
       }
     }
 
-    public void BuildRandomTrainingNewBorn(bool buildFromPost, int agentId = 0)
+    public IEnumerator BuildRandomTrainingNewBorn(bool buildFromPost, int agentId = 0)
     {
+      // check the current generation
+      yield return StartCoroutine(RequestGenerations()); /// This check should be made as you build the AGENT and not as you post the agents.
+      if (generationService.generations.Count == 0)
+      {
+        yield return StartCoroutine(PostGeneration(1));
+      }
+
+
       Transform agent = Agents[agentId].transform;
       AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
       NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
       NewbornService newbornService = agent.GetComponent<NewbornService>();
-
+      Newborn newborn = agent.GetComponent<Newborn>();
+      newborn.GenerationIndex = generationService.generations.Count;
       newBornBuilder.requestApiData = false;
       newBornBuilder.initNewBorn(agentConfig.layerNumber, agentConfig.threshold);
       setBrainParameters(atBehaviour, newBornBuilder);
     }
 
-    public void BuildRandomProductionNewBorn(Transform agent)
+    public IEnumerator BuildRandomProductionNewBorn(Transform agent)
     {
+      // check the current generation
+      yield return StartCoroutine(RequestGenerations()); /// This check should be made as you build the AGENT and not as you post the agents.
+      if (generationService.generations.Count == 0)
+      {
+        yield return StartCoroutine(PostGeneration(1));
+      }
       // Handle starting/communication with api data
       AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
       NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
       NewbornService newbornService = agent.GetComponent<NewbornService>();
-
+      Newborn newborn = agent.GetComponent<Newborn>();
+      newborn.GenerationIndex = generationService.generations.Count;
       newBornBuilder.requestApiData = false;
       newBornBuilder.initNewBorn(agentConfig.layerNumber, agentConfig.threshold);
       setBrainParameters(atBehaviour, newBornBuilder);
@@ -223,16 +240,10 @@ namespace Gene
       }
     }
 
-    public IEnumerator PostNewborns()
+    public void PostTrainingNewborns()
     {
       Debug.Log("Posting training NewBorns to the server...");
-      yield return StartCoroutine(RequestGenerations());
-      if (generationService.generations.Count == 0)
-      {
-        yield return StartCoroutine(PostGeneration(1));
-      }
-
-      string generationId = generationService.generations[0];
+      string generationId = generationService.generations[generationService.generations.Count - 1]; // Get the latest generation;
 
       for (int agent = 0; agent < Agents.Count; agent++)
       {
@@ -243,9 +254,14 @@ namespace Gene
       }
     }
 
-    public void PostTrainingNewborns()
+    public void BuildRandomTrainingNewBornCoroutine(bool buildFromPost, int agentId = 0)
     {
-      StartCoroutine(PostNewborns());
+      StartCoroutine(BuildRandomTrainingNewBorn(buildFromPost, agentId));
+    }
+
+    public void BuildRandomProductionNewBornCoroutine(Transform agent)
+    {
+      StartCoroutine(BuildRandomProductionNewBorn(agent));
     }
 
     public IEnumerator PostGeneration(int generationIndex)
@@ -355,9 +371,9 @@ namespace Gene
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
       newborn = newBornAgent.transform.GetComponent<Newborn>();
-      newborn.Sex = SexConfig.sexes[Random.Range(0, 2)]; // Randomly select male or female
+      newborn.Sex = SexConfig.sexes[UnityEngine.Random.Range(0, 2)]; // Randomly select male or female
       Agents.Add(newBornAgent);
-      newBornAgent.transform.localPosition = new Vector3(Random.Range(-randomPositionIndex, randomPositionIndex), 0f, Random.Range(-randomPositionIndex, randomPositionIndex));
+      newBornAgent.transform.localPosition = new Vector3(UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex), 0f, UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex));
       return newBornAgent;
     }
 

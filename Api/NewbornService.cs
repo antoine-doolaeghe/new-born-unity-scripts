@@ -31,6 +31,7 @@ namespace Gene
 
     private TrainingManager trainingManager;
     private NewBornBuilder newBornBuilder;
+    private Newborn newborn;
 
     private String graphQlInput;
 
@@ -38,6 +39,7 @@ namespace Gene
     {
       trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
       newBornBuilder = transform.GetComponent<NewBornBuilder>();
+      newborn = transform.GetComponent<Newborn>();
     }
 
     public IEnumerator PostNewborn(NewBornPostData newBornPostData, int agentId)
@@ -52,7 +54,6 @@ namespace Gene
 
       WWW www;
       ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.newBornGraphQlMutation, apiConfig.apiKey, apiConfig.url);
-      Debug.Log(graphQlInput);
       yield return www;
       if (www.error != null)
       {
@@ -61,8 +62,9 @@ namespace Gene
       }
       else
       {
-        Debug.Log(JSON.Parse(www.text));
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
+        newborn.GenerationIndex = JSON.Parse(www.text)["data"]["createNewborn"]["generation"]["index"];
+        // Bring the newborn information to the generation object
         newBornBuilder.PostNewbornModel(createdNewBornId, 0, agentId); // will it always be first generation
       }
     }
@@ -79,7 +81,6 @@ namespace Gene
         cellPositionsString = cellPositionsString + JSON.Parse(JsonUtility.ToJson(generationPostData.cellPositions[i]))["position"].ToString() + ",";
       }
       cellPositionsString = cellPositionsString + "]";
-      Debug.Log(cellPositionsString);
       NewbornService.variable["id"] = generationPostData.id;
       NewbornService.variable["modelNewbornId"] = modelId;
       NewbornService.variable["cellPositions"] = cellPositionsString;
@@ -95,7 +96,7 @@ namespace Gene
       }
       else
       {
-        Debug.Log("New Generation successfully posted!");
+        Debug.Log("New Model successfully posted!");
         Transform[] childs = transform.Cast<Transform>().ToArray();
         DestroyAgent(childs);
         cellInfoResponse = new List<float>();

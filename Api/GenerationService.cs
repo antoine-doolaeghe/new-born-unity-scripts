@@ -38,6 +38,7 @@ namespace Gene
       }
       else
       {
+        generations.Clear();
         foreach (var generation in JSON.Parse(www.text)["data"]["listGenerations"]["items"].AsArray)
         {
           generations.Add(generation.Value["id"]);
@@ -55,7 +56,6 @@ namespace Gene
 
       WWW www;
       ServiceHelpers.graphQlApiRequest(GenerationService.variable, GenerationService.array, out postData, out postHeader, out www, out graphQlInput, apiConfig.generationsGraphQlMutation, apiConfig.apiKey, apiConfig.url);
-      Debug.Log(graphQlInput);
       yield return www;
       if (www.error != null)
       {

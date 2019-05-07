@@ -6,67 +6,86 @@ using MyBox;
 using UnityEditor;
 using UnityEngine;
 
-namespace Gene {
-  [CustomEditor (typeof (TrainingManager))]
-  public class TrainingManagerBuildEditor : Editor {
+namespace Gene
+{
+  [CustomEditor(typeof(TrainingManager))]
+  public class TrainingManagerBuildEditor : Editor
+  {
 
-    public override void OnInspectorGUI () {
-      DrawDefaultInspector ();
-      TrainingManager spawner = (TrainingManager) target;
+    public override void OnInspectorGUI()
+    {
+      DrawDefaultInspector();
+      TrainingManager spawner = (TrainingManager)target;
 
-      EditorGUILayout.LabelField ("Environmnet Parameters");
+      EditorGUILayout.LabelField("Environmnet Parameters");
 
-      if (GUILayout.Button ("Build environment")) {
-        spawner.BuildSpawners ();
+      if (GUILayout.Button("Build environment"))
+      {
+        spawner.BuildSpawners();
       }
 
-      if (GUILayout.Button ("Delete environment")) {
-        spawner.Delete ();
+      if (GUILayout.Button("Delete environment"))
+      {
+        spawner.Delete();
       }
 
-      EditorGUILayout.LabelField ("Random NewBorn Builds");
+      EditorGUILayout.LabelField("Random NewBorn Builds");
 
-      if (spawner.isTrainingMode) {
-        if (GUILayout.Button ("Build NewBorn Training Cells")) {
-          for (int i = 0; i < spawner.Agents.Count; i++) {
-            spawner.BuildRandomTrainingNewBorn (false, i);
+      if (spawner.isTrainingMode)
+      {
+        if (GUILayout.Button("Build NewBorn Training Cells"))
+        {
+          for (int i = 0; i < spawner.Agents.Count; i++)
+          {
+            spawner.BuildRandomTrainingNewBornCoroutine(false, i);
           }
         }
       }
 
-      if (!spawner.isTrainingMode) {
-        if (GUILayout.Button ("Build NewBorn Production Cells")) {
-          foreach (GameObject agent in GameObject.FindGameObjectsWithTag ("agent")) {
-            spawner.BuildRandomProductionNewBorn (agent.transform);
+      if (!spawner.isTrainingMode)
+      {
+        if (GUILayout.Button("Build NewBorn Production Cells"))
+        {
+          foreach (GameObject agent in GameObject.FindGameObjectsWithTag("agent"))
+          {
+            spawner.BuildRandomProductionNewBornCoroutine(agent.transform);
           }
         }
       }
 
-      if (GUILayout.Button ("Delete NewBorn Cells")) {
-        spawner.DeleteCell ();
+      if (GUILayout.Button("Delete NewBorn Cells"))
+      {
+        spawner.DeleteCell();
       }
 
-      if (GUILayout.Button ("Add Agent Generation")) {
-        spawner.BuildRandomGeneration ();
+      if (GUILayout.Button("Add Agent Generation"))
+      {
+        spawner.BuildRandomGeneration();
       }
 
-      EditorGUILayout.LabelField ("Serviced Newborn Builds");
+      EditorGUILayout.LabelField("Serviced Newborn Builds");
 
-      if (spawner.isTrainingMode) {
-        if (GUILayout.Button ("Request Training NewBorn")) {
-          spawner.RequestNewborn ();
+      if (spawner.isTrainingMode)
+      {
+        if (GUILayout.Button("Request Training NewBorn"))
+        {
+          spawner.RequestNewborn();
         }
       }
 
-      if (!spawner.isTrainingMode) {
-        if (GUILayout.Button ("Request Production NewBorn")) {
-          spawner.RequestProductionAgentInfo ();
+      if (!spawner.isTrainingMode)
+      {
+        if (GUILayout.Button("Request Production NewBorn"))
+        {
+          spawner.RequestProductionAgentInfo();
         }
       }
 
-      if (spawner.isTrainingMode) {
-        if (GUILayout.Button ("Request Training NewBorn (target generation)")) {
-          spawner.RequestNewborn ();
+      if (spawner.isTrainingMode)
+      {
+        if (GUILayout.Button("Request Training NewBorn (target generation)"))
+        {
+          spawner.RequestNewborn();
         }
       }
 
@@ -79,10 +98,11 @@ namespace Gene {
       //   }
       // }
 
-      EditorGUILayout.LabelField ("API Post request");
+      EditorGUILayout.LabelField("API Post request");
 
-      if (GUILayout.Button ("Post Training NewBorn")) {
-        spawner.PostTrainingNewborns ();
+      if (GUILayout.Button("Post Training NewBorn"))
+      {
+        spawner.PostTrainingNewborns();
       }
 
 

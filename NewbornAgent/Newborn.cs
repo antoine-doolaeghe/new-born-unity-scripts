@@ -4,7 +4,13 @@ using UnityEngine;
 
 public class Newborn : MonoBehaviour
 {
+  private string bio;
+  private string bornPlace;
+  private string hexColor;
+  private string id;
+  public string title;
   public string Sex;
+  public int GenerationIndex;
   public GameObject CellPrefab;
   public List<List<GameObject>> NewBornGenerations;
   public List<GameObject> Cells;

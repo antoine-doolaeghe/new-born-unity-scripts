@@ -19,7 +19,6 @@ namespace Gene
     public int minCellNb;
     private int cellInfoIndex = 0;
     private bool Initialised;
-    public string Sex;
     private AgentTrainBehaviour aTBehaviour;
     private TrainingManager trainingManager;
     private List<Vector3> sides = new List<Vector3> {
@@ -84,10 +83,14 @@ namespace Gene
     public void initNewBorn(int generationNumber, float threshold)
     {
       transform.gameObject.name = transform.GetComponent<AgentTrainBehaviour>().brain + "";
+      newborn.title = transform.gameObject.name;
       newborn.NewBornGenerations = new List<List<GameObject>>();
       newborn.Cells = new List<GameObject>();
       newborn.CellPositions = new List<Vector3>();
       newborn.CelllocalPositions = new List<Vector3>();
+
+
+
       if (GeneInformations.Count == 0)
       {
         GeneInformations.Add(new GeneInformation(new List<float>()));
@@ -207,13 +210,13 @@ namespace Gene
       }
     }
 
-    public List<float> ReturnGeneInformations(int modelId)
+    public List<float> ReturnGeneInformations(int modelIndex)
     {
       List<float> ModelInfos = new List<float>();
 
-      for (int i = 0; i < GeneInformations[modelId].info.Count; i++)
+      for (int i = 0; i < GeneInformations[modelIndex].info.Count; i++)
       {
-        ModelInfos.Add(GeneInformations[modelId].info[i]);
+        ModelInfos.Add(GeneInformations[modelIndex].info[i]);
       }
 
       return ModelInfos;
@@ -241,9 +244,9 @@ namespace Gene
       StartCoroutine(newbornService.PostNewborn(newBornPostData, agentId));
     }
 
-    public void PostNewbornModel(string newbornId, int generationId, int agentId)
+    public void PostNewbornModel(string newbornId, int modelIndex, int agentId)
     {
-      List<float> modelInfos = ReturnGeneInformations(generationId);
+      List<float> modelInfos = ReturnGeneInformations(modelIndex);
       List<PositionPostData> cellPositions = ReturnModelPositions();
       string id = Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
       GenerationPostData generationPostData = new GenerationPostData(newbornId, cellPositions, modelInfos);
@@ -367,7 +370,6 @@ namespace Gene
 
     private void BuildAgentPart(bool init)
     {
-      Debug.Log(GeneInformations.Count);
       aTBehaviour = transform.gameObject.GetComponent<AgentTrainBehaviour>();
       aTBehaviour.initPart = newborn.Cells[0].transform;
       for (int i = 1; i < cellNb; i++)
