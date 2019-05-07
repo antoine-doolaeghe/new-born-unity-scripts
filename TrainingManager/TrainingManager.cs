@@ -180,7 +180,7 @@ namespace Gene
 
     public IEnumerator BuildRandomTrainingNewBorn(bool buildFromPost, int agentId = 0)
     {
-      // check the current generation
+      // TODO: refactor this in a helper function
       yield return StartCoroutine(RequestGenerations()); /// This check should be made as you build the AGENT and not as you post the agents.
       if (generationService.generations.Count == 0)
       {
@@ -201,7 +201,7 @@ namespace Gene
 
     public IEnumerator BuildRandomProductionNewBorn(Transform agent)
     {
-      // check the current generation
+      // TODO: refactor this in a helper function
       yield return StartCoroutine(RequestGenerations()); /// This check should be made as you build the AGENT and not as you post the agents.
       if (generationService.generations.Count == 0)
       {

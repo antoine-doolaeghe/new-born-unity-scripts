@@ -241,17 +241,21 @@ public class AgentTrainBehaviour : Agent
   {
     AddReward(15f);
     string sex = transform.gameObject.GetComponent<Newborn>().Sex;
+    int generationIndex = transform.gameObject.GetComponent<Newborn>().GenerationIndex;
     string partnerSex = touchingNewborn.GetComponent<Newborn>().Sex;
-    if (sex == "female" && partnerSex == "male") // AND the sex of the other is male
+    int partnerGenerationIndex = transform.gameObject.GetComponent<Newborn>().GenerationIndex;
+    if (sex == "female" && partnerSex == "male" && generationIndex == partnerGenerationIndex) // Generation must be equal ? 
     {
+      Debug.Log("Compatible partner");
       List<GeneInformation> femaleGene = transform.gameObject.GetComponent<NewBornBuilder>().GeneInformations;
       List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewBornBuilder>().GeneInformations;
       List<GeneInformation> newGene = GeneHelper.returnMixedForReproduction(femaleGene, maleGene);
+      // DO a generation check ? 
       transform.gameObject.GetComponent<NewBornBuilder>().PostNewborn("1", Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""), 1);
     }
     else
     {
-      Debug.Log("Incompatible sex");
+      Debug.Log("Incompatible partner");
     }
   }
   public void TouchedFood()
