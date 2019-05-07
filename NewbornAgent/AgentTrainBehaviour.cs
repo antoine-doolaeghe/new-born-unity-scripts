@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 using Gene;
 using MLAgents;
 using UnityEngine;
@@ -245,11 +246,12 @@ public class AgentTrainBehaviour : Agent
     {
       List<GeneInformation> femaleGene = transform.gameObject.GetComponent<NewBornBuilder>().GeneInformations;
       List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewBornBuilder>().GeneInformations;
-
-      GeneHelper.returnMixedForReproduction(femaleGene, maleGene);
+      List<GeneInformation> newGene = GeneHelper.returnMixedForReproduction(femaleGene, maleGene);
+      transform.gameObject.GetComponent<NewBornBuilder>().PostNewborn("1", Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""), 1);
     }
     else
     {
+      Debug.Log("Incompatible sex");
     }
   }
   public void TouchedFood()

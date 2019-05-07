@@ -13,12 +13,13 @@ MonoBehaviour:
   m_Name: Api Config
   m_EditorClassIdentifier: 
   url: https://ilhzglf4sfgepcagdzuviwewy4.appsync-api.eu-west-1.amazonaws.com/graphql
-  apiKey: da2-2tazrlusczbivn3j72pxnikida
+  apiKey: da2-scnuxzzpafavxofjuecffec3hi
   generationsGraphQlQuery: query getGenerations {listGenerations { items {id} }}
   generationsGraphQlMutation: 'mutation createGenerations {createGeneration(input:
     {id: $id^}) { id }}'
   newBornGraphQlMutation: 'mutation NewbornPost {createNewborn(input: {id: ''$id^'',
-    name: $name^, newbornGenerationId: ''$newbornGenerationId^''}) {id, name}}'
+    name: $name^, newbornGenerationId: ''$newbornGenerationId^'', sex: "$sex^"}) {id,
+    name, sex}}'
   modelGraphQlMutation: 'mutation ModelPost {createModel(input: {id: ''$id^'', cellInfos:
     $cellInfos^, cellPositions: $cellPositions^, modelNewbornId: ''$modelNewbornId^''})
     { id, cellInfos }}'

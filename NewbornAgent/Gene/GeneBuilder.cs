@@ -7,7 +7,7 @@ namespace Gene
 {
   public class GeneHelper
   {
-    public static void returnMixedForReproduction(List<GeneInformation> femaleGene, List<GeneInformation> maleGene)
+    public static List<GeneInformation> returnMixedForReproduction(List<GeneInformation> femaleGene, List<GeneInformation> maleGene)
     {
       List<GeneInformation> newGeneInformation = new List<GeneInformation>();
       newGeneInformation.Add(new GeneInformation(new List<float>()));
@@ -30,7 +30,7 @@ namespace Gene
           newGeneInformation[0].info.Add(info);
         }
       }
-      Debug.Log(newGeneInformation[0].info.Count);
+      return newGeneInformation;
     }
   }
 }

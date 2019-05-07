@@ -6,9 +6,11 @@ using UnityEngine;
 
 namespace Gene
 {
+  [ExecuteInEditMode]
   public class NewBornBuilder : MonoBehaviour
   {
-    public GameObject CellPrefab;
+
+    private Newborn newborn;
     [Header("Connection to API Service")]
     public NewbornService newbornService;
     public AgentConfig agentConfig;
@@ -40,7 +42,7 @@ namespace Gene
 
     void Awake()
     {
-
+      newborn = transform.GetComponent<Newborn>();
       trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
       Initialised = false;
     }
@@ -236,7 +238,7 @@ namespace Gene
       return positions;
     }
 
-    public void HandlePostNewborn(string generationId, string newbornId, int agentId)
+    public void PostNewborn(string generationId, string newbornId, int agentId)
     {
       string newBornName = "\"cellName\"";
       string nexBornHexColor = "\"red\"";
@@ -292,7 +294,7 @@ namespace Gene
 
     private GameObject InitBaseShape(List<GameObject> NewBornGeneration, int y)
     {
-      NewBornGeneration.Add(Instantiate(CellPrefab));
+      NewBornGeneration.Add(Instantiate(newborn.CellPrefab));
       GameObject cell = NewBornGenerations[y][NewBornGenerations[y].Count - 1];
       cell.transform.position = transform.position;
       return cell;

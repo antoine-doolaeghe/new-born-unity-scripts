@@ -25,7 +25,6 @@ namespace Gene
     [ConditionalField("isTrainingMode")] public float floorHeight;
     [Header("Agent parameters")]
     public GameObject AgentPrefab;
-    public GameObject CellPrefab;
     public int minCellNb;
     public bool requestApiData;
     public string newbornId;
@@ -239,7 +238,7 @@ namespace Gene
         NewBornBuilder newBornBuilder = Agents[agent].transform.GetComponent<NewBornBuilder>();
         AgentTrainBehaviour agentTrainBehaviour = Agents[agent].transform.GetComponent<AgentTrainBehaviour>();
         string newbornId = agentTrainBehaviour.brain.name;
-        newBornBuilder.HandlePostNewborn(generationId, newbornId, agent);
+        newBornBuilder.PostNewborn(generationId, newbornId, agent);
       }
     }
 
@@ -354,7 +353,6 @@ namespace Gene
       newBornAgent = Instantiate(AgentPrefab, spawner.transform);
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
-      newBornBuilder.CellPrefab = CellPrefab;
       newBornBuilder.Sex = SexConfig.sexes[Random.Range(0, 2)]; // Randomly select male or female
       Agents.Add(newBornAgent);
       newBornAgent.transform.localPosition = new Vector3(Random.Range(-randomPositionIndex, randomPositionIndex), 0f, Random.Range(-randomPositionIndex, randomPositionIndex));

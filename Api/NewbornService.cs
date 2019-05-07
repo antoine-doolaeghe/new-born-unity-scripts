@@ -61,6 +61,7 @@ namespace Gene
       }
       else
       {
+        Debug.Log(JSON.Parse(www.text));
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
         newBornBuilder.PostNewbornModel(createdNewBornId, 0, agentId); // will it always be first generation
       }
