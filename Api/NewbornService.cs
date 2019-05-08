@@ -101,6 +101,7 @@ namespace Gene
         Debug.Log("New Model successfully posted!");
         Transform[] childs = transform.Cast<Transform>().ToArray();
         DestroyAgent(childs);
+        // HERE you need to make the adjustment for wether what need to be done. 
         cellInfoResponse = new List<float>();
         JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
         string responseId = responseData["id"];
