@@ -46,7 +46,7 @@ namespace Gene
     {
       byte[] postData;
       Dictionary<string, string> postHeader;
-
+      Debug.Log("HERE2");
       NewbornService.variable["id"] = newBornPostData.id;
       NewbornService.variable["name"] = newBornPostData.name;
       NewbornService.variable["sex"] = newBornPostData.sex;
@@ -54,6 +54,7 @@ namespace Gene
 
       WWW www;
       ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.newBornGraphQlMutation, apiConfig.apiKey, apiConfig.url);
+      Debug.Log(graphQlInput);
       yield return www;
       if (www.error != null)
       {
@@ -62,6 +63,7 @@ namespace Gene
       }
       else
       {
+        Debug.Log(JSON.Parse(www.text));
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
         newborn.GenerationIndex = JSON.Parse(www.text)["data"]["createNewborn"]["generation"]["index"];
         // Bring the newborn information to the generation object

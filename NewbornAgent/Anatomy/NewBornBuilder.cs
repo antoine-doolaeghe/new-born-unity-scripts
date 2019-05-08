@@ -236,11 +236,8 @@ namespace Gene
       return positions;
     }
 
-    public void PostNewborn(string generationId, string newbornId, int agentId)
+    public void PostNewborn(NewBornPostData newBornPostData, int agentId)
     {
-      string newBornName = "\"cellName\"";
-      string nexBornHexColor = "\"red\"";
-      NewBornPostData newBornPostData = new NewBornPostData(newBornName, newbornId, generationId, newborn.Sex, nexBornHexColor);
       StartCoroutine(newbornService.PostNewborn(newBornPostData, agentId));
     }
 

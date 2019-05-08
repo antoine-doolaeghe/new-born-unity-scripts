@@ -18,8 +18,8 @@ MonoBehaviour:
   generationsGraphQlMutation: 'mutation createGeneration {createGeneration(input:
     {id: $id^, index: $index^}) { id, index }}'
   newBornGraphQlMutation: 'mutation NewbornPost {createNewborn(input: {id: ''$id^'',
-    name: $name^, newbornGenerationId: ''$newbornGenerationId^'', sex: "$sex^"}) {id,
-    name, sex, generation {index}}}'
+    name: "$name^", newbornGenerationId: ''$newbornGenerationId^'', sex: "$sex^"})
+    {id, name, sex, generation {index}}}'
   modelGraphQlMutation: 'mutation ModelPost {createModel(input: {id: ''$id^'', cellInfos:
     $cellInfos^, cellPositions: $cellPositions^, modelNewbornId: ''$modelNewbornId^''})
     { id, cellInfos }}'

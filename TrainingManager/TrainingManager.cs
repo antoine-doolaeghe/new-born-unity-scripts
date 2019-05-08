@@ -194,6 +194,7 @@ namespace Gene
       NewbornService newbornService = agent.GetComponent<NewbornService>();
       Newborn newborn = agent.GetComponent<Newborn>();
       newborn.GenerationIndex = generationService.generations.Count;
+      newborn.GenerationId = generationService.generations[newborn.GenerationIndex - 1];
       newBornBuilder.requestApiData = false;
       newBornBuilder.initNewBorn(agentConfig.layerNumber, agentConfig.threshold);
       setBrainParameters(atBehaviour, newBornBuilder);
@@ -213,6 +214,7 @@ namespace Gene
       NewbornService newbornService = agent.GetComponent<NewbornService>();
       Newborn newborn = agent.GetComponent<Newborn>();
       newborn.GenerationIndex = generationService.generations.Count;
+      newborn.GenerationId = generationService.generations[newborn.GenerationIndex - 1];
       newBornBuilder.requestApiData = false;
       newBornBuilder.initNewBorn(agentConfig.layerNumber, agentConfig.threshold);
       setBrainParameters(atBehaviour, newBornBuilder);
@@ -247,10 +249,16 @@ namespace Gene
 
       for (int agent = 0; agent < Agents.Count; agent++)
       {
+        Newborn newborn = Agents[agent].transform.GetComponent<Newborn>();
         NewBornBuilder newBornBuilder = Agents[agent].transform.GetComponent<NewBornBuilder>();
         AgentTrainBehaviour agentTrainBehaviour = Agents[agent].transform.GetComponent<AgentTrainBehaviour>();
         string newbornId = agentTrainBehaviour.brain.name;
-        newBornBuilder.PostNewborn(generationId, newbornId, agent);
+        string newbornName = newborn.title;
+        string newbornSex = newborn.Sex;
+        string newbornHex = "mock hex";
+        // DO a generation check ? 
+        NewBornPostData newBornPostData = new NewBornPostData(newbornName, newbornId, generationId, newbornSex, newbornHex);
+        newBornBuilder.PostNewborn(newBornPostData, agent);
       }
     }
 

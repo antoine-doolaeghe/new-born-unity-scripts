@@ -247,18 +247,20 @@ public class AgentTrainBehaviour : Agent
     int partnerGenerationIndex = transform.gameObject.GetComponent<Newborn>().GenerationIndex;
     if (sex == "female" && partnerSex == "male" && generationIndex == partnerGenerationIndex) // Generation must be equal ? 
     {
-
       Debug.Log("Compatible partner");
       transform.gameObject.GetComponent<Newborn>().isGestating = true;
       List<GeneInformation> femaleGene = transform.gameObject.GetComponent<NewBornBuilder>().GeneInformations;
       List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewBornBuilder>().GeneInformations;
       List<GeneInformation> newGene = GeneHelper.returnMixedForReproduction(femaleGene, maleGene);
+      // prepare post data
+      string newNewbornName = "name";
+      string newNewbornId = Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
+      string newNewbornGenerationId = transform.gameObject.GetComponent<Newborn>().GenerationId;
+      string newNewbornSex = "male";
+      string newNewbornHex = "MOCK HEX";
       // DO a generation check ? 
-      transform.gameObject.GetComponent<NewBornBuilder>().PostNewborn("1", Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""), 1);
-    }
-    else
-    {
-      Debug.Log("Incompatible partner");
+      NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, newNewbornId, newNewbornGenerationId, newNewbornSex, newNewbornHex);
+      transform.gameObject.GetComponent<NewBornBuilder>().PostNewborn(newBornPostData, 1);
     }
   }
   public void TouchedFood()
