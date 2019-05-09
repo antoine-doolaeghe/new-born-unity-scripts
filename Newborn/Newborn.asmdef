@@ -1,12 +1,13 @@
 {
-    "name": "Anatomy Tests",
-    "references": [],
-    "optionalUnityReferences": [
-        "TestAssemblies"
+    "name": "Newborn",
+    "references": [
+        "SimpleJson",
+        "MyBox"
     ],
+    "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
-    "allowUnsafeCode": false,
+    "allowUnsafeCode": true,
     "overrideReferences": false,
     "precompiledReferences": [],
     "autoReferenced": true,

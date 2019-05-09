@@ -213,6 +213,7 @@ namespace Gene
       NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
       NewbornService newbornService = agent.GetComponent<NewbornService>();
       Newborn newborn = agent.GetComponent<Newborn>();
+      Debug.Log(agent);
       newborn.GenerationIndex = generationService.generations.Count;
       newborn.GenerationId = generationService.generations[newborn.GenerationIndex - 1];
       newBornBuilder.requestApiData = false;

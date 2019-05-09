@@ -1,11 +1,7 @@
 {
-    "name": "Agents",
-    "references": [
-        "Cell"
-    ],
-    "optionalUnityReferences": [
-        "TestAssemblies"
-    ],
+    "name": "SimpleJson",
+    "references": [],
+    "optionalUnityReferences": [],
     "includePlatforms": [],
     "excludePlatforms": [],
     "allowUnsafeCode": false,

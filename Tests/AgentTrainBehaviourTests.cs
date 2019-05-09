@@ -1,4 +1,4 @@
-﻿using System.Collections;
+using System.Collections;
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
@@ -7,9 +7,8 @@ using UnityEngine.SceneManagement;
 
 namespace Tests
 {
-  public class AnatomyTests
+  public class AgentTrainBehaviourTests
   {
-
     [UnitySetUp]
     public IEnumerator TestSceneSetup()
     {
@@ -19,10 +18,20 @@ namespace Tests
     }
 
     [UnityTest]
-    public IEnumerator TestAnatomySex()
+    public IEnumerator TestActiveScene()
     {
-      // TrainingManager Nb = GameObject.Find("TrainingManager").GetComponent<TrainingManager>();
+      Assert.IsTrue(SceneManager.GetActiveScene().name == "MockAgentScene");
       yield return null;
+    }
+
+    [UnityTest]
+    public IEnumerator TestCollisionControll()
+    {
+      GameObject spawner0 = GameObject.Find("Spawner0");
+      
+      AgentTrainBehaviour at = spawner0.transform.GetChild(0).transform.GetComponent<AgentTrainBehaviour>();
+      yield return null;
+      // at.TouchedNewborn();
     }
   }
 }
