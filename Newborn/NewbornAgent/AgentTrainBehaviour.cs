@@ -10,8 +10,6 @@ using UnityEngine.UI;
 public class AgentTrainBehaviour : Agent
 {
   [Header("Morphology")]
-  public AgentConfig agentConfig;
-
   [SerializeField] public List<Transform> parts;
   [SerializeField] public Transform initPart;
   [Header("API Service")]
@@ -261,8 +259,9 @@ public class AgentTrainBehaviour : Agent
       string newNewbornHex = "MOCK HEX";
       // DO a generation check ? 
       NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, newNewbornId, newNewbornGenerationId, newNewbornSex, newNewbornHex);
-      // NewbornService.PostNewborn(newBornPostData);
+      NewbornService.PostNewborn(newBornPostData);
       // SEND THE TRAINING INSTANCE HERE;
+      Debug.Log("HERE2");
       CoroutineWithData cd = new CoroutineWithData(this, NewbornService.PostNewborn(newBornPostData));
       Debug.Log(cd.coroutine);
       // yield return cd.coroutine;

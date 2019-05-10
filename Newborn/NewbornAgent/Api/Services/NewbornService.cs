@@ -6,11 +6,11 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.RegularExpressions;
+using Gene;
 using SimpleJSON;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
-using Gene;
 
 namespace Gene
 {
@@ -18,7 +18,7 @@ namespace Gene
   public class NewbornService : MonoBehaviour
   {
     public string responseUuid;
-    public List<float> cellInfoResponse;
+    public static List<float> cellInfoResponse;
     public GameObject cell;
     public delegate void QueryComplete();
     public static event QueryComplete onQueryComplete;
@@ -28,7 +28,6 @@ namespace Gene
     public static Dictionary<string, string> variable = new Dictionary<string, string>();
     public static Dictionary<string, string[]> array = new Dictionary<string, string[]>();
 
-    private TrainingManager trainingManager;
     private NewBornBuilder newBornBuilder;
     private Newborn newborn;
 
@@ -36,7 +35,6 @@ namespace Gene
 
     void Awake()
     {
-      trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
       newBornBuilder = transform.GetComponent<NewBornBuilder>();
       newborn = transform.GetComponent<Newborn>();
     }
@@ -46,8 +44,8 @@ namespace Gene
       byte[] postData;
       Dictionary<string, string> postHeader;
       NewbornService.variable["id"] = newBornPostData.id;
-      NewbornService.variable["name"] = "newborn";
-      NewbornService.variable["sex"] = newBornPostData.sex;
+      NewbornService.variable["name"] = "\"newborn\"";
+      NewbornService.variable["sex"] = "\"demale\"";
       NewbornService.variable["newbornGenerationId"] = newBornPostData.generationId;
 
       WWW www;
@@ -60,17 +58,18 @@ namespace Gene
       }
       else
       {
-        Debug.Log(JSON.Parse(www.text));
+        // ALL THE DATA RECEIVED SHOULD BE passed to the newborn here
+        Debug.Log("HERE1");
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
         agent.transform.GetComponent<Newborn>().GenerationIndex = JSON.Parse(www.text)["data"]["createNewborn"]["generation"]["index"];
-        yield return createdNewBornId;
+        // yield return createdNewBornId;
         // Bring the newborn information to the generation object
         agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(createdNewBornId, 0, agent); // will it always be first generation
       }
     }
 
 
-    public IEnumerator PostNewbornModel(GenerationPostData generationPostData, string modelId, GameObject agent)
+    public static IEnumerator PostNewbornModel(Transform transform, GenerationPostData generationPostData, string modelId, GameObject agent)
     {
       byte[] postData;
 
@@ -97,8 +96,7 @@ namespace Gene
       else
       {
         Debug.Log("New Model successfully posted!");
-        Transform[] childs = transform.Cast<Transform>().ToArray();
-        DestroyAgent(childs);
+        DestroyAgent(transform);
         // HERE you need to make the adjustment for wether what need to be done. 
         cellInfoResponse = new List<float>();
         JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
@@ -107,7 +105,7 @@ namespace Gene
         {
           cellInfoResponse.Add(cellInfo.Value.AsFloat);
         }
-
+        TrainingManager trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
         trainingManager.requestApiData = true;
         trainingManager.BuildNewBornFromFetch(true, responseId, agent);
       }
@@ -139,13 +137,15 @@ namespace Gene
           cellInfoResponse.Add(cellInfo.Value.AsFloat);
         }
 
+        TrainingManager trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
         trainingManager.requestApiData = true;
         trainingManager.BuildNewBornFromFetch(false, responseId, agent);
       }
     }
 
-    public void DestroyAgent(Transform[] childs)
+    public static void DestroyAgent(Transform transform)
     {
+      Transform[] childs = transform.Cast<Transform>().ToArray();
       transform.gameObject.SetActive(true);
       transform.GetComponent<NewBornBuilder>().DeleteCells();
       transform.GetComponent<AgentTrainBehaviour>().DeleteBodyParts();

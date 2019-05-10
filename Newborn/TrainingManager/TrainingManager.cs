@@ -29,7 +29,6 @@ namespace Gene
     public int minCellNb;
     public bool requestApiData;
     public string newbornId;
-    public AgentConfig agentConfig;
     public float randomPositionIndex;
     [Header("Target parameters")]
     [ConditionalField("isTrainingMode")] public GameObject StaticTarget;
@@ -145,8 +144,8 @@ namespace Gene
 
       if (newBornBuilder.partNb == 0 && newBornBuilder.threshold == 0f)
       {
-        newBornBuilder.partNb = agentConfig.layerNumber;
-        newBornBuilder.threshold = agentConfig.threshold;
+        newBornBuilder.partNb = AgentConfig.layerNumber;
+        newBornBuilder.threshold = AgentConfig.threshold;
       }
 
       newBornBuilder.requestApiData = true;
@@ -188,7 +187,7 @@ namespace Gene
       newborn.GenerationIndex = GenerationService.generations.Count;
       newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
       newBornBuilder.requestApiData = false;
-      newBornBuilder.initNewBorn(agentConfig.layerNumber, agentConfig.threshold);
+      newBornBuilder.initNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
       setBrainParameters(atBehaviour, newBornBuilder);
     }
 
@@ -208,7 +207,7 @@ namespace Gene
       newborn.GenerationIndex = GenerationService.generations.Count;
       newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
       newBornBuilder.requestApiData = false;
-      newBornBuilder.initNewBorn(agentConfig.layerNumber, agentConfig.threshold);
+      newBornBuilder.initNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
       setBrainParameters(atBehaviour, newBornBuilder);
     }
 
@@ -220,7 +219,7 @@ namespace Gene
 
         NewBornBuilder newBornBuilder = Agents[a].transform.GetComponent<NewBornBuilder>();
         AgentTrainBehaviour atBehaviour = Agents[a].transform.GetComponent<AgentTrainBehaviour>();
-        newBornBuilder.threshold = agentConfig.threshold;
+        newBornBuilder.threshold = AgentConfig.threshold;
         SetApiRequestParameter(newBornBuilder, atBehaviour, false);
         newBornBuilder.BuildGeneration(newBornBuilder.GeneInformations.Count, false);
         Brain brain = Resources.Load<Brain>("Brains/agentBrain" + a);
