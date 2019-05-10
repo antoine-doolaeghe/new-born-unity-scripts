@@ -236,18 +236,18 @@ namespace Gene
       return positions;
     }
 
-    public void PostNewborn(NewBornPostData newBornPostData, int agentId)
+    public void PostNewborn(NewBornPostData newBornPostData, GameObject agent)
     {
-      StartCoroutine(newbornService.PostNewborn(newBornPostData, agentId));
+      StartCoroutine(NewbornService.PostNewborn(newBornPostData, agent));
     }
 
-    public void PostNewbornModel(string newbornId, int modelIndex, int agentId)
+    public void PostNewbornModel(string newbornId, int modelIndex, GameObject agent)
     {
       List<float> modelInfos = ReturnGeneInformations(modelIndex);
       List<PositionPostData> cellPositions = ReturnModelPositions();
       string id = Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
       GenerationPostData generationPostData = new GenerationPostData(newbornId, cellPositions, modelInfos);
-      StartCoroutine(newbornService.PostNewbornModel(generationPostData, newbornId, agentId));
+      StartCoroutine(newbornService.PostNewbornModel(generationPostData, newbornId, agent));
     }
 
     private void HandleStoreCell(GameObject cell, Vector3 cellPosition, Vector3 cellLocalPosition)

@@ -6,31 +6,29 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.RegularExpressions;
-using Gene;
 using SimpleJSON;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using Gene;
 
 namespace Gene
 {
   [ExecuteInEditMode]
   public class GenerationService : MonoBehaviour
   {
-    public ApiConfig apiConfig;
-    private String graphQlInput;
-    public List<string> generations;
+    private static String graphQlInput;
+    public static List<string> generations;
     public static Dictionary<string, string> variable = new Dictionary<string, string>();
     public static Dictionary<string, string[]> array = new Dictionary<string, string[]>();
 
-    public IEnumerator GetGenerations()
+    public static IEnumerator GetGenerations()
     {
       byte[] postData;
       Dictionary<string, string> postHeader;
       WWW www;
       generations = new List<string>();
-      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.generationsGraphQlQuery, apiConfig.apiKey, apiConfig.url);
-      Debug.Log(apiConfig.apiKey);
+      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.generationsGraphQlQuery, ApiConfig.apiKey, ApiConfig.url);
       yield return www;
       if (www.error != null)
       {
@@ -46,7 +44,7 @@ namespace Gene
       }
     }
 
-    public IEnumerator PostGeneration(string generationId, int generationIndex)
+    public static IEnumerator PostGeneration(string generationId, int generationIndex)
     {
       byte[] postData;
       Dictionary<string, string> postHeader;
@@ -55,7 +53,7 @@ namespace Gene
       GenerationService.variable["index"] = generationIndex.ToString();
 
       WWW www;
-      ServiceHelpers.graphQlApiRequest(GenerationService.variable, GenerationService.array, out postData, out postHeader, out www, out graphQlInput, apiConfig.generationsGraphQlMutation, apiConfig.apiKey, apiConfig.url);
+      ServiceHelpers.graphQlApiRequest(GenerationService.variable, GenerationService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.generationsGraphQlMutation, ApiConfig.apiKey, ApiConfig.url);
       yield return www;
       if (www.error != null)
       {

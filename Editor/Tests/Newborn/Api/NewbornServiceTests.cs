@@ -14,7 +14,7 @@ namespace Gene
       int agentId = 12345;
       GenerationPostData generationPostData = new GenerationPostData("newbornId", new List<PositionPostData>(), new List<float>());
       NewbornService newbornService = new NewbornService();
-      newbornService.PostNewbornModel(generationPostData, modelId, agentId);
+      // newbornService.PostNewbornModel(generationPostData, modelId, agentId);
     }
   }
 }

@@ -46,13 +46,6 @@ namespace Gene
     [Header("Camera parameters")]
 
     [HideInInspector] public List<GameObject> Agents = new List<GameObject>();
-    private GenerationService generationService;
-
-    void Awake()
-    {
-      generationService = transform.GetComponent<GenerationService>();
-    }
-
     public void Delete()
     {
       Transform[] childs = transform.Cast<Transform>().ToArray();
@@ -143,13 +136,12 @@ namespace Gene
       }
     }
 
-    public void BuildNewBornFromFetch(bool buildFromPost, string responseId, int agentId = 0)
+    public void BuildNewBornFromFetch(bool buildFromPost, string responseId, GameObject agent = null)
     {
       Debug.Log("Building Newborn From Fetch");
-      Transform agent = Agents[agentId].transform;
-      AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
-      NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
-      NewbornService newbornService = agent.GetComponent<NewbornService>();
+      AgentTrainBehaviour atBehaviour = agent.transform.GetComponent<AgentTrainBehaviour>();
+      NewBornBuilder newBornBuilder = agent.transform.GetComponent<NewBornBuilder>();
+      NewbornService newbornService = agent.transform.GetComponent<NewbornService>();
 
       if (newBornBuilder.partNb == 0 && newBornBuilder.threshold == 0f)
       {
@@ -165,7 +157,7 @@ namespace Gene
         setBrainParameters(atBehaviour, newBornBuilder);
         setBrainName(atBehaviour, responseId);
       }
-      else if (agentId == 0) // INIT FIRST BRAIN
+      else if (agent == null) // INIT FIRST BRAIN
       {
         ClearBroadCastingBrains(academy);
         setBrainParameters(atBehaviour, newBornBuilder);
@@ -182,7 +174,7 @@ namespace Gene
     {
       // TODO: refactor this in a helper function
       yield return StartCoroutine(RequestGenerations()); /// This check should be made as you build the AGENT and not as you post the agents.
-      if (generationService.generations.Count == 0)
+      if (GenerationService.generations.Count == 0)
       {
         yield return StartCoroutine(PostGeneration(1));
       }
@@ -193,8 +185,8 @@ namespace Gene
       NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
       NewbornService newbornService = agent.GetComponent<NewbornService>();
       Newborn newborn = agent.GetComponent<Newborn>();
-      newborn.GenerationIndex = generationService.generations.Count;
-      newborn.GenerationId = generationService.generations[newborn.GenerationIndex - 1];
+      newborn.GenerationIndex = GenerationService.generations.Count;
+      newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
       newBornBuilder.requestApiData = false;
       newBornBuilder.initNewBorn(agentConfig.layerNumber, agentConfig.threshold);
       setBrainParameters(atBehaviour, newBornBuilder);
@@ -204,7 +196,7 @@ namespace Gene
     {
       // TODO: refactor this in a helper function
       yield return StartCoroutine(RequestGenerations()); /// This check should be made as you build the AGENT and not as you post the agents.
-      if (generationService.generations.Count == 0)
+      if (GenerationService.generations.Count == 0)
       {
         yield return StartCoroutine(PostGeneration(1));
       }
@@ -213,9 +205,8 @@ namespace Gene
       NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
       NewbornService newbornService = agent.GetComponent<NewbornService>();
       Newborn newborn = agent.GetComponent<Newborn>();
-      Debug.Log(agent);
-      newborn.GenerationIndex = generationService.generations.Count;
-      newborn.GenerationId = generationService.generations[newborn.GenerationIndex - 1];
+      newborn.GenerationIndex = GenerationService.generations.Count;
+      newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
       newBornBuilder.requestApiData = false;
       newBornBuilder.initNewBorn(agentConfig.layerNumber, agentConfig.threshold);
       setBrainParameters(atBehaviour, newBornBuilder);
@@ -246,7 +237,8 @@ namespace Gene
     public void PostTrainingNewborns()
     {
       Debug.Log("Posting training NewBorns to the server...");
-      string generationId = generationService.generations[generationService.generations.Count - 1]; // Get the latest generation;
+      Debug.Log(GenerationService.generations[0]);
+      string generationId = GenerationService.generations[GenerationService.generations.Count - 1]; // Get the latest generation;
 
       for (int agent = 0; agent < Agents.Count; agent++)
       {
@@ -259,7 +251,7 @@ namespace Gene
         string newbornHex = "mock hex";
         // DO a generation check ? 
         NewBornPostData newBornPostData = new NewBornPostData(newbornName, newbornId, generationId, newbornSex, newbornHex);
-        newBornBuilder.PostNewborn(newBornPostData, agent);
+        newBornBuilder.PostNewborn(newBornPostData, Agents[agent]);
       }
     }
 
@@ -275,12 +267,12 @@ namespace Gene
 
     public IEnumerator PostGeneration(int generationIndex)
     {
-      yield return StartCoroutine(generationService.PostGeneration(Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""), generationIndex));
+      yield return StartCoroutine(GenerationService.PostGeneration(Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""), generationIndex));
     }
 
     public IEnumerator RequestGenerations()
     {
-      yield return StartCoroutine(generationService.GetGenerations());
+      yield return StartCoroutine(GenerationService.GetGenerations());
     }
 
     public IEnumerator RequestNewbornAgentInfo()
@@ -289,7 +281,7 @@ namespace Gene
       for (int a = 0; a < Agents.Count; a++)
       {
         NewbornService newbornService = Agents[a].transform.GetComponent<NewbornService>();
-        yield return StartCoroutine(newbornService.GetNewborn(newbornId, a, false));
+        yield return StartCoroutine(newbornService.GetNewborn(newbornId, Agents[a], false));
       }
       Debug.Log("Finished to build Agents");
       academy.InitializeEnvironment();

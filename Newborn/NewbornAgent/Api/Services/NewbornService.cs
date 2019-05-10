@@ -6,11 +6,11 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.RegularExpressions;
-using Gene;
 using SimpleJSON;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
+using Gene;
 
 namespace Gene
 {
@@ -20,7 +20,6 @@ namespace Gene
     public string responseUuid;
     public List<float> cellInfoResponse;
     public GameObject cell;
-    public ApiConfig apiConfig;
     public delegate void QueryComplete();
     public static event QueryComplete onQueryComplete;
 
@@ -33,7 +32,7 @@ namespace Gene
     private NewBornBuilder newBornBuilder;
     private Newborn newborn;
 
-    private String graphQlInput;
+    private static String graphQlInput;
 
     void Awake()
     {
@@ -42,37 +41,36 @@ namespace Gene
       newborn = transform.GetComponent<Newborn>();
     }
 
-    public IEnumerator PostNewborn(NewBornPostData newBornPostData, int agentId)
+    public static IEnumerator PostNewborn(NewBornPostData newBornPostData, GameObject agent = null)
     {
       byte[] postData;
       Dictionary<string, string> postHeader;
-      Debug.Log("HERE2");
       NewbornService.variable["id"] = newBornPostData.id;
-      NewbornService.variable["name"] = newBornPostData.name;
+      NewbornService.variable["name"] = "newborn";
       NewbornService.variable["sex"] = newBornPostData.sex;
       NewbornService.variable["newbornGenerationId"] = newBornPostData.generationId;
 
       WWW www;
-      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, apiConfig.newBornGraphQlMutation, apiConfig.apiKey, apiConfig.url);
+      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.newBornGraphQlMutation, ApiConfig.apiKey, ApiConfig.url);
       Debug.Log(graphQlInput);
       yield return www;
       if (www.error != null)
       {
-        Debug.Log(www.text);
         throw new Exception("There was an error sending request: " + www.error);
       }
       else
       {
         Debug.Log(JSON.Parse(www.text));
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
-        newborn.GenerationIndex = JSON.Parse(www.text)["data"]["createNewborn"]["generation"]["index"];
+        agent.transform.GetComponent<Newborn>().GenerationIndex = JSON.Parse(www.text)["data"]["createNewborn"]["generation"]["index"];
+        yield return createdNewBornId;
         // Bring the newborn information to the generation object
-        newBornBuilder.PostNewbornModel(createdNewBornId, 0, agentId); // will it always be first generation
+        agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(createdNewBornId, 0, agent); // will it always be first generation
       }
     }
 
 
-    public IEnumerator PostNewbornModel(GenerationPostData generationPostData, string modelId, int agentId)
+    public IEnumerator PostNewbornModel(GenerationPostData generationPostData, string modelId, GameObject agent)
     {
       byte[] postData;
 
@@ -89,7 +87,7 @@ namespace Gene
       NewbornService.variable["cellInfos"] = JSON.Parse(JsonUtility.ToJson(generationPostData))["cellInfos"].ToString();
 
       WWW www;
-      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, apiConfig.modelGraphQlMutation, apiConfig.apiKey, apiConfig.url);
+      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.modelGraphQlMutation, ApiConfig.apiKey, ApiConfig.url);
 
       yield return www;
       if (www.error != null)
@@ -111,11 +109,11 @@ namespace Gene
         }
 
         trainingManager.requestApiData = true;
-        trainingManager.BuildNewBornFromFetch(true, responseId, agentId);
+        trainingManager.BuildNewBornFromFetch(true, responseId, agent);
       }
     }
 
-    public IEnumerator GetNewborn(string id, int agentId, bool IsGetAfterPost)
+    public IEnumerator GetNewborn(string id, GameObject agent, bool IsGetAfterPost)
     {
       byte[] postData;
       Dictionary<string, string> postHeader;
@@ -123,7 +121,7 @@ namespace Gene
       NewbornService.variable["id"] = id;
 
       WWW www;
-      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, apiConfig.newBornGraphQlQuery, apiConfig.apiKey, apiConfig.url);
+      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.newBornGraphQlQuery, ApiConfig.apiKey, ApiConfig.url);
 
       yield return www;
       if (www.error != null)
@@ -142,7 +140,7 @@ namespace Gene
         }
 
         trainingManager.requestApiData = true;
-        trainingManager.BuildNewBornFromFetch(false, responseId, agentId);
+        trainingManager.BuildNewBornFromFetch(false, responseId, agent);
       }
     }
 

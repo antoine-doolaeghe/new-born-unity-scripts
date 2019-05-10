@@ -39,17 +39,17 @@ namespace Tests
       yield return null;
     }
 
-    [UnityTest]
-    public IEnumerator TestBuildAgentCellScene()
-    {
-      Gene.TrainingManager tm = GameObject.Find("TrainingManager").GetComponent<Gene.TrainingManager>();
-      tm.Delete();
-      tm.spawnerNumber = 1;
-      tm.agentNumber = 1;
-      tm.BuildSpawners();
-      yield return tm.BuildRandomProductionNewBorn(GameObject.Find("Spawner0").transform.GetChild(0).transform);
-      Assert.IsTrue(GameObject.Find("TrainingManager").transform.GetChild(0).transform.GetChild(0).transform.childCount > 0);
-      yield return null;
-    }
+    // [UnityTest]
+    // public IEnumerator TestBuildAgentCellScene()
+    // {
+    //   Gene.TrainingManager tm = GameObject.Find("TrainingManager").GetComponent<Gene.TrainingManager>();
+    //   tm.Delete();
+    //   tm.spawnerNumber = 1;
+    //   tm.agentNumber = 1;
+    //   tm.BuildSpawners();
+    //   yield return tm.BuildRandomProductionNewBorn(GameObject.Find("Spawner0").transform.GetChild(0).transform);
+    //   Assert.IsTrue(GameObject.Find("TrainingManager").transform.GetChild(0).transform.GetChild(0).transform.childCount > 0);
+    //   yield return null;
+    // }
   }
 }

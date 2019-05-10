@@ -245,13 +245,14 @@ public class AgentTrainBehaviour : Agent
     int generationIndex = transform.gameObject.GetComponent<Newborn>().GenerationIndex;
     string partnerSex = touchingNewborn.GetComponent<Newborn>().Sex;
     int partnerGenerationIndex = transform.gameObject.GetComponent<Newborn>().GenerationIndex;
+
     if (sex == "female" && partnerSex == "male" && generationIndex == partnerGenerationIndex) // Generation must be equal ? 
     {
       Debug.Log("Compatible partner");
       transform.gameObject.GetComponent<Newborn>().isGestating = true;
       List<GeneInformation> femaleGene = transform.gameObject.GetComponent<NewBornBuilder>().GeneInformations;
       List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewBornBuilder>().GeneInformations;
-      List<GeneInformation> newGene = GeneHelper.returnMixedForReproduction(femaleGene, maleGene);
+      List<GeneInformation> newGene = GeneHelper.ReturnMixedForReproduction(femaleGene, maleGene);
       // prepare post data
       string newNewbornName = "name";
       string newNewbornId = Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
@@ -260,7 +261,11 @@ public class AgentTrainBehaviour : Agent
       string newNewbornHex = "MOCK HEX";
       // DO a generation check ? 
       NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, newNewbornId, newNewbornGenerationId, newNewbornSex, newNewbornHex);
-      transform.gameObject.GetComponent<NewBornBuilder>().PostNewborn(newBornPostData, 1);
+      // NewbornService.PostNewborn(newBornPostData);
+      // SEND THE TRAINING INSTANCE HERE;
+      CoroutineWithData cd = new CoroutineWithData(this, NewbornService.PostNewborn(newBornPostData));
+      Debug.Log(cd.coroutine);
+      // yield return cd.coroutine;
     }
   }
   public void TouchedFood()
