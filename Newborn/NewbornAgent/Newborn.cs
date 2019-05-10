@@ -8,6 +8,7 @@ public class Newborn : MonoBehaviour
   private string bornPlace;
   private string hexColor;
   private string id;
+  public List<string> childs = new List<string>();
   public string title;
   public string Sex;
   public bool isGestating;

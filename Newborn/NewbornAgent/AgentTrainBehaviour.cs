@@ -239,6 +239,12 @@ public class AgentTrainBehaviour : Agent
   public void TouchedNewborn(GameObject touchingNewborn)
   {
     AddReward(15f);
+    StartCoroutine(handleTouchedNewborn(touchingNewborn));
+  }
+
+  public IEnumerator handleTouchedNewborn(GameObject touchingNewborn)
+  {
+    // CREATE A COROUTINE HERE 
     string sex = transform.gameObject.GetComponent<Newborn>().Sex;
     int generationIndex = transform.gameObject.GetComponent<Newborn>().GenerationIndex;
     string partnerSex = touchingNewborn.GetComponent<Newborn>().Sex;
@@ -259,11 +265,11 @@ public class AgentTrainBehaviour : Agent
       string newNewbornHex = "MOCK HEX";
       // DO a generation check ? 
       NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, newNewbornId, newNewbornGenerationId, newNewbornSex, newNewbornHex);
-      NewbornService.PostNewborn(newBornPostData);
       // SEND THE TRAINING INSTANCE HERE;
+      Debug.Log("HERE0");
+      yield return NewbornService.PostReproducedNewborn(newBornPostData, transform.gameObject, touchingNewborn);
       Debug.Log("HERE2");
-      CoroutineWithData cd = new CoroutineWithData(this, NewbornService.PostNewborn(newBornPostData));
-      Debug.Log(cd.coroutine);
+
       // yield return cd.coroutine;
     }
   }

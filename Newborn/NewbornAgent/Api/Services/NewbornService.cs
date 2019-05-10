@@ -58,12 +58,35 @@ namespace Gene
       }
       else
       {
-        // ALL THE DATA RECEIVED SHOULD BE passed to the newborn here
-        Debug.Log("HERE1");
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
         agent.transform.GetComponent<Newborn>().GenerationIndex = JSON.Parse(www.text)["data"]["createNewborn"]["generation"]["index"];
-        // yield return createdNewBornId;
-        // Bring the newborn information to the generation object
+        agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(createdNewBornId, 0, agent); // will it always be first generation
+      }
+    }
+
+    public static IEnumerator PostReproducedNewborn(NewBornPostData newBornPostData, GameObject agent, GameObject agentPartner)
+    {
+      byte[] postData;
+      Dictionary<string, string> postHeader;
+      NewbornService.variable["id"] = newBornPostData.id;
+      NewbornService.variable["name"] = "\"newborn\"";
+      NewbornService.variable["sex"] = "\"demale\"";
+      NewbornService.variable["newbornGenerationId"] = newBornPostData.generationId;
+
+      WWW www;
+      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.newBornGraphQlMutation, ApiConfig.apiKey, ApiConfig.url);
+      Debug.Log(graphQlInput);
+      yield return www;
+      if (www.error != null)
+      {
+        throw new Exception("There was an error sending request: " + www.error);
+      }
+      else
+      {
+        // ALL THE DATA RECEIVED SHOULD BE passed to the newborn here
+        string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
+        agent.transform.GetComponent<Newborn>().childs.Add(createdNewBornId);
+        agentPartner.transform.GetComponent<Newborn>().childs.Add(createdNewBornId);
         agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(createdNewBornId, 0, agent); // will it always be first generation
       }
     }
@@ -95,7 +118,7 @@ namespace Gene
       }
       else
       {
-        Debug.Log("New Model successfully posted!");
+        Debug.Log("Newborn Model successfully posted!");
         DestroyAgent(transform);
         // HERE you need to make the adjustment for wether what need to be done. 
         cellInfoResponse = new List<float>();

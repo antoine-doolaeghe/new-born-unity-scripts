@@ -236,7 +236,6 @@ namespace Gene
     public void PostTrainingNewborns()
     {
       Debug.Log("Posting training NewBorns to the server...");
-      Debug.Log(GenerationService.generations[0]);
       string generationId = GenerationService.generations[GenerationService.generations.Count - 1]; // Get the latest generation;
 
       for (int agent = 0; agent < Agents.Count; agent++)
