@@ -33,10 +33,36 @@ namespace Gene
 
     private static String graphQlInput;
 
+    public delegate void RebuildAgentCallback(Transform transform, WWW www, GameObject agent);
+
+
     void Awake()
     {
       newBornBuilder = transform.GetComponent<NewBornBuilder>();
       newborn = transform.GetComponent<Newborn>();
+    }
+
+    public static void RebuildAgent(Transform transform, WWW www, GameObject agent)
+    {
+      Debug.Log("Newborn Model successfully posted!");
+      DestroyAgent(transform);
+      // HERE you need to make the adjustment for wether what need to be done. 
+      cellInfoResponse = new List<float>();
+      JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
+      string responseId = responseData["id"];
+      foreach (var cellInfo in responseData["cellInfos"].AsArray)
+      {
+        cellInfoResponse.Add(cellInfo.Value.AsFloat);
+      }
+      TrainingManager trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
+      trainingManager.requestApiData = true;
+      trainingManager.BuildNewBornFromFetch(true, responseId, agent);
+    }
+
+    public static void SuccessfullReproductionCallback(Transform transform, WWW www, GameObject agent)
+    {
+      Debug.Log("Successfull Newborn reproduction");
+      // TODO: Action after a successfull newborn reproduction;
     }
 
     public static IEnumerator PostNewborn(NewBornPostData newBornPostData, GameObject agent = null)
@@ -60,7 +86,8 @@ namespace Gene
       {
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
         agent.transform.GetComponent<Newborn>().GenerationIndex = JSON.Parse(www.text)["data"]["createNewborn"]["generation"]["index"];
-        agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(createdNewBornId, 0, agent); // will it always be first generation
+        NewbornService.RebuildAgentCallback handler = NewbornService.RebuildAgent;
+        yield return agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(createdNewBornId, 0, agent, handler); // will it always be first generation
       }
     }
 
@@ -70,12 +97,11 @@ namespace Gene
       Dictionary<string, string> postHeader;
       NewbornService.variable["id"] = newBornPostData.id;
       NewbornService.variable["name"] = "\"newborn\"";
-      NewbornService.variable["sex"] = "\"demale\"";
+      NewbornService.variable["sex"] = "\"female\"";
       NewbornService.variable["newbornGenerationId"] = newBornPostData.generationId;
 
       WWW www;
       ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.newBornGraphQlMutation, ApiConfig.apiKey, ApiConfig.url);
-      Debug.Log(graphQlInput);
       yield return www;
       if (www.error != null)
       {
@@ -83,16 +109,14 @@ namespace Gene
       }
       else
       {
-        // ALL THE DATA RECEIVED SHOULD BE passed to the newborn here
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
         agent.transform.GetComponent<Newborn>().childs.Add(createdNewBornId);
         agentPartner.transform.GetComponent<Newborn>().childs.Add(createdNewBornId);
-        agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(createdNewBornId, 0, agent); // will it always be first generation
       }
     }
 
 
-    public static IEnumerator PostNewbornModel(Transform transform, GenerationPostData generationPostData, string modelId, GameObject agent)
+    public static IEnumerator PostNewbornModel(Transform transform, GenerationPostData generationPostData, string modelId, GameObject agent, RebuildAgentCallback callback)
     {
       byte[] postData;
 
@@ -118,19 +142,7 @@ namespace Gene
       }
       else
       {
-        Debug.Log("Newborn Model successfully posted!");
-        DestroyAgent(transform);
-        // HERE you need to make the adjustment for wether what need to be done. 
-        cellInfoResponse = new List<float>();
-        JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
-        string responseId = responseData["id"];
-        foreach (var cellInfo in responseData["cellInfos"].AsArray)
-        {
-          cellInfoResponse.Add(cellInfo.Value.AsFloat);
-        }
-        TrainingManager trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
-        trainingManager.requestApiData = true;
-        trainingManager.BuildNewBornFromFetch(true, responseId, agent);
+        callback(transform, www, agent);
       }
     }
 

@@ -244,33 +244,34 @@ public class AgentTrainBehaviour : Agent
 
   public IEnumerator handleTouchedNewborn(GameObject touchingNewborn)
   {
+    Newborn newborn = transform.gameObject.GetComponent<Newborn>();
+    NewBornBuilder newBornBuilder = transform.gameObject.GetComponent<NewBornBuilder>();
     // CREATE A COROUTINE HERE 
-    string sex = transform.gameObject.GetComponent<Newborn>().Sex;
-    int generationIndex = transform.gameObject.GetComponent<Newborn>().GenerationIndex;
+    string sex = newborn.Sex;
+    int generationIndex = newborn.GenerationIndex;
     string partnerSex = touchingNewborn.GetComponent<Newborn>().Sex;
-    int partnerGenerationIndex = transform.gameObject.GetComponent<Newborn>().GenerationIndex;
+    int partnerGenerationIndex = touchingNewborn.GetComponent<Newborn>().GenerationIndex;
 
     if (sex == "female" && partnerSex == "male" && generationIndex == partnerGenerationIndex) // Generation must be equal ? 
     {
       Debug.Log("Compatible partner");
-      transform.gameObject.GetComponent<Newborn>().isGestating = true;
-      List<GeneInformation> femaleGene = transform.gameObject.GetComponent<NewBornBuilder>().GeneInformations;
+      newborn.isGestating = true;
+      List<GeneInformation> femaleGene = newBornBuilder.GeneInformations;
       List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewBornBuilder>().GeneInformations;
       List<GeneInformation> newGene = GeneHelper.ReturnMixedForReproduction(femaleGene, maleGene);
       // prepare post data
       string newNewbornName = "name";
       string newNewbornId = Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
-      string newNewbornGenerationId = transform.gameObject.GetComponent<Newborn>().GenerationId;
+      string newNewbornGenerationId = newborn.GenerationId;
       string newNewbornSex = "male";
       string newNewbornHex = "MOCK HEX";
       // DO a generation check ? 
       NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, newNewbornId, newNewbornGenerationId, newNewbornSex, newNewbornHex);
       // SEND THE TRAINING INSTANCE HERE;
-      Debug.Log("HERE0");
       yield return NewbornService.PostReproducedNewborn(newBornPostData, transform.gameObject, touchingNewborn);
-      Debug.Log("HERE2");
-
-      // yield return cd.coroutine;
+      NewbornService.RebuildAgentCallback handler = NewbornService.SuccessfullReproductionCallback;
+      yield return newBornBuilder.PostNewbornModel(newborn.childs[newborn.childs.Count - 1], 0, transform.gameObject, handler); // will it always be first generation
+      yield return TrainingService.TrainNewborn(newborn.childs[newborn.childs.Count - 1]);
     }
   }
   public void TouchedFood()

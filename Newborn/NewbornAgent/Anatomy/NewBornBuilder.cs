@@ -240,13 +240,13 @@ namespace Gene
       StartCoroutine(NewbornService.PostNewborn(newBornPostData, agent));
     }
 
-    public void PostNewbornModel(string newbornId, int modelIndex, GameObject agent)
+    public IEnumerator PostNewbornModel(string newbornId, int modelIndex, GameObject agent, NewbornService.RebuildAgentCallback responseCallback)
     {
       List<float> modelInfos = ReturnGeneInformations(modelIndex);
       List<PositionPostData> cellPositions = ReturnModelPositions();
       string id = Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
       GenerationPostData generationPostData = new GenerationPostData(newbornId, cellPositions, modelInfos);
-      StartCoroutine(NewbornService.PostNewbornModel(transform, generationPostData, newbornId, agent));
+      yield return NewbornService.PostNewbornModel(transform, generationPostData, newbornId, agent, responseCallback);
     }
 
     private void HandleStoreCell(GameObject cell, Vector3 cellPosition, Vector3 cellLocalPosition)
