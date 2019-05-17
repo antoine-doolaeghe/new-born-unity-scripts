@@ -32,7 +32,7 @@ namespace Gene
       // TODO: call the newborn instance with the new newborn id
       byte[] postData;
       Dictionary<string, string> postHeader;
-      TrainingService.variable["id"] = "\"helooo\"";
+      TrainingService.variable["id"] = "\"" + newbornId + "\"";
 
       WWW www;
       ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.trainingGraphQlQuery, ApiConfig.apiKey, ApiConfig.url);
