@@ -1,0 +1,15 @@
+{
+    "name": "Newborn",
+    "references": [
+        "SimpleJson",
+        "MyBox"
+    ],
+    "optionalUnityReferences": [],
+    "includePlatforms": [],
+    "excludePlatforms": [],
+    "allowUnsafeCode": true,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": []
+}

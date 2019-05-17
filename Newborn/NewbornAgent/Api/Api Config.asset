@@ -1,0 +1,27 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 30d07f09a8bda44baa0e4f2f96b629e0, type: 3}
+  m_Name: Api Config
+  m_EditorClassIdentifier: 
+  url: https://ilhzglf4sfgepcagdzuviwewy4.appsync-api.eu-west-1.amazonaws.com/graphql
+  apiKey: da2-scnuxzzpafavxofjuecffec3hi
+  generationsGraphQlQuery: query getGenerations {listGenerations { items {id} }}
+  generationsGraphQlMutation: 'mutation createGeneration {createGeneration(input:
+    {id: $id^, index: $index^}) { id, index }}'
+  newBornGraphQlMutation: 'mutation NewbornPost {createNewborn(input: {id: ''$id^'',
+    name: "$name^", newbornGenerationId: ''$newbornGenerationId^'', sex: "$sex^"})
+    {id, name, sex, generation {index}}}'
+  modelGraphQlMutation: 'mutation ModelPost {createModel(input: {id: ''$id^'', cellInfos:
+    $cellInfos^, cellPositions: $cellPositions^, modelNewbornId: ''$modelNewbornId^''})
+    { id, cellInfos }}'
+  newBornGraphQlQuery: 'query getNewBorn {getNewborn(id: "$id^") {id, name, models
+    {items {cellInfos}}}}'
