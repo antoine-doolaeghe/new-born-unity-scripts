@@ -235,6 +235,7 @@ namespace MLAgents
     /// </summary>
     void Awake()
     {
+      Debug.Log("HEREE");
       bool hasNewbornId = false;
       string[] arguments = Environment.GetCommandLineArgs();
       for (int x = 0; x < arguments.Length; x++)
@@ -286,6 +287,7 @@ namespace MLAgents
         x => x != null && x is LearningBrain && broadcastHub.IsControlled(x));
       foreach (LearningBrain brain in controlledBrains)
       {
+        Debug.Log("HERE controll");
         brain.SetToControlledExternally();
       }
 
@@ -332,6 +334,8 @@ namespace MLAgents
         academyParameters.Version = kApiVersion;
         foreach (var brain in exposedBrains)
         {
+          Debug.Log("exposedBrains");
+          Debug.Log(broadcastHub.IsControlled(brain));
           var bp = brain.brainParameters;
           academyParameters.BrainParameters.Add(
             bp.ToProto(brain.name, broadcastHub.IsControlled(brain)));

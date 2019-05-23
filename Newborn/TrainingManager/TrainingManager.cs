@@ -70,11 +70,10 @@ namespace Gene
 
         if (isTrainingMode && i % 4 == 0)
         {
-          parent = new GameObject();
-          NameFloor(parent, floor);
           floor++;
           squarePosition = 0;
           parent = CreateTrainingFloor(floor);
+          NameFloor(parent, floor);
         }
 
         InstantiateSpawner(parent, floor, squarePosition, out spawner);
@@ -156,7 +155,7 @@ namespace Gene
         setBrainParameters(atBehaviour, newBornBuilder);
         setBrainName(atBehaviour, responseId);
       }
-      else if (agent == null) // INIT FIRST BRAIN
+      else if (!buildFromPost) // INIT FIRST BRAIN
       {
         ClearBroadCastingBrains(academy);
         setBrainParameters(atBehaviour, newBornBuilder);
@@ -165,7 +164,7 @@ namespace Gene
       }
       else // ASSIGN ALL TO THE SAME BRAIN
       {
-        atBehaviour.brain = Agents[0].transform.GetComponent<AgentTrainBehaviour>().brain;
+        atBehaviour.brain = GameObject.FindGameObjectsWithTag("agent")[0].transform.GetComponent<AgentTrainBehaviour>().brain;
       }
     }
 
@@ -237,19 +236,19 @@ namespace Gene
     {
       Debug.Log("Posting training NewBorns to the server...");
       string generationId = GenerationService.generations[GenerationService.generations.Count - 1]; // Get the latest generation;
-
-      for (int agent = 0; agent < Agents.Count; agent++)
+      GameObject[] agentList = GameObject.FindGameObjectsWithTag("agent");
+      for (int agent = 0; agent < agentList.Length; agent++)
       {
-        Newborn newborn = Agents[agent].transform.GetComponent<Newborn>();
-        NewBornBuilder newBornBuilder = Agents[agent].transform.GetComponent<NewBornBuilder>();
-        AgentTrainBehaviour agentTrainBehaviour = Agents[agent].transform.GetComponent<AgentTrainBehaviour>();
+        Newborn newborn = agentList[agent].transform.GetComponent<Newborn>();
+        NewBornBuilder newBornBuilder = agentList[agent].transform.GetComponent<NewBornBuilder>();
+        AgentTrainBehaviour agentTrainBehaviour = agentList[agent].transform.GetComponent<AgentTrainBehaviour>();
         string newbornId = agentTrainBehaviour.brain.name;
         string newbornName = newborn.title;
         string newbornSex = newborn.Sex;
         string newbornHex = "mock hex";
         // DO a generation check ? 
         NewBornPostData newBornPostData = new NewBornPostData(newbornName, newbornId, generationId, newbornSex, newbornHex);
-        newBornBuilder.PostNewborn(newBornPostData, Agents[agent]);
+        newBornBuilder.PostNewborn(newBornPostData, agentList[agent]);
       }
     }
 
@@ -276,10 +275,11 @@ namespace Gene
     public IEnumerator RequestNewbornAgentInfo()
     {
       Debug.Log("Request Agent info from server...");
-      for (int a = 0; a < Agents.Count; a++)
+      Debug.Log(Agents.Count);
+      GameObject[] agentsObject = GameObject.FindGameObjectsWithTag("agent");
+      for (int a = 0; a < agentsObject.Length; a++)
       {
-        NewbornService newbornService = Agents[a].transform.GetComponent<NewbornService>();
-        yield return StartCoroutine(newbornService.GetNewborn(newbornId, Agents[a], false));
+        yield return StartCoroutine(NewbornService.GetNewborn(newbornId, agentsObject[a], false));
       }
       Debug.Log("Finished to build Agents");
       academy.InitializeEnvironment();
@@ -408,7 +408,7 @@ namespace Gene
       atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
       atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
       atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { newBornBuilder.cellNb * 3 };
-      atBehaviour.brain.brainParameters.vectorObservationSize = newBornBuilder.cellNb * 13 - 4;
+      atBehaviour.brain.brainParameters.vectorObservationSize = (newBornBuilder.cellNb + 1) * 13 - 4;
     }
 
     private void setBrainName(AgentTrainBehaviour atBehaviour, string responseId)
