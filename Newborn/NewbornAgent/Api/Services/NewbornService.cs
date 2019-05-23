@@ -84,6 +84,7 @@ namespace Gene
       }
       else
       {
+        Debug.Log(www.text);
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
         agent.transform.GetComponent<Newborn>().GenerationIndex = JSON.Parse(www.text)["data"]["createNewborn"]["generation"]["index"];
         NewbornService.RebuildAgentCallback handler = NewbornService.RebuildAgent;
@@ -146,13 +147,14 @@ namespace Gene
       }
     }
 
-    public IEnumerator GetNewborn(string id, GameObject agent, bool IsGetAfterPost)
+    public static IEnumerator GetNewborn(string id, GameObject agent, bool IsGetAfterPost)
     {
       byte[] postData;
       Dictionary<string, string> postHeader;
 
       NewbornService.variable["id"] = id;
-
+      Debug.Log("Agent");
+      Debug.Log(agent);
       WWW www;
       ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.newBornGraphQlQuery, ApiConfig.apiKey, ApiConfig.url);
 
@@ -165,6 +167,7 @@ namespace Gene
       {
         Debug.Log("NewBorn successfully requested!");
         cellInfoResponse = new List<float>();
+        Debug.Log(www.text);
         JSONNode responseData = JSON.Parse(www.text)["data"]["getNewborn"];
         string responseId = responseData["id"];
         foreach (var cellInfo in responseData["models"]["items"][0]["cellInfos"].AsArray)
