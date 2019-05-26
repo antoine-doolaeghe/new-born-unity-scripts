@@ -43,7 +43,9 @@ namespace Gene
       }
       else
       {
-        Debug.Log(www.text);
+        Debug.Log("Training Instance successfully launched");
+        string instanceId = JSON.Parse(www.text)["data"]["start"];
+        yield return NewbornService.UpdateInstanceId(newbornId, instanceId);
       }
     }
   }

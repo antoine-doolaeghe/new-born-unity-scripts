@@ -152,13 +152,13 @@ namespace Gene
 
       if (buildFromPost)
       {
-        setBrainParameters(atBehaviour, newBornBuilder);
+        setBrainParameters(atBehaviour, newBornBuilder.cellNb);
         setBrainName(atBehaviour, responseId);
       }
       else if (!buildFromPost) // INIT FIRST BRAIN
       {
         ClearBroadCastingBrains(academy);
-        setBrainParameters(atBehaviour, newBornBuilder);
+        setBrainParameters(atBehaviour, newBornBuilder.cellNb);
         setBrainName(atBehaviour, responseId);
         academy.broadcastHub.broadcastingBrains.Add(atBehaviour.brain);
       }
@@ -186,8 +186,9 @@ namespace Gene
       newborn.GenerationIndex = GenerationService.generations.Count;
       newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
       newBornBuilder.requestApiData = false;
+      Debug.Log("HERE build");
       newBornBuilder.initNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
-      setBrainParameters(atBehaviour, newBornBuilder);
+      setBrainParameters(atBehaviour, newBornBuilder.cellNb);
     }
 
     public IEnumerator BuildRandomProductionNewBorn(Transform agent)
@@ -207,7 +208,7 @@ namespace Gene
       newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
       newBornBuilder.requestApiData = false;
       newBornBuilder.initNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
-      setBrainParameters(atBehaviour, newBornBuilder);
+      setBrainParameters(atBehaviour, newBornBuilder.cellNb);
     }
 
     public void BuildRandomGeneration()
@@ -403,12 +404,12 @@ namespace Gene
       academy.broadcastHub.broadcastingBrains.Clear();
     }
 
-    private void setBrainParameters(AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder)
+    private void setBrainParameters(AgentTrainBehaviour atBehaviour, int cellNb)
     {
       atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
       atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
-      atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { newBornBuilder.cellNb * 3 };
-      atBehaviour.brain.brainParameters.vectorObservationSize = (newBornBuilder.cellNb) * 13 - 4;
+      atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { cellNb * 3 };
+      atBehaviour.brain.brainParameters.vectorObservationSize = (cellNb) * 13 - 4;
     }
 
     private void setBrainName(AgentTrainBehaviour atBehaviour, string responseId)

@@ -153,8 +153,6 @@ namespace Gene
       Dictionary<string, string> postHeader;
 
       NewbornService.variable["id"] = id;
-      Debug.Log("Agent");
-      Debug.Log(agent);
       WWW www;
       ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.newBornGraphQlQuery, ApiConfig.apiKey, ApiConfig.url);
 
@@ -178,6 +176,35 @@ namespace Gene
         TrainingManager trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
         trainingManager.requestApiData = true;
         trainingManager.BuildNewBornFromFetch(false, responseId, agent);
+      }
+    }
+
+    public static IEnumerator UpdateInstanceId(string id, string instanceId)
+    {
+      byte[] postData;
+      Dictionary<string, string> postHeader;
+      NewbornService.variable["id"] = "\"" + id + "\"";
+      NewbornService.variable["instanceId"] = "\"" + instanceId + "\"";
+      WWW www;
+      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateNewbornInstanceId, ApiConfig.apiKey, ApiConfig.url);
+      yield return www;
+      if (www.error != null)
+      {
+        Debug.Log(www.text);
+        throw new Exception("There was an error sending request: " + www.error);
+      }
+      else
+      {
+        JSONNode responseData = JSON.Parse(www.text);
+        Debug.Log(responseData);
+        if (responseData["data"])
+        {
+          Debug.Log("NewBorn instanceId successfully updated!");
+        }
+        else
+        {
+          throw new Exception("There was an error sending request: " + responseData);
+        }
       }
     }
 
