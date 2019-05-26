@@ -408,7 +408,7 @@ namespace Gene
       atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
       atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
       atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { newBornBuilder.cellNb * 3 };
-      atBehaviour.brain.brainParameters.vectorObservationSize = (newBornBuilder.cellNb + 1) * 13 - 4;
+      atBehaviour.brain.brainParameters.vectorObservationSize = (newBornBuilder.cellNb) * 13 - 4;
     }
 
     private void setBrainName(AgentTrainBehaviour atBehaviour, string responseId)

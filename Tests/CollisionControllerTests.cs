@@ -25,31 +25,31 @@ namespace Tests
     }
 
     [UnityTest]
-    public IEnumerator TestCollisionControll()
+    public IEnumerator TestCollisionController()
     {
       GameObject spawner0 = GameObject.Find("Spawner0");
       GameObject spawner1 = GameObject.Find("Spawner1");
-      
-      CollisionController tcA = spawner0.transform.GetChild(0).transform.GetChild(0).transform.GetComponent<CollisionController>();
-      CollisionController tcB = spawner1.transform.GetChild(0).transform.GetChild(0).transform.GetComponent<CollisionController>();
+
+      CollisionController collisionControllerA = spawner0.transform.GetChild(0).transform.GetChild(0).transform.GetComponent<CollisionController>();
+      CollisionController collisionControllerB = spawner1.transform.GetChild(0).transform.GetChild(0).transform.GetComponent<CollisionController>();
 
       yield return spawner0.transform.GetChild(0).transform.position = new Vector3(1f, 1f, 1f);
       yield return spawner1.transform.GetChild(0).transform.position = new Vector3(-1f, -1f, -1f);
 
-      Assert.IsFalse(tcA.touchingNewborn);
-      Assert.IsFalse(tcB.touchingNewborn);
+      Assert.IsFalse(collisionControllerA.touchingNewborn);
+      Assert.IsFalse(collisionControllerB.touchingNewborn);
 
       yield return spawner0.transform.GetChild(0).transform.position = new Vector3(0f, 0f, 0f);
       yield return spawner1.transform.GetChild(0).transform.position = new Vector3(0f, 0f, 0f);
 
-      Assert.IsTrue(tcA.touchingNewborn);
-      Assert.IsTrue(tcB.touchingNewborn);
+      Assert.IsTrue(collisionControllerA.touchingNewborn);
+      Assert.IsTrue(collisionControllerB.touchingNewborn);
 
       yield return spawner0.transform.GetChild(0).transform.position = new Vector3(1f, 1f, 1f);
       yield return spawner1.transform.GetChild(0).transform.position = new Vector3(-1f, -1f, -1f);
 
-      Assert.IsFalse(tcA.touchingNewborn);
-      Assert.IsFalse(tcB.touchingNewborn);
+      Assert.IsFalse(collisionControllerA.touchingNewborn);
+      Assert.IsFalse(collisionControllerB.touchingNewborn);
     }
   }
 }

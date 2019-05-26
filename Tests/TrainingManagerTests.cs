@@ -13,8 +13,8 @@ namespace Tests
     public IEnumerator TestSceneSetup()
     {
       Scene testScene = SceneManager.GetActiveScene();
-      yield return SceneManager.LoadSceneAsync("MockAgentScene", LoadSceneMode.Single);
-      SceneManager.SetActiveScene(SceneManager.GetSceneByName("MockAgentScene"));
+      yield return SceneManager.LoadSceneAsync("MockEmptyTestScene", LoadSceneMode.Single);
+      SceneManager.SetActiveScene(SceneManager.GetSceneByName("MockEmptyTestScene"));
     }
 
     [UnityTest]
