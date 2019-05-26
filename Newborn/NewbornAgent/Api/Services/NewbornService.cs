@@ -54,9 +54,9 @@ namespace Gene
       {
         cellInfoResponse.Add(cellInfo.Value.AsFloat);
       }
-      TrainingManager trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
-      trainingManager.requestApiData = true;
-      trainingManager.BuildNewBornFromFetch(true, responseId, agent);
+      NewbornManager newbornManager = GameObject.Find("NewbornManager").transform.GetComponent<NewbornManager>();
+      newbornManager.requestApiData = true;
+      newbornManager.BuildNewBornFromFetch(true, responseId, agent);
     }
 
     public static IEnumerator GetNewborn(string id, GameObject agent, bool IsGetAfterPost)
@@ -77,7 +77,6 @@ namespace Gene
       {
         Debug.Log("NewBorn successfully requested!");
         cellInfoResponse = new List<float>();
-        Debug.Log(www.text);
         JSONNode responseData = JSON.Parse(www.text)["data"]["getNewborn"];
         string responseId = responseData["id"];
         foreach (var cellInfo in responseData["models"]["items"][0]["cellInfos"].AsArray)
@@ -85,9 +84,9 @@ namespace Gene
           cellInfoResponse.Add(cellInfo.Value.AsFloat);
         }
 
-        TrainingManager trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
-        trainingManager.requestApiData = true;
-        trainingManager.BuildNewBornFromFetch(false, responseId, agent);
+        NewbornManager newbornManager = GameObject.Find("NewbornManager").transform.GetComponent<NewbornManager>();
+        newbornManager.requestApiData = true;
+        newbornManager.BuildNewBornFromFetch(false, responseId, agent);
       }
     }
 

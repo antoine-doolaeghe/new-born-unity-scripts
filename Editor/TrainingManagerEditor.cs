@@ -8,14 +8,14 @@ using UnityEngine;
 
 namespace Gene
 {
-  [CustomEditor(typeof(TrainingManager))]
-  public class TrainingManagerBuildEditor : Editor
+  [CustomEditor(typeof(NewbornManager))]
+  public class NewbornManagerBuildEditor : Editor
   {
 
     public override void OnInspectorGUI()
     {
       DrawDefaultInspector();
-      TrainingManager spawner = (TrainingManager)target;
+      NewbornManager spawner = (NewbornManager)target;
 
       EditorGUILayout.LabelField("Environmnet Parameters");
 

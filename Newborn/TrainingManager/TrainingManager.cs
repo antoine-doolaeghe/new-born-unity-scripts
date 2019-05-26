@@ -11,7 +11,7 @@ using UnityEngine;
 namespace Gene
 {
   [ExecuteInEditMode]
-  public class TrainingManager : MonoBehaviour
+  public class NewbornManager : MonoBehaviour
   {
     [Header("Environment Mode")]
     public bool isTrainingMode;

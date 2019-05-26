@@ -101,7 +101,7 @@ namespace MLAgents
     [HideInInspector] public bool initialized;
     public BroadcastHub broadcastHub = new BroadcastHub();
 
-    public Gene.TrainingManager spawner;
+    public Gene.NewbornManager manager;
 
     private const string kApiVersion = "API-6";
 
@@ -243,13 +243,13 @@ namespace MLAgents
         {
           Debug.Log("Initalising with external newborn id");
           hasNewbornId = true;
-          spawner.newbornId = arguments[x + 1];
+          manager.newbornId = arguments[x + 1];
         }
       }
 
       if (hasNewbornId)
       {
-        StartCoroutine(spawner.RequestNewbornAgentInfo());
+        StartCoroutine(manager.RequestNewbornAgentInfo());
       }
       else
       {

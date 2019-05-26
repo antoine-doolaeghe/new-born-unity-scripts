@@ -19,7 +19,7 @@ namespace Gene
     private int cellInfoIndex = 0;
     private bool Initialised;
     private AgentTrainBehaviour aTBehaviour;
-    private TrainingManager trainingManager;
+    private NewbornManager trainingManager;
     private List<Vector3> sides = new List<Vector3> {
       new Vector3 (1f, 0f, 0f),
       new Vector3 (0f, 1f, 0f),
@@ -37,7 +37,7 @@ namespace Gene
     void Awake()
     {
       newborn = transform.GetComponent<Newborn>();
-      trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<TrainingManager>();
+      trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<NewbornManager>();
       Initialised = false;
     }
 
