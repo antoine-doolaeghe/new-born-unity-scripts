@@ -34,7 +34,7 @@ namespace Gene
     static byte[] postData;
     static Dictionary<string, string> postHeader;
 
-    public delegate void RebuildAgentCallback(Transform transform, WWW www, GameObject agent);
+    public delegate void BuildAgentCallback(Transform transform, WWW www, GameObject agent);
 
     public static void RebuildAgent(Transform transform, WWW www, GameObject agent)
     {
@@ -125,14 +125,9 @@ namespace Gene
       }
     }
 
-    public static IEnumerator PostNewbornModel(Transform transform, GenerationPostData generationPostData, string modelId, GameObject agent, RebuildAgentCallback callback)
+    public static IEnumerator PostNewbornModel(Transform transform, GenerationPostData generationPostData, string modelId, GameObject agent, BuildAgentCallback callback)
     {
-      string cellPositionsString = "[";
-      for (int i = 0; i < generationPostData.cellPositions.Count; i++)
-      {
-        cellPositionsString = cellPositionsString + JSON.Parse(JsonUtility.ToJson(generationPostData.cellPositions[i]))["position"].ToString() + ",";
-      }
-      cellPositionsString = cellPositionsString + "]";
+      string cellPositionsString = BuildCellPositionString(generationPostData);
       NewbornService.variable["id"] = generationPostData.id;
       NewbornService.variable["modelNewbornId"] = modelId;
       NewbornService.variable["cellPositions"] = cellPositionsString;
@@ -151,8 +146,6 @@ namespace Gene
         callback(transform, www, agent);
       }
     }
-
-
     public static IEnumerator PostNewborn(NewBornPostData newBornPostData, GameObject agent = null)
     {
       NewbornService.variable["id"] = newBornPostData.id;
@@ -173,7 +166,7 @@ namespace Gene
         Debug.Log(www.text);
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
         agent.transform.GetComponent<Newborn>().GenerationIndex = JSON.Parse(www.text)["data"]["createNewborn"]["generation"]["index"];
-        NewbornService.RebuildAgentCallback handler = NewbornService.RebuildAgent;
+        NewbornService.BuildAgentCallback handler = NewbornService.RebuildAgent;
         yield return agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(createdNewBornId, 0, agent, handler); // will it always be first generation
       }
     }
@@ -210,6 +203,17 @@ namespace Gene
       {
         DestroyImmediate(child.gameObject);
       }
+    }
+
+    private static string BuildCellPositionString(GenerationPostData generationPostData)
+    {
+      string cellPositionsString = "[";
+      for (int i = 0; i < generationPostData.cellPositions.Count; i++)
+      {
+        cellPositionsString = cellPositionsString + JSON.Parse(JsonUtility.ToJson(generationPostData.cellPositions[i]))["position"].ToString() + ",";
+      }
+      cellPositionsString = cellPositionsString + "]";
+      return cellPositionsString;
     }
 
     public static void SuccessfullReproductionCallback(Transform transform, WWW www, GameObject agent)

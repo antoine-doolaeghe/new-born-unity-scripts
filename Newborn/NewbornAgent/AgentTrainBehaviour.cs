@@ -269,8 +269,8 @@ public class AgentTrainBehaviour : Agent
       NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, newNewbornId, newNewbornGenerationId, newNewbornSex, newNewbornHex);
       // SEND THE TRAINING INSTANCE HERE;
       yield return NewbornService.PostReproducedNewborn(newBornPostData, transform.gameObject, touchingNewborn);
-      NewbornService.RebuildAgentCallback handler = NewbornService.SuccessfullReproductionCallback;
-      yield return newBornBuilder.PostNewbornModel(newborn.childs[newborn.childs.Count - 1], 0, transform.gameObject, handler); // will it always be first generation
+      NewbornService.BuildAgentCallback Callback = NewbornService.SuccessfullReproductionCallback;
+      yield return newBornBuilder.PostNewbornModel(newborn.childs[newborn.childs.Count - 1], 0, transform.gameObject, Callback); // will it always be first generation
       yield return TrainingService.TrainNewborn(newborn.childs[newborn.childs.Count - 1]);
     }
   }

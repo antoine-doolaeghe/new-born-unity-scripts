@@ -276,7 +276,7 @@ namespace Gene
       StartCoroutine(NewbornService.PostNewborn(newBornPostData, agent));
     }
 
-    public IEnumerator PostNewbornModel(string newbornId, int modelIndex, GameObject agent, NewbornService.RebuildAgentCallback responseCallback)
+    public IEnumerator PostNewbornModel(string newbornId, int modelIndex, GameObject agent, NewbornService.BuildAgentCallback responseCallback)
     {
       List<float> modelInfos = ReturnGeneInformations(modelIndex);
       List<PositionPostData> cellPositions = AnatomyHelpers.ReturnModelPositions(newborn);
