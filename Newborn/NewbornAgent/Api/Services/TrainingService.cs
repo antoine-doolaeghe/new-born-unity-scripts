@@ -24,7 +24,7 @@ namespace Gene
 
     private static String graphQlInput;
 
-    public delegate void RebuildAgentCallback(Transform transform, WWW www, GameObject agent);
+    public delegate void BuildAgentCallback(Transform transform, WWW www, GameObject agent);
 
 
     public static IEnumerator TrainNewborn(string newbornId)
@@ -43,7 +43,9 @@ namespace Gene
       }
       else
       {
-        Debug.Log(www.text);
+        Debug.Log("Training Instance successfully launched");
+        string instanceId = JSON.Parse(www.text)["data"]["start"];
+        yield return NewbornService.UpdateInstanceId(newbornId, instanceId);
       }
     }
   }

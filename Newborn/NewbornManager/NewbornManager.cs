@@ -11,7 +11,7 @@ using UnityEngine;
 namespace Gene
 {
   [ExecuteInEditMode]
-  public class TrainingManager : MonoBehaviour
+  public class NewbornManager : MonoBehaviour
   {
     [Header("Environment Mode")]
     public bool isTrainingMode;
@@ -45,7 +45,7 @@ namespace Gene
     [Header("Camera parameters")]
 
     [HideInInspector] public List<GameObject> Agents = new List<GameObject>();
-    public void Delete()
+    public void DeleteSpawner()
     {
       Transform[] childs = transform.Cast<Transform>().ToArray();
       foreach (Transform child in childs)
@@ -139,7 +139,6 @@ namespace Gene
       Debug.Log("Building Newborn From Fetch");
       AgentTrainBehaviour atBehaviour = agent.transform.GetComponent<AgentTrainBehaviour>();
       NewBornBuilder newBornBuilder = agent.transform.GetComponent<NewBornBuilder>();
-      NewbornService newbornService = agent.transform.GetComponent<NewbornService>();
 
       if (newBornBuilder.partNb == 0 && newBornBuilder.threshold == 0f)
       {
@@ -152,13 +151,13 @@ namespace Gene
 
       if (buildFromPost)
       {
-        setBrainParameters(atBehaviour, newBornBuilder);
+        setBrainParameters(atBehaviour, newBornBuilder.cellNb);
         setBrainName(atBehaviour, responseId);
       }
       else if (!buildFromPost) // INIT FIRST BRAIN
       {
         ClearBroadCastingBrains(academy);
-        setBrainParameters(atBehaviour, newBornBuilder);
+        setBrainParameters(atBehaviour, newBornBuilder.cellNb);
         setBrainName(atBehaviour, responseId);
         academy.broadcastHub.broadcastingBrains.Add(atBehaviour.brain);
       }
@@ -177,17 +176,15 @@ namespace Gene
         yield return StartCoroutine(PostGeneration(1));
       }
 
-
       Transform agent = Agents[agentId].transform;
       AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
       NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
-      NewbornService newbornService = agent.GetComponent<NewbornService>();
       Newborn newborn = agent.GetComponent<Newborn>();
       newborn.GenerationIndex = GenerationService.generations.Count;
       newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
       newBornBuilder.requestApiData = false;
-      newBornBuilder.initNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
-      setBrainParameters(atBehaviour, newBornBuilder);
+      newBornBuilder.InitNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
+      setBrainParameters(atBehaviour, newBornBuilder.cellNb);
     }
 
     public IEnumerator BuildRandomProductionNewBorn(Transform agent)
@@ -201,13 +198,12 @@ namespace Gene
       // Handle starting/communication with api data
       AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
       NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
-      NewbornService newbornService = agent.GetComponent<NewbornService>();
       Newborn newborn = agent.GetComponent<Newborn>();
       newborn.GenerationIndex = GenerationService.generations.Count;
       newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
       newBornBuilder.requestApiData = false;
-      newBornBuilder.initNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
-      setBrainParameters(atBehaviour, newBornBuilder);
+      newBornBuilder.InitNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
+      setBrainParameters(atBehaviour, newBornBuilder.cellNb);
     }
 
     public void BuildRandomGeneration()
@@ -215,12 +211,11 @@ namespace Gene
       academy.broadcastHub.broadcastingBrains.Clear();
       for (int a = 0; a < Agents.Count; a++)
       {
-
         NewBornBuilder newBornBuilder = Agents[a].transform.GetComponent<NewBornBuilder>();
         AgentTrainBehaviour atBehaviour = Agents[a].transform.GetComponent<AgentTrainBehaviour>();
         newBornBuilder.threshold = AgentConfig.threshold;
         SetApiRequestParameter(newBornBuilder, atBehaviour, false);
-        newBornBuilder.BuildGeneration(newBornBuilder.GeneInformations.Count, false);
+        newBornBuilder.BuildNewGeneration(newBornBuilder.GeneInformations.Count, false);
         Brain brain = Resources.Load<Brain>("Brains/agentBrain" + a);
         SetBrainParams(brain, brain.name);
         Agents[a].gameObject.name = brain + "";
@@ -403,12 +398,12 @@ namespace Gene
       academy.broadcastHub.broadcastingBrains.Clear();
     }
 
-    private void setBrainParameters(AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder)
+    private void setBrainParameters(AgentTrainBehaviour atBehaviour, int cellNb)
     {
       atBehaviour.brain.brainParameters.vectorObservationSize = vectorObservationSize;
       atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
-      atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { newBornBuilder.cellNb * 3 };
-      atBehaviour.brain.brainParameters.vectorObservationSize = (newBornBuilder.cellNb + 1) * 13 - 4;
+      atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { cellNb * 3 };
+      atBehaviour.brain.brainParameters.vectorObservationSize = (cellNb) * 13 - 4;
     }
 
     private void setBrainName(AgentTrainBehaviour atBehaviour, string responseId)
