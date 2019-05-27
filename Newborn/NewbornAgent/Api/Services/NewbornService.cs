@@ -27,26 +27,20 @@ namespace Gene
 
     public static Dictionary<string, string> variable = new Dictionary<string, string>();
     public static Dictionary<string, string[]> array = new Dictionary<string, string[]>();
-
-    private NewBornBuilder newBornBuilder;
     private Newborn newborn;
 
     private static String graphQlInput;
 
+    static byte[] postData;
+    static Dictionary<string, string> postHeader;
+
     public delegate void RebuildAgentCallback(Transform transform, WWW www, GameObject agent);
-
-
-    void Awake()
-    {
-      newBornBuilder = transform.GetComponent<NewBornBuilder>();
-      newborn = transform.GetComponent<Newborn>();
-    }
 
     public static void RebuildAgent(Transform transform, WWW www, GameObject agent)
     {
       Debug.Log("Newborn Model successfully posted!");
       DestroyAgent(transform);
-      // HERE you need to make the adjustment for wether what need to be done. 
+      // HERE you need to make the adjustment for whether what need to be done. 
       cellInfoResponse = new List<float>();
       JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
       string responseId = responseData["id"];
@@ -61,9 +55,6 @@ namespace Gene
 
     public static IEnumerator GetNewborn(string id, GameObject agent, bool IsGetAfterPost)
     {
-      byte[] postData;
-      Dictionary<string, string> postHeader;
-
       NewbornService.variable["id"] = id;
       WWW www;
       ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.newBornGraphQlQuery, ApiConfig.apiKey, ApiConfig.url);
@@ -92,9 +83,6 @@ namespace Gene
 
     public static IEnumerator ListNewborn()
     {
-      byte[] postData;
-      Dictionary<string, string> postHeader;
-
       WWW www;
       ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.newbornsGraphQlQuery, ApiConfig.apiKey, ApiConfig.url);
 
@@ -111,12 +99,8 @@ namespace Gene
       }
     }
 
-
-    /// MUTATIONS
     public static IEnumerator UpdateInstanceId(string id, string instanceId)
     {
-      byte[] postData;
-      Dictionary<string, string> postHeader;
       NewbornService.variable["id"] = "\"" + id + "\"";
       NewbornService.variable["instanceId"] = "\"" + instanceId + "\"";
       WWW www;
@@ -144,9 +128,6 @@ namespace Gene
 
     public static IEnumerator PostNewbornModel(Transform transform, GenerationPostData generationPostData, string modelId, GameObject agent, RebuildAgentCallback callback)
     {
-      byte[] postData;
-
-      Dictionary<string, string> postHeader;
       string cellPositionsString = "[";
       for (int i = 0; i < generationPostData.cellPositions.Count; i++)
       {
@@ -175,8 +156,6 @@ namespace Gene
 
     public static IEnumerator PostNewborn(NewBornPostData newBornPostData, GameObject agent = null)
     {
-      byte[] postData;
-      Dictionary<string, string> postHeader;
       NewbornService.variable["id"] = newBornPostData.id;
       NewbornService.variable["name"] = "\"newborn\"";
       NewbornService.variable["sex"] = "\"demale\"";
@@ -202,8 +181,6 @@ namespace Gene
 
     public static IEnumerator PostReproducedNewborn(NewBornPostData newBornPostData, GameObject agent, GameObject agentPartner)
     {
-      byte[] postData;
-      Dictionary<string, string> postHeader;
       NewbornService.variable["id"] = newBornPostData.id;
       NewbornService.variable["name"] = "\"newborn\"";
       NewbornService.variable["sex"] = "\"female\"";

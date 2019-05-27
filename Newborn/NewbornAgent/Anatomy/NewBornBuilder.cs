@@ -37,7 +37,6 @@ namespace Gene
     void Awake()
     {
       newborn = transform.GetComponent<Newborn>();
-      trainingManager = GameObject.Find("TrainingManager").transform.GetComponent<NewbornManager>();
       Initialised = false;
     }
 
