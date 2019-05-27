@@ -45,7 +45,7 @@ namespace Gene
     [Header("Camera parameters")]
 
     [HideInInspector] public List<GameObject> Agents = new List<GameObject>();
-    public void Delete()
+    public void DeleteSpawner()
     {
       Transform[] childs = transform.Cast<Transform>().ToArray();
       foreach (Transform child in childs)
@@ -139,7 +139,6 @@ namespace Gene
       Debug.Log("Building Newborn From Fetch");
       AgentTrainBehaviour atBehaviour = agent.transform.GetComponent<AgentTrainBehaviour>();
       NewBornBuilder newBornBuilder = agent.transform.GetComponent<NewBornBuilder>();
-      NewbornService newbornService = agent.transform.GetComponent<NewbornService>();
 
       if (newBornBuilder.partNb == 0 && newBornBuilder.threshold == 0f)
       {
@@ -177,17 +176,14 @@ namespace Gene
         yield return StartCoroutine(PostGeneration(1));
       }
 
-
       Transform agent = Agents[agentId].transform;
       AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
       NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
-      NewbornService newbornService = agent.GetComponent<NewbornService>();
       Newborn newborn = agent.GetComponent<Newborn>();
       newborn.GenerationIndex = GenerationService.generations.Count;
       newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
       newBornBuilder.requestApiData = false;
-      Debug.Log("HERE build");
-      newBornBuilder.initNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
+      newBornBuilder.InitNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
       setBrainParameters(atBehaviour, newBornBuilder.cellNb);
     }
 
@@ -202,12 +198,11 @@ namespace Gene
       // Handle starting/communication with api data
       AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
       NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
-      NewbornService newbornService = agent.GetComponent<NewbornService>();
       Newborn newborn = agent.GetComponent<Newborn>();
       newborn.GenerationIndex = GenerationService.generations.Count;
       newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
       newBornBuilder.requestApiData = false;
-      newBornBuilder.initNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
+      newBornBuilder.InitNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
       setBrainParameters(atBehaviour, newBornBuilder.cellNb);
     }
 
@@ -216,12 +211,11 @@ namespace Gene
       academy.broadcastHub.broadcastingBrains.Clear();
       for (int a = 0; a < Agents.Count; a++)
       {
-
         NewBornBuilder newBornBuilder = Agents[a].transform.GetComponent<NewBornBuilder>();
         AgentTrainBehaviour atBehaviour = Agents[a].transform.GetComponent<AgentTrainBehaviour>();
         newBornBuilder.threshold = AgentConfig.threshold;
         SetApiRequestParameter(newBornBuilder, atBehaviour, false);
-        newBornBuilder.BuildGeneration(newBornBuilder.GeneInformations.Count, false);
+        newBornBuilder.BuildNewGeneration(newBornBuilder.GeneInformations.Count, false);
         Brain brain = Resources.Load<Brain>("Brains/agentBrain" + a);
         SetBrainParams(brain, brain.name);
         Agents[a].gameObject.name = brain + "";

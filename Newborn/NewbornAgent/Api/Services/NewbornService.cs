@@ -114,8 +114,7 @@ namespace Gene
       else
       {
         JSONNode responseData = JSON.Parse(www.text);
-        Debug.Log(responseData);
-        if (responseData["data"])
+        if (responseData["data"]["updateNewborn"] != null)
         {
           Debug.Log("NewBorn instanceId successfully updated!");
         }

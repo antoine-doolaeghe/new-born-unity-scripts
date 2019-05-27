@@ -17,19 +17,9 @@ namespace Gene
     public int cellNb = 0;
     public int minCellNb;
     private int cellInfoIndex = 0;
-    private bool Initialised;
+    private bool Initialised = false;
     private AgentTrainBehaviour aTBehaviour;
     private NewbornManager trainingManager;
-    private List<Vector3> sides = new List<Vector3> {
-      new Vector3 (1f, 0f, 0f),
-      new Vector3 (0f, 1f, 0f),
-      new Vector3 (0f, 0f, 1f),
-      new Vector3 (-1f, 0f, 0f),
-      new Vector3 (0f, -1f, 0f),
-      new Vector3 (0f, 0f, -1f)
-    };
-    private Vector3 childPositionSum = new Vector3(0f, 0f, 0f);
-    [HideInInspector] public Vector3 center;
     [HideInInspector] public float threshold;
     [HideInInspector] public int partNb;
     public List<GeneInformation> GeneInformations;
@@ -37,20 +27,7 @@ namespace Gene
     void Awake()
     {
       newborn = transform.GetComponent<Newborn>();
-      Initialised = false;
     }
-
-    void Update()
-    {
-      childPositionSum = new Vector3(0f, 0f, 0f);
-      foreach (Transform child in transform)
-      {
-        childPositionSum += child.transform.position;
-      }
-
-      center = (childPositionSum / transform.childCount);
-    }
-
     public void DeleteCells()
     {
       newborn.Cells.Clear();
@@ -63,67 +40,42 @@ namespace Gene
       cellNb = 0;
     }
 
-    public void handleCellInfoResponse()
+    public void InitNewBorn(int generationNumber, float threshold)
     {
-      List<float> cellInfoResponse = NewbornService.cellInfoResponse;
-      if (cellInfoResponse.Count != 0 && !Initialised)
-      {
-        GeneInformations.Add(new GeneInformation(new List<float>()));
-        for (int i = 0; i < cellInfoResponse.Count; i++)
-        {
-          GeneInformations[0].info.Add(cellInfoResponse[i]);
-        }
-        initNewBorn(partNb, threshold);
-        Initialised = true;
-      }
-    }
-
-    public void initNewBorn(int generationNumber, float threshold)
-    {
-      transform.gameObject.name = transform.GetComponent<AgentTrainBehaviour>().brain + "";
-      newborn.title = transform.gameObject.name;
-      newborn.NewBornGenerations = new List<List<GameObject>>();
-      newborn.Cells = new List<GameObject>();
-      newborn.CellPositions = new List<Vector3>();
-      newborn.CelllocalPositions = new List<Vector3>();
-
-
+      SetAgentNameFromBrainName();
+      InitaliseNewbornInformation();
 
       if (GeneInformations.Count == 0)
       {
         GeneInformations.Add(new GeneInformation(new List<float>()));
       }
+
       newborn.NewBornGenerations.Add(new List<GameObject>());
       GameObject initCell = InitBaseShape(newborn.NewBornGenerations[0], 0);
       initCell.transform.parent = transform;
-      InitRigidBody(initCell);
-      HandleStoreCell(initCell, initCell.transform.position, initCell.transform.position);
+      AnatomyHelpers.InitRigidBody(initCell);
+      StoreNewbornCell(initCell, initCell.transform.position, initCell.transform.position);
       for (int y = 1; y < generationNumber; y++)
       {
         int previousGenerationCellNumber = newborn.NewBornGenerations[y - 1].Count;
         newborn.NewBornGenerations.Add(new List<GameObject>());
         for (int i = 0; i < previousGenerationCellNumber; i++)
         {
-          for (int z = 0; z < sides.Count; z++)
+          for (int z = 0; z < AnatomyHelpers.Sides.Count; z++)
           {
             if (!requestApiData || cellInfoIndex < GeneInformations[0].info.Count)
             {
-              bool isValid = true;
+              bool IsValidPosition = true;
               float cellInfo = 0f;
-              Vector3 cellPosition = newborn.NewBornGenerations[y - 1][i].transform.position + sides[z];
-              isValid = CheckIsValid(isValid, cellPosition);
+              Vector3 cellPosition = newborn.NewBornGenerations[y - 1][i].transform.position + AnatomyHelpers.Sides[z];
+              IsValidPosition = AnatomyHelpers.IsValidPosition(newborn, IsValidPosition, cellPosition);
               cellInfo = HandleCellInfos(0, cellInfoIndex);
               cellInfoIndex++;
-              if (isValid)
+              if (IsValidPosition)
               {
                 if (cellInfo > threshold)
                 {
-                  GameObject cell = InitBaseShape(newborn.NewBornGenerations[y], y);
-                  InitPosition(sides, y, i, z, cell);
-                  InitRigidBody(cell);
-                  initJoint(cell, newborn.NewBornGenerations[y - 1][i], sides[z], y, z);
-                  cell.transform.parent = transform;
-                  HandleStoreCell(cell, cellPosition, cellPosition);
+                  HandleSingleCellBuild(y, i, z, cellPosition);
                 }
               }
             }
@@ -134,7 +86,7 @@ namespace Gene
 
       foreach (var cell in newborn.Cells)
       {
-        cell.transform.parent = transform; // RESET CELL TO MAIN TRANSFORM
+        cell.transform.parent = transform;
         cell.GetComponent<SphereCollider>().radius /= 2f;
       }
 
@@ -144,7 +96,7 @@ namespace Gene
       BuildAgentPart(true);
     }
 
-    public void BuildGeneration(int generationInfo, bool isAfterRequest)
+    public void BuildNewGeneration(int generationInfo, bool isAfterRequest)
     {
       int indexInfo = 0;
       int previousGenerationCellNumber = 0;
@@ -164,6 +116,7 @@ namespace Gene
           newborn.NewBornGenerations.RemoveAt(i);
         }
       }
+
       if (!isAfterRequest)
       {
         GeneInformations.Add(new GeneInformation(new List<float>()));
@@ -173,24 +126,24 @@ namespace Gene
 
       for (int i = 0; i < previousGenerationCellNumber; i++)
       {
-        for (int z = 0; z < sides.Count; z++)
+        for (int z = 0; z < AnatomyHelpers.Sides.Count; z++)
         {
-          bool isValid = true;
+          bool IsValidPosition = true;
           float cellInfo = 0f;
-          Vector3 cellPosition = newborn.NewBornGenerations[germNb][i].transform.position + sides[z];
-          isValid = CheckIsValid(isValid, cellPosition);
+          Vector3 cellPosition = newborn.NewBornGenerations[germNb][i].transform.position + AnatomyHelpers.Sides[z];
+          IsValidPosition = AnatomyHelpers.IsValidPosition(newborn, IsValidPosition, cellPosition);
           cellInfo = HandleCellInfos(GeneInformations.Count - 1, indexInfo);
           indexInfo++;
-          if (isValid)
+          if (IsValidPosition)
           {
             if (cellInfo > threshold)
             {
               GameObject cell = InitBaseShape(newborn.NewBornGenerations[germNb + 1], germNb + 1);
-              InitPosition(sides, germNb + 1, i, z, cell);
-              InitRigidBody(cell);
-              initJoint(cell, newborn.NewBornGenerations[germNb][i], sides[z], germNb + 1, z);
+              AnatomyHelpers.InitPosition(AnatomyHelpers.Sides, germNb + 1, i, z, cell, newborn);
+              AnatomyHelpers.InitRigidBody(cell);
+              AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[germNb][i], AnatomyHelpers.Sides[z], germNb + 1, z);
               cell.transform.parent = transform;
-              HandleStoreCell(cell, cellPosition, cellPosition);
+              StoreNewbornCell(cell, cellPosition, cellPosition);
             }
           }
         }
@@ -199,15 +152,113 @@ namespace Gene
       BuildAgentPart(false);
     }
 
-    private void checkMinCellNb()
+    // public void BuildNewBornFromFetch(bool buildFromPost, string responseId, GameObject agent = null)
+    // {
+    //   Debug.Log("Building Newborn From Fetch");
+    //   AgentTrainBehaviour atBehaviour = agent.transform.GetComponent<AgentTrainBehaviour>();
+    //   NewBornBuilder newBornBuilder = agent.transform.GetComponent<NewBornBuilder>();
+
+    //   if (newBornBuilder.partNb == 0 && newBornBuilder.threshold == 0f)
+    //   {
+    //     newBornBuilder.partNb = AgentConfig.layerNumber;
+    //     newBornBuilder.threshold = AgentConfig.threshold;
+    //   }
+
+    //   newBornBuilder.requestApiData = true;
+    //   newBornBuilder.handleCellInfoResponse();
+
+    //   if (buildFromPost)
+    //   {
+    //     setBrainParameters(atBehaviour, newBornBuilder.cellNb);
+    //     setBrainName(atBehaviour, responseId);
+    //   }
+    //   else if (!buildFromPost) // INIT FIRST BRAIN
+    //   {
+    //     ClearBroadCastingBrains(academy);
+    //     setBrainParameters(atBehaviour, newBornBuilder.cellNb);
+    //     setBrainName(atBehaviour, responseId);
+    //     academy.broadcastHub.broadcastingBrains.Add(atBehaviour.brain);
+    //   }
+    //   else // ASSIGN ALL TO THE SAME BRAIN
+    //   {
+    //     atBehaviour.brain = GameObject.FindGameObjectsWithTag("agent")[0].transform.GetComponent<AgentTrainBehaviour>().brain;
+    //   }
+    // }
+
+    // public IEnumerator BuildRandomTrainingNewBorn(bool buildFromPost, int agentId = 0)
+    // {
+    //   // TODO: refactor this in a helper function
+    //   yield return StartCoroutine(RequestGenerations()); /// This check should be made as you build the AGENT and not as you post the agents.
+    //   if (GenerationService.generations.Count == 0)
+    //   {
+    //     yield return StartCoroutine(PostGeneration(1));
+    //   }
+
+    //   Transform agent = Agents[agentId].transform;
+    //   AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
+    //   NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
+    //   Newborn newborn = agent.GetComponent<Newborn>();
+    //   newborn.GenerationIndex = GenerationService.generations.Count;
+    //   newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
+    //   newBornBuilder.requestApiData = false;
+    //   newBornBuilder.InitNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
+    //   setBrainParameters(atBehaviour, newBornBuilder.cellNb);
+    // }
+
+    // public IEnumerator BuildRandomProductionNewBorn(Transform agent)
+    // {
+    //   // TODO: refactor this in a helper function
+    //   yield return StartCoroutine(RequestGenerations()); /// This check should be made as you build the AGENT and not as you post the agents.
+    //   if (GenerationService.generations.Count == 0)
+    //   {
+    //     yield return StartCoroutine(PostGeneration(1));
+    //   }
+    //   // Handle starting/communication with api data
+    //   AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
+    //   NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
+    //   Newborn newborn = agent.GetComponent<Newborn>();
+    //   newborn.GenerationIndex = GenerationService.generations.Count;
+    //   newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
+    //   newBornBuilder.requestApiData = false;
+    //   newBornBuilder.InitNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
+    //   setBrainParameters(atBehaviour, newBornBuilder.cellNb);
+    // }
+
+    // public void BuildRandomGeneration()
+    // {
+    //   academy.broadcastHub.broadcastingBrains.Clear();
+    //   for (int a = 0; a < Agents.Count; a++)
+    //   {
+    //     NewBornBuilder newBornBuilder = Agents[a].transform.GetComponent<NewBornBuilder>();
+    //     AgentTrainBehaviour atBehaviour = Agents[a].transform.GetComponent<AgentTrainBehaviour>();
+    //     newBornBuilder.threshold = AgentConfig.threshold;
+    //     SetApiRequestParameter(newBornBuilder, atBehaviour, false);
+    //     newBornBuilder.BuildNewGeneration(newBornBuilder.GeneInformations.Count, false);
+    //     Brain brain = Resources.Load<Brain>("Brains/agentBrain" + a);
+    //     SetBrainParams(brain, brain.name);
+    //     Agents[a].gameObject.name = brain + "";
+    //     brain.brainParameters.vectorObservationSize = vectorObservationSize;
+    //     brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
+    //     brain.brainParameters.vectorActionSize = new int[1] { Agents[a].transform.GetComponent<NewBornBuilder>().cellNb * 3 };
+    //     brain.brainParameters.vectorObservationSize = Agents[a].transform.GetComponent<NewBornBuilder>().cellNb * 13 - 4;
+    //     atBehaviour.brain = brain;
+    //   }
+    // }
+
+    public void handleCellInfoResponse()
     {
-      if (cellNb < minCellNb)
+      List<float> cellInfoResponse = NewbornService.cellInfoResponse;
+      if (cellInfoResponse.Count != 0 && !Initialised)
       {
-        Debug.Log("Killin Object (less that requiered size");
-        transform.gameObject.SetActive(false);
+        GeneInformations.Add(new GeneInformation(new List<float>()));
+        for (int i = 0; i < cellInfoResponse.Count; i++)
+        {
+          GeneInformations[0].info.Add(cellInfoResponse[i]);
+        }
+        InitNewBorn(partNb, threshold);
+        Initialised = true;
       }
     }
-
     public List<float> ReturnGeneInformations(int modelIndex)
     {
       List<float> ModelInfos = new List<float>();
@@ -220,20 +271,6 @@ namespace Gene
       return ModelInfos;
     }
 
-    public List<PositionPostData> ReturnModelPositions()
-    {
-      List<PositionPostData> positions = new List<PositionPostData>();
-      for (int i = 0; i < newborn.CelllocalPositions.Count; i++)
-      {
-        List<float> position = new List<float>();
-        position.Add(newborn.CelllocalPositions[i].x);
-        position.Add(newborn.CelllocalPositions[i].y);
-        position.Add(newborn.CelllocalPositions[i].z);
-        positions.Add(new PositionPostData(position));
-      }
-      return positions;
-    }
-
     public void PostNewborn(NewBornPostData newBornPostData, GameObject agent)
     {
       StartCoroutine(NewbornService.PostNewborn(newBornPostData, agent));
@@ -242,13 +279,13 @@ namespace Gene
     public IEnumerator PostNewbornModel(string newbornId, int modelIndex, GameObject agent, NewbornService.RebuildAgentCallback responseCallback)
     {
       List<float> modelInfos = ReturnGeneInformations(modelIndex);
-      List<PositionPostData> cellPositions = ReturnModelPositions();
+      List<PositionPostData> cellPositions = AnatomyHelpers.ReturnModelPositions(newborn);
       string id = Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
       GenerationPostData generationPostData = new GenerationPostData(newbornId, cellPositions, modelInfos);
       yield return NewbornService.PostNewbornModel(transform, generationPostData, newbornId, agent, responseCallback);
     }
 
-    private void HandleStoreCell(GameObject cell, Vector3 cellPosition, Vector3 cellLocalPosition)
+    private void StoreNewbornCell(GameObject cell, Vector3 cellPosition, Vector3 cellLocalPosition)
     {
       newborn.Cells.Add(cell);
       newborn.CellPositions.Add(cellPosition);
@@ -270,97 +307,12 @@ namespace Gene
       }
     }
 
-
-
-    private static void InitRigidBody(GameObject cell)
-    {
-      // cell.AddComponent<Rigidbody>();
-      cell.GetComponent<Rigidbody>().useGravity = true;
-      cell.GetComponent<Rigidbody>().mass = 1f;
-    }
-
-    private void InitPosition(List<Vector3> sides, int y, int i, int z, GameObject cell)
-    {
-      cell.transform.parent = newborn.NewBornGenerations[y - 1][i].transform;
-      cell.transform.localPosition = sides[z];
-    }
-
     private GameObject InitBaseShape(List<GameObject> NewBornGeneration, int y)
     {
       NewBornGeneration.Add(Instantiate(newborn.CellPrefab));
       GameObject cell = newborn.NewBornGenerations[y][newborn.NewBornGenerations[y].Count - 1];
       cell.transform.position = transform.position;
       return cell;
-    }
-
-    private bool CheckIsValid(bool isValid, Vector3 cellPosition)
-    {
-      foreach (var position in newborn.CellPositions)
-      {
-        if (cellPosition == position)
-        {
-          isValid = false;
-        }
-      }
-
-      return isValid;
-    }
-
-    private void initJoint(GameObject part, GameObject connectedBody, Vector3 jointAnchor, int y, int z)
-    {
-      ConfigurableJoint cj = part.transform.gameObject.AddComponent<ConfigurableJoint>();
-      cj.xMotion = ConfigurableJointMotion.Locked;
-      cj.yMotion = ConfigurableJointMotion.Locked;
-      cj.zMotion = ConfigurableJointMotion.Locked;
-      cj.angularXMotion = ConfigurableJointMotion.Limited;
-      cj.angularYMotion = ConfigurableJointMotion.Limited;
-      cj.angularZMotion = ConfigurableJointMotion.Limited;
-      cj.anchor = -jointAnchor;
-      cj.connectedBody = connectedBody.gameObject.GetComponent<Rigidbody>();
-      cj.rotationDriveMode = RotationDriveMode.Slerp;
-      cj.angularYLimit = new SoftJointLimit() { limit = AgentConfig.yLimit, bounciness = AgentConfig.bounciness };
-      handleAngularLimit(cj, jointAnchor);
-      cj.angularZLimit = new SoftJointLimit() { limit = AgentConfig.zLimit, bounciness = AgentConfig.bounciness };
-      part.gameObject.GetComponent<Rigidbody>().useGravity = true;
-      part.gameObject.GetComponent<Rigidbody>().mass = 1f;
-    }
-
-    private void handleAngularLimit(ConfigurableJoint cj, Vector3 jointAnchor)
-    {
-      if (jointAnchor.y == -1)
-      {
-        cj.lowAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
-        cj.highAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
-      }
-      else if (jointAnchor.y == 1)
-      {
-        cj.highAngularXLimit = new SoftJointLimit() { limit = AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
-        cj.lowAngularXLimit = new SoftJointLimit() { limit = AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
-      }
-      else if (jointAnchor.x == 1)
-      {
-        cj.highAngularXLimit = new SoftJointLimit() { limit = AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
-        cj.lowAngularXLimit = new SoftJointLimit() { limit = AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
-        cj.axis = new Vector3(0f, -1f, 0f);
-      }
-      else if (jointAnchor.x == -1)
-      {
-        cj.lowAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
-        cj.highAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
-        cj.axis = new Vector3(0f, -1f, 0f);
-      }
-      else if (jointAnchor.z == 1)
-      {
-        cj.axis = new Vector3(0f, -1f, 0f);
-        cj.highAngularXLimit = new SoftJointLimit() { limit = AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
-        cj.lowAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
-      }
-      else if (jointAnchor.z == -1)
-      {
-        cj.axis = new Vector3(-1f, 0f, 0f);
-        cj.highAngularXLimit = new SoftJointLimit() { limit = AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
-        cj.lowAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
-      }
     }
 
     private void BuildAgentPart(bool init)
@@ -379,5 +331,38 @@ namespace Gene
         aTBehaviour.initBodyParts();
       }
     }
+
+    private void InitaliseNewbornInformation()
+    {
+      newborn.title = transform.gameObject.name;
+      newborn.NewBornGenerations = new List<List<GameObject>>();
+      newborn.Cells = new List<GameObject>();
+      newborn.CellPositions = new List<Vector3>();
+      newborn.CelllocalPositions = new List<Vector3>();
+    }
+    private void HandleSingleCellBuild(int y, int i, int z, Vector3 cellPosition)
+    {
+      GameObject cell = InitBaseShape(newborn.NewBornGenerations[y], y);
+      AnatomyHelpers.InitPosition(AnatomyHelpers.Sides, y, i, z, cell, newborn);
+      AnatomyHelpers.InitRigidBody(cell);
+      AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[y - 1][i], AnatomyHelpers.Sides[z], y, z);
+      cell.transform.parent = transform;
+      StoreNewbornCell(cell, cellPosition, cellPosition);
+    }
+
+    private void SetAgentNameFromBrainName()
+    {
+      transform.gameObject.name = transform.GetComponent<AgentTrainBehaviour>().brain + "";
+    }
+
+    private void checkMinCellNb()
+    {
+      if (cellNb < minCellNb)
+      {
+        Debug.Log("Killin Object (less that requiered size");
+        transform.gameObject.SetActive(false);
+      }
+    }
+
   }
 }

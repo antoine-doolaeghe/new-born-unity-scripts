@@ -26,7 +26,7 @@ namespace Gene
 
       if (GUILayout.Button("Delete environment"))
       {
-        spawner.Delete();
+        spawner.DeleteSpawner();
       }
 
       EditorGUILayout.LabelField("Random NewBorn Builds");

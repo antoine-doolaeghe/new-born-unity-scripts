@@ -22,7 +22,7 @@ namespace Tests
     {
       Assert.IsTrue(GameObject.Find("NewbornManager").transform.childCount == 2);
       Gene.NewbornManager tm = GameObject.Find("NewbornManager").GetComponent<Gene.NewbornManager>();
-      tm.Delete();
+      tm.DeleteSpawner();
       Assert.IsTrue(GameObject.Find("NewbornManager").transform.childCount == 0);
       yield return null;
     }
@@ -31,7 +31,7 @@ namespace Tests
     public IEnumerator TestBuildAgentScene()
     {
       Gene.NewbornManager tm = GameObject.Find("NewbornManager").GetComponent<Gene.NewbornManager>();
-      tm.Delete();
+      tm.DeleteSpawner();
       Assert.IsTrue(GameObject.Find("NewbornManager").transform.childCount == 0);
       tm.spawnerNumber = 2;
       tm.BuildSpawners();
@@ -43,7 +43,7 @@ namespace Tests
     public IEnumerator TestBuildAgentCellScene()
     {
       Gene.NewbornManager tm = GameObject.Find("NewbornManager").GetComponent<Gene.NewbornManager>();
-      tm.Delete();
+      tm.DeleteSpawner();
       tm.spawnerNumber = 1;
       tm.agentNumber = 1;
       tm.BuildSpawners();
