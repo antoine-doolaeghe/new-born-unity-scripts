@@ -100,7 +100,7 @@ namespace Gene
           NewBornBuilder newBornBuilder;
           Newborn newborn;
           GameObject newBornAgent;
-          newBornAgents.Add(BuildAgent(spawner, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn));
+          newBornAgents.Add(spawner.GetComponent<NewbornSpawner>().BuildAgent(spawner, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn));
           AddBrainToAgentBehaviour(atBehaviour, brain);
           SetApiRequestParameter(newBornBuilder, atBehaviour, requestApiData);
           AddMinCellNb(newBornBuilder, minCellNb);
@@ -270,7 +270,6 @@ namespace Gene
     public IEnumerator RequestNewbornAgentInfo()
     {
       Debug.Log("Request Agent info from server...");
-      Debug.Log(Agents.Count);
       GameObject[] agentsObject = GameObject.FindGameObjectsWithTag("agent");
       for (int a = 0; a < agentsObject.Length; a++)
       {
@@ -357,18 +356,6 @@ namespace Gene
       spawner = Instantiate(TrainingPrefab, parent.transform);
       spawner.name = ("Spawner" + squarePosition);
       spawner.transform.localScale = groundScale;
-    }
-
-    private GameObject BuildAgent(GameObject spawner, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out Newborn newborn)
-    {
-      newBornAgent = Instantiate(AgentPrefab, spawner.transform);
-      atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
-      newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
-      newborn = newBornAgent.transform.GetComponent<Newborn>();
-      newborn.Sex = SexConfig.sexes[UnityEngine.Random.Range(0, 2)]; // Randomly select male or female
-      Agents.Add(newBornAgent);
-      newBornAgent.transform.localPosition = new Vector3(UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex), 0f, UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex));
-      return newBornAgent;
     }
 
     private void NameFloor(GameObject trainingFloor, int floor)

@@ -81,7 +81,7 @@ namespace Gene
       }
     }
 
-    public static IEnumerator ListNewborn()
+    public static IEnumerator ListTrainedNewborn()
     {
       WWW www;
       ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.newbornsGraphQlQuery, ApiConfig.apiKey, ApiConfig.url);
@@ -95,7 +95,11 @@ namespace Gene
       else
       {
         Debug.Log("NewBorn List successfully requested!");
-        Debug.Log(www.text);
+        foreach (System.Collections.Generic.KeyValuePair<string, SimpleJSON.JSONNode> newbornId in JSON.Parse(www.text)["data"]["listNewborns"]["items"])
+        {
+          Debug.Log(newbornId.Value["id"]);
+          // StartCoroutine(NewbornService.GetNewborn(newbornId.Value["id"]));
+        };
       }
     }
 

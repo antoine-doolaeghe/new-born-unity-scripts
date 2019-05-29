@@ -9,7 +9,6 @@ namespace Gene
   [ExecuteInEditMode]
   public class NewBornBuilder : MonoBehaviour
   {
-
     private Newborn newborn;
     [Header("Connection to API Service")]
     public NewbornService newbornService;
