@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-// using MLAgents;
+using MLAgents;
 using UnityEngine;
 
 namespace Gene
@@ -39,7 +39,7 @@ namespace Gene
       cellNb = 0;
     }
 
-    public void InitNewBorn(int generationNumber, float threshold)
+    public void BuildNewBorn(int generationNumber, float threshold)
     {
       SetAgentNameFromBrainName();
       InitaliseNewbornInformation();
@@ -74,7 +74,7 @@ namespace Gene
               {
                 if (cellInfo > threshold)
                 {
-                  HandleSingleCellBuild(y, i, z, cellPosition);
+                  BuildCell(y, i, z, cellPosition);
                 }
               }
             }
@@ -90,9 +90,6 @@ namespace Gene
       }
 
       cellNb = newborn.Cells.Count;
-
-      checkMinCellNb();
-      BuildAgentPart(true);
     }
 
     public void BuildNewGeneration(int generationInfo, bool isAfterRequest)
@@ -148,101 +145,56 @@ namespace Gene
         }
       }
       cellNb = newborn.Cells.Count;
-      BuildAgentPart(false);
+      AddBodyPart(false);
     }
 
-    // public void BuildNewBornFromFetch(bool buildFromPost, string responseId, GameObject agent = null)
-    // {
-    //   Debug.Log("Building Newborn From Fetch");
-    //   AgentTrainBehaviour atBehaviour = agent.transform.GetComponent<AgentTrainBehaviour>();
-    //   NewBornBuilder newBornBuilder = agent.transform.GetComponent<NewBornBuilder>();
+    public void BuildNewBornFromFetch()
+    {
+      Debug.Log("Building Newborn From Fetch");
+      if (partNb == 0 && threshold == 0f)
+      {
+        partNb = AgentConfig.layerNumber;
+        threshold = AgentConfig.threshold;
+      }
 
-    //   if (newBornBuilder.partNb == 0 && newBornBuilder.threshold == 0f)
-    //   {
-    //     newBornBuilder.partNb = AgentConfig.layerNumber;
-    //     newBornBuilder.threshold = AgentConfig.threshold;
-    //   }
+      requestApiData = true;
+      handleCellInfoResponse();
+    }
 
-    //   newBornBuilder.requestApiData = true;
-    //   newBornBuilder.handleCellInfoResponse();
+    public IEnumerator BuildAgentRandomNewBorn()
+    {
+      yield return StartCoroutine(GenerationService.GetGenerations()); /// This check should be made as you build the AGENT and not as you post the agents.
+      if (GenerationService.generations.Count == 0)
+      {
+        yield return StartCoroutine(GenerationService.PostGeneration(Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""), 1));
+      }
+      // Handle starting/communication with api data
+      AgentTrainBehaviour atBehaviour = transform.GetComponent<AgentTrainBehaviour>();
+      Newborn newborn = transform.GetComponent<Newborn>();
+      newborn.GenerationIndex = GenerationService.generations.Count;
+      newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
+      requestApiData = false;
+      BuildNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
+      checkMinCellNb();
+      AddBodyPart(true);
+      NewbornBrain.SetBrainParameters(atBehaviour, cellNb);
+    }
 
-    //   if (buildFromPost)
-    //   {
-    //     setBrainParameters(atBehaviour, newBornBuilder.cellNb);
-    //     setBrainName(atBehaviour, responseId);
-    //   }
-    //   else if (!buildFromPost) // INIT FIRST BRAIN
-    //   {
-    //     ClearBroadCastingBrains(academy);
-    //     setBrainParameters(atBehaviour, newBornBuilder.cellNb);
-    //     setBrainName(atBehaviour, responseId);
-    //     academy.broadcastHub.broadcastingBrains.Add(atBehaviour.brain);
-    //   }
-    //   else // ASSIGN ALL TO THE SAME BRAIN
-    //   {
-    //     atBehaviour.brain = GameObject.FindGameObjectsWithTag("agent")[0].transform.GetComponent<AgentTrainBehaviour>().brain;
-    //   }
-    // }
-
-    // public IEnumerator BuildRandomTrainingNewBorn(bool buildFromPost, int agentId = 0)
-    // {
-    //   // TODO: refactor this in a helper function
-    //   yield return StartCoroutine(RequestGenerations()); /// This check should be made as you build the AGENT and not as you post the agents.
-    //   if (GenerationService.generations.Count == 0)
-    //   {
-    //     yield return StartCoroutine(PostGeneration(1));
-    //   }
-
-    //   Transform agent = Agents[agentId].transform;
-    //   AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
-    //   NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
-    //   Newborn newborn = agent.GetComponent<Newborn>();
-    //   newborn.GenerationIndex = GenerationService.generations.Count;
-    //   newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
-    //   newBornBuilder.requestApiData = false;
-    //   newBornBuilder.InitNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
-    //   setBrainParameters(atBehaviour, newBornBuilder.cellNb);
-    // }
-
-    // public IEnumerator BuildRandomProductionNewBorn(Transform agent)
-    // {
-    //   // TODO: refactor this in a helper function
-    //   yield return StartCoroutine(RequestGenerations()); /// This check should be made as you build the AGENT and not as you post the agents.
-    //   if (GenerationService.generations.Count == 0)
-    //   {
-    //     yield return StartCoroutine(PostGeneration(1));
-    //   }
-    //   // Handle starting/communication with api data
-    //   AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
-    //   NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
-    //   Newborn newborn = agent.GetComponent<Newborn>();
-    //   newborn.GenerationIndex = GenerationService.generations.Count;
-    //   newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
-    //   newBornBuilder.requestApiData = false;
-    //   newBornBuilder.InitNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
-    //   setBrainParameters(atBehaviour, newBornBuilder.cellNb);
-    // }
-
-    // public void BuildRandomGeneration()
-    // {
-    //   academy.broadcastHub.broadcastingBrains.Clear();
-    //   for (int a = 0; a < Agents.Count; a++)
-    //   {
-    //     NewBornBuilder newBornBuilder = Agents[a].transform.GetComponent<NewBornBuilder>();
-    //     AgentTrainBehaviour atBehaviour = Agents[a].transform.GetComponent<AgentTrainBehaviour>();
-    //     newBornBuilder.threshold = AgentConfig.threshold;
-    //     SetApiRequestParameter(newBornBuilder, atBehaviour, false);
-    //     newBornBuilder.BuildNewGeneration(newBornBuilder.GeneInformations.Count, false);
-    //     Brain brain = Resources.Load<Brain>("Brains/agentBrain" + a);
-    //     SetBrainParams(brain, brain.name);
-    //     Agents[a].gameObject.name = brain + "";
-    //     brain.brainParameters.vectorObservationSize = vectorObservationSize;
-    //     brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
-    //     brain.brainParameters.vectorActionSize = new int[1] { Agents[a].transform.GetComponent<NewBornBuilder>().cellNb * 3 };
-    //     brain.brainParameters.vectorObservationSize = Agents[a].transform.GetComponent<NewBornBuilder>().cellNb * 13 - 4;
-    //     atBehaviour.brain = brain;
-    //   }
-    // }
+    public void BuildAgentRandomGeneration(Transform agent)
+    {
+      NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
+      AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
+      newBornBuilder.threshold = AgentConfig.threshold;
+      // SetApiRequestParameter(newBornBuilder, atBehaviour, false);
+      newBornBuilder.BuildNewGeneration(newBornBuilder.GeneInformations.Count, false);
+      Brain brain = Resources.Load<Brain>("Brains/agentBrain0");
+      // NewbornBrain.SetBrainParams(brain, brain.name);
+      agent.gameObject.name = brain + "";
+      brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
+      brain.brainParameters.vectorActionSize = new int[1] { agent.transform.GetComponent<NewBornBuilder>().cellNb * 3 };
+      brain.brainParameters.vectorObservationSize = agent.transform.GetComponent<NewBornBuilder>().cellNb * 13 - 4;
+      atBehaviour.brain = brain;
+    }
 
     public void handleCellInfoResponse()
     {
@@ -254,7 +206,9 @@ namespace Gene
         {
           GeneInformations[0].info.Add(cellInfoResponse[i]);
         }
-        InitNewBorn(partNb, threshold);
+        BuildNewBorn(partNb, threshold);
+        checkMinCellNb();
+        AddBodyPart(true);
         Initialised = true;
       }
     }
@@ -314,7 +268,7 @@ namespace Gene
       return cell;
     }
 
-    private void BuildAgentPart(bool init)
+    private void AddBodyPart(bool init)
     {
       aTBehaviour = transform.gameObject.GetComponent<AgentTrainBehaviour>();
       aTBehaviour.initPart = newborn.Cells[0].transform;
@@ -339,7 +293,7 @@ namespace Gene
       newborn.CellPositions = new List<Vector3>();
       newborn.CelllocalPositions = new List<Vector3>();
     }
-    private void HandleSingleCellBuild(int y, int i, int z, Vector3 cellPosition)
+    private void BuildCell(int y, int i, int z, Vector3 cellPosition)
     {
       GameObject cell = InitBaseShape(newborn.NewBornGenerations[y], y);
       AnatomyHelpers.InitPosition(AnatomyHelpers.Sides, y, i, z, cell, newborn);

@@ -1,3 +1,4 @@
+
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -10,6 +11,7 @@ namespace Gene
 {
   public class NewbornSpawner : MonoBehaviour
   {
+    [HideInInspector] public List<GameObject> Agents = new List<GameObject>();
     public GameObject AgentPrefab;
     public float randomPositionIndex;
     private float timer = 0.0f;
@@ -33,6 +35,37 @@ namespace Gene
       // Agents.Add(newBornAgent);
       newBornAgent.transform.localPosition = new Vector3(UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex), 0f, UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex));
       return newBornAgent;
+    }
+
+    public void BuildAllAgentsRandomGeneration()
+    {
+      foreach (GameObject agent in Agents)
+      {
+        agent.transform.GetComponent<NewBornBuilder>().BuildAgentRandomGeneration(agent.transform);
+      }
+    }
+
+    public void BuildAllAgentsRandomNewBorn()
+    {
+      foreach (GameObject agent in Agents)
+      {
+        StartCoroutine(agent.transform.GetComponent<NewBornBuilder>().BuildAgentRandomNewBorn());
+      }
+    }
+
+    public void DeleteCell()
+    {
+      foreach (GameObject agent in Agents)
+      {
+        agent.SetActive(true);
+        agent.GetComponent<NewBornBuilder>().DeleteCells();
+        agent.GetComponent<AgentTrainBehaviour>().DeleteBodyParts();
+        Transform[] childs = agent.transform.Cast<Transform>().ToArray();
+        foreach (Transform child in childs)
+        {
+          DestroyImmediate(child.gameObject);
+        }
+      }
     }
   }
 }

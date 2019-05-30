@@ -48,9 +48,11 @@ namespace Gene
       {
         cellInfoResponse.Add(cellInfo.Value.AsFloat);
       }
-      NewbornManager newbornManager = GameObject.Find("NewbornManager").transform.GetComponent<NewbornManager>();
-      newbornManager.requestApiData = true;
-      newbornManager.BuildNewBornFromFetch(true, responseId, agent);
+      // NewbornManager newbornManager = GameObject.Find("NewbornManager").transform.GetComponent<NewbornManager>();
+      // newbornManager.requestApiData = true;
+      agent.GetComponent<NewBornBuilder>().BuildNewBornFromFetch();
+      NewbornBrain.SetBrainParameters(agent.GetComponent<AgentTrainBehaviour>(), agent.GetComponent<NewBornBuilder>().cellNb);
+      NewbornBrain.SetBrainName(agent.GetComponent<AgentTrainBehaviour>(), responseId);
     }
 
     public static IEnumerator GetNewborn(string id, GameObject agent, bool IsGetAfterPost)
@@ -76,8 +78,12 @@ namespace Gene
         }
 
         NewbornManager newbornManager = GameObject.Find("NewbornManager").transform.GetComponent<NewbornManager>();
-        newbornManager.requestApiData = true;
-        newbornManager.BuildNewBornFromFetch(false, responseId, agent);
+        // newbornManager.requestApiData = true;
+        agent.GetComponent<NewBornBuilder>().BuildNewBornFromFetch();
+        newbornManager.ClearBroadCastingBrains();
+        NewbornBrain.SetBrainParameters(agent.GetComponent<AgentTrainBehaviour>(), agent.GetComponent<NewBornBuilder>().cellNb);
+        NewbornBrain.SetBrainName(agent.GetComponent<AgentTrainBehaviour>(), responseId);
+        newbornManager.academy.broadcastHub.broadcastingBrains.Add(agent.GetComponent<AgentTrainBehaviour>().brain);
       }
     }
 
