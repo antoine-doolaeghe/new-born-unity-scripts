@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Gene;
+using Newborn;
 using MLAgents;
 using UnityEngine;
 using UnityEngine.UI;
@@ -119,7 +119,7 @@ public class AgentTrainBehaviour : Agent
 
     foreach (var bodyPart in jdController.bodyPartsDict.Values)
     {
-      if (bodyPart.collisionController && !IsDone() && !transform.gameObject.GetComponent<Newborn>().isGestating && bodyPart.collisionController.touchingNewborn != null)
+      if (bodyPart.collisionController && !IsDone() && !transform.gameObject.GetComponent<NewbornAgent>().isGestating && bodyPart.collisionController.touchingNewborn != null)
       {
         TouchedNewborn(bodyPart.collisionController.touchingNewborn);
       }
@@ -244,13 +244,13 @@ public class AgentTrainBehaviour : Agent
 
   public IEnumerator handleTouchedNewborn(GameObject touchingNewborn)
   {
-    Newborn newborn = transform.gameObject.GetComponent<Newborn>();
+    NewbornAgent newborn = transform.gameObject.GetComponent<NewbornAgent>();
     NewBornBuilder newBornBuilder = transform.gameObject.GetComponent<NewBornBuilder>();
     // CREATE A COROUTINE HERE 
     string sex = newborn.Sex;
     int generationIndex = newborn.GenerationIndex;
-    string partnerSex = touchingNewborn.GetComponent<Newborn>().Sex;
-    int partnerGenerationIndex = touchingNewborn.GetComponent<Newborn>().GenerationIndex;
+    string partnerSex = touchingNewborn.GetComponent<NewbornAgent>().Sex;
+    int partnerGenerationIndex = touchingNewborn.GetComponent<NewbornAgent>().GenerationIndex;
 
     if (sex == "female" && partnerSex == "male" && generationIndex == partnerGenerationIndex) // Generation must be equal ? 
     {

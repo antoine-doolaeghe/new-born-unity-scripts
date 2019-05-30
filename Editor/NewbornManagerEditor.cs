@@ -6,7 +6,7 @@ using MyBox;
 using UnityEditor;
 using UnityEngine;
 
-namespace Gene
+namespace Newborn
 {
   [CustomEditor(typeof(NewbornManager))]
   public class NewbornManagerBuildEditor : Editor

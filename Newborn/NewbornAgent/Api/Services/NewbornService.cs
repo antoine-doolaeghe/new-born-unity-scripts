@@ -6,13 +6,13 @@ using System.Linq;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
 using System.Text.RegularExpressions;
-using Gene;
+using Newborn;
 using SimpleJSON;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
 
-namespace Gene
+namespace Newborn
 {
   [ExecuteInEditMode]
   public class NewbornService : MonoBehaviour
@@ -27,7 +27,7 @@ namespace Gene
 
     public static Dictionary<string, string> variable = new Dictionary<string, string>();
     public static Dictionary<string, string[]> array = new Dictionary<string, string[]>();
-    private Newborn newborn;
+    private NewbornAgent newborn;
 
     private static String graphQlInput;
 
@@ -175,7 +175,7 @@ namespace Gene
       {
         Debug.Log(www.text);
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
-        agent.transform.GetComponent<Newborn>().GenerationIndex = JSON.Parse(www.text)["data"]["createNewborn"]["generation"]["index"];
+        agent.transform.GetComponent<NewbornAgent>().GenerationIndex = JSON.Parse(www.text)["data"]["createNewborn"]["generation"]["index"];
         NewbornService.BuildAgentCallback handler = NewbornService.RebuildAgent;
         yield return agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(createdNewBornId, 0, agent, handler); // will it always be first generation
       }
@@ -198,8 +198,8 @@ namespace Gene
       else
       {
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
-        agent.transform.GetComponent<Newborn>().childs.Add(createdNewBornId);
-        agentPartner.transform.GetComponent<Newborn>().childs.Add(createdNewBornId);
+        agent.transform.GetComponent<NewbornAgent>().childs.Add(createdNewBornId);
+        agentPartner.transform.GetComponent<NewbornAgent>().childs.Add(createdNewBornId);
       }
     }
 

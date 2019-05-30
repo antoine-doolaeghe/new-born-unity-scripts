@@ -3,20 +3,23 @@ using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
 
-namespace Gene {
-    [CustomEditor (typeof (NewBornBuilder))]
-    public class NewBornBuilderEditor : Editor {
-        public int agentNumber;
-        public GameObject agent;
-        public Vector3 agentScale;
+namespace Newborn
+{
+  [CustomEditor(typeof(NewBornBuilder))]
+  public class NewBornBuilderEditor : Editor
+  {
+    public int agentNumber;
+    public GameObject agent;
+    public Vector3 agentScale;
 
-        public override void OnInspectorGUI () {
-            DrawDefaultInspector ();
-            NewBornBuilder newBornBuilder = (NewBornBuilder) target;
+    public override void OnInspectorGUI()
+    {
+      DrawDefaultInspector();
+      NewBornBuilder newBornBuilder = (NewBornBuilder)target;
 
-            // if (GUILayout.Button ("Post Single Gene")) {
-            //     newBornBuilder.PostCell("");
-            // }
-        }
+      // if (GUILayout.Button ("Post Single Gene")) {
+      //     newBornBuilder.PostCell("");
+      // }
     }
+  }
 }

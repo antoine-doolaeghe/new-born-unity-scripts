@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 using UnityEditor;
 using UnityEngine;
 
-namespace Gene
+namespace Newborn
 {
   public class NewbornSpawner : MonoBehaviour
   {
@@ -25,12 +25,12 @@ namespace Gene
       }
     }
 
-    public GameObject BuildAgent(GameObject spawner, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out Newborn newborn)
+    public GameObject BuildAgent(GameObject spawner, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out NewbornAgent newborn)
     {
       newBornAgent = Instantiate(AgentPrefab, spawner.transform);
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
-      newborn = newBornAgent.transform.GetComponent<Newborn>();
+      newborn = newBornAgent.transform.GetComponent<NewbornAgent>();
       newborn.Sex = SexConfig.sexes[UnityEngine.Random.Range(0, 2)]; // Randomly select male or female
       // Agents.Add(newBornAgent);
       newBornAgent.transform.localPosition = new Vector3(UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex), 0f, UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex));

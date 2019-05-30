@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 using MLAgents;
 using UnityEngine;
 
-namespace Gene
+namespace Newborn
 {
   public class NewbornBrain
   {

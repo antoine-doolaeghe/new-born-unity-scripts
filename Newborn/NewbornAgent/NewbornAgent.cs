@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Newborn : MonoBehaviour
+public class NewbornAgent : MonoBehaviour
 {
   private string bio;
   private string bornPlace;

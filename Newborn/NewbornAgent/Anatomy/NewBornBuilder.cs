@@ -4,12 +4,12 @@ using System.Text.RegularExpressions;
 using MLAgents;
 using UnityEngine;
 
-namespace Gene
+namespace Newborn
 {
   [ExecuteInEditMode]
   public class NewBornBuilder : MonoBehaviour
   {
-    private Newborn newborn;
+    private NewbornAgent newborn;
     [Header("Connection to API Service")]
     public NewbornService newbornService;
     public bool requestApiData;
@@ -25,7 +25,7 @@ namespace Gene
 
     void Awake()
     {
-      newborn = transform.GetComponent<Newborn>();
+      newborn = transform.GetComponent<NewbornAgent>();
     }
     public void DeleteCells()
     {
@@ -170,7 +170,7 @@ namespace Gene
       }
       // Handle starting/communication with api data
       AgentTrainBehaviour atBehaviour = transform.GetComponent<AgentTrainBehaviour>();
-      Newborn newborn = transform.GetComponent<Newborn>();
+      NewbornAgent newborn = transform.GetComponent<NewbornAgent>();
       newborn.GenerationIndex = GenerationService.generations.Count;
       newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
       requestApiData = false;

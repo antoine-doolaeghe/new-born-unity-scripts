@@ -8,7 +8,7 @@ using MyBox;
 using UnityEditor;
 using UnityEngine;
 
-namespace Gene
+namespace Newborn
 {
   [ExecuteInEditMode]
   public class NewbornManager : MonoBehaviour
@@ -92,7 +92,7 @@ namespace Gene
         {
           AgentTrainBehaviour atBehaviour;
           NewBornBuilder newBornBuilder;
-          Newborn newborn;
+          NewbornAgent newborn;
           GameObject newBornAgent;
           spawner.GetComponent<NewbornSpawner>().Agents.Add(spawner.GetComponent<NewbornSpawner>().BuildAgent(spawner, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn));
           AddBrainToAgentBehaviour(atBehaviour, brain);
@@ -135,7 +135,7 @@ namespace Gene
       GameObject[] agentList = GameObject.FindGameObjectsWithTag("agent");
       for (int agent = 0; agent < agentList.Length; agent++)
       {
-        Newborn newborn = agentList[agent].transform.GetComponent<Newborn>();
+        NewbornAgent newborn = agentList[agent].transform.GetComponent<NewbornAgent>();
         NewBornBuilder newBornBuilder = agentList[agent].transform.GetComponent<NewBornBuilder>();
         AgentTrainBehaviour agentTrainBehaviour = agentList[agent].transform.GetComponent<AgentTrainBehaviour>();
         string newbornId = agentTrainBehaviour.brain.name;
