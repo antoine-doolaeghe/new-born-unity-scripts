@@ -23,7 +23,6 @@ namespace Newborn
     [ConditionalField("isTrainingMode")] public Vector3 groundScale;
     [ConditionalField("isTrainingMode")] public float floorHeight;
     [Header("Agent parameters")]
-    public int minCellNb;
     public bool requestApiData;
     public string newbornId;
     [Header("Target parameters")]
@@ -94,10 +93,10 @@ namespace Newborn
           NewBornBuilder newBornBuilder;
           NewbornAgent newborn;
           GameObject newBornAgent;
-          spawner.GetComponent<NewbornSpawner>().Agents.Add(spawner.GetComponent<NewbornSpawner>().BuildAgent(spawner, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn));
-          AddBrainToAgentBehaviour(atBehaviour, brain);
-          SetApiRequestParameter(newBornBuilder, atBehaviour, requestApiData);
-          AddMinCellNb(newBornBuilder, minCellNb);
+          spawner.GetComponent<NewbornSpawner>().Agents.Add(spawner.GetComponent<NewbornSpawner>().BuildAgent(spawner, requestApiData, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn));
+          spawner.GetComponent<NewbornSpawner>().AddBrainToAgentBehaviour(atBehaviour, brain);
+          // spawner.GetComponent<NewbornSpawner>().SetApiRequestParameter(newBornBuilder, atBehaviour, requestApiData);
+          // spawner.GetComponent<NewbornSpawner>().AddMinCellNb(newBornBuilder, minCellNb);
         }
 
         AssignTarget(spawner.GetComponent<NewbornSpawner>().Agents);
@@ -161,10 +160,10 @@ namespace Newborn
     public IEnumerator RequestNewbornAgentInfo()
     {
       Debug.Log("Request Agent info from server...");
-      GameObject[] agentsObject = GameObject.FindGameObjectsWithTag("agent");
-      for (int a = 0; a < agentsObject.Length; a++)
+      GameObject[] agents = GameObject.FindGameObjectsWithTag("agent");
+      for (int a = 0; a < agents.Length; a++)
       {
-        yield return StartCoroutine(NewbornService.GetNewborn(newbornId, agentsObject[a], false));
+        yield return StartCoroutine(NewbornService.GetNewborn(newbornId, agents[a], false));
       }
       Debug.Log("Finished to build Agents");
       academy.InitializeEnvironment();
@@ -239,22 +238,6 @@ namespace Newborn
     {
       trainingFloor.name = "Floor" + floor;
       trainingFloor.transform.parent = transform;
-    }
-
-    private void AddMinCellNb(NewBornBuilder newBornBuilder, int minCellNb)
-    {
-      newBornBuilder.minCellNb = minCellNb;
-    }
-
-    private void SetApiRequestParameter(NewBornBuilder newBornBuilder, AgentTrainBehaviour atBehaviour, bool requestApiData)
-    {
-      atBehaviour.requestApiData = requestApiData;
-      newBornBuilder.requestApiData = requestApiData;
-    }
-
-    private void AddBrainToAgentBehaviour(AgentTrainBehaviour atBehaviour, Brain brain)
-    {
-      atBehaviour.brain = brain;
     }
 
     public void ClearBroadCastingBrains()

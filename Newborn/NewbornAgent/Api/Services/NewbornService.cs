@@ -87,28 +87,6 @@ namespace Newborn
       }
     }
 
-    public static IEnumerator ListTrainedNewborn()
-    {
-      WWW www;
-      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.newbornsGraphQlQuery, ApiConfig.apiKey, ApiConfig.url);
-
-      yield return www;
-      if (www.error != null)
-      {
-        Debug.Log(www.text);
-        throw new Exception("There was an error sending request: " + www.error);
-      }
-      else
-      {
-        Debug.Log("NewBorn List successfully requested!");
-        foreach (System.Collections.Generic.KeyValuePair<string, SimpleJSON.JSONNode> newbornId in JSON.Parse(www.text)["data"]["listNewborns"]["items"])
-        {
-          Debug.Log(newbornId.Value["id"]);
-          // StartCoroutine(NewbornService.GetNewborn(newbornId.Value["id"]));
-        };
-      }
-    }
-
     public static IEnumerator UpdateInstanceId(string id, string instanceId)
     {
       NewbornService.variable["id"] = "\"" + id + "\"";
