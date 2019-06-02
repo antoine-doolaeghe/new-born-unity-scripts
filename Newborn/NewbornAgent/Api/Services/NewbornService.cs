@@ -18,7 +18,6 @@ namespace Newborn
   public class NewbornService : MonoBehaviour
   {
     public string responseUuid;
-    public static List<float> cellInfoResponse;
     public GameObject cell;
     public delegate void QueryComplete();
     public static event QueryComplete onQueryComplete;
@@ -41,18 +40,14 @@ namespace Newborn
       Debug.Log("Newborn Model successfully posted!");
       DestroyAgent(transform);
       // HERE you need to make the adjustment for whether what need to be done. 
-      cellInfoResponse = new List<float>();
+      List<float> infoResponse = new List<float>();
       JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
       string responseId = responseData["id"];
       foreach (var cellInfo in responseData["cellInfos"].AsArray)
       {
-        cellInfoResponse.Add(cellInfo.Value.AsFloat);
+        infoResponse.Add(cellInfo.Value.AsFloat);
       }
-      // NewbornManager newbornManager = GameObject.Find("NewbornManager").transform.GetComponent<NewbornManager>();
-      // newbornManager.requestApiData = true;
-      agent.GetComponent<NewBornBuilder>().BuildNewBornFromFetch();
-      NewbornBrain.SetBrainParameters(agent.GetComponent<AgentTrainBehaviour>(), agent.GetComponent<NewBornBuilder>().cellNb);
-      NewbornBrain.SetBrainName(agent.GetComponent<AgentTrainBehaviour>(), responseId);
+      agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseId, infoResponse);
     }
 
     public static IEnumerator GetNewborn(string id, GameObject agent, bool IsGetAfterPost)
@@ -69,21 +64,14 @@ namespace Newborn
       else
       {
         Debug.Log("NewBorn successfully requested!");
-        cellInfoResponse = new List<float>();
+        List<float> infoResponse = new List<float>();
         JSONNode responseData = JSON.Parse(www.text)["data"]["getNewborn"];
         string responseId = responseData["id"];
         foreach (var cellInfo in responseData["models"]["items"][0]["cellInfos"].AsArray)
         {
-          cellInfoResponse.Add(cellInfo.Value.AsFloat);
+          infoResponse.Add(cellInfo.Value.AsFloat);
         }
-
-        NewbornManager newbornManager = GameObject.Find("NewbornManager").transform.GetComponent<NewbornManager>();
-        // newbornManager.requestApiData = true;
-        agent.GetComponent<NewBornBuilder>().BuildNewBornFromFetch();
-        newbornManager.ClearBroadCastingBrains();
-        NewbornBrain.SetBrainParameters(agent.GetComponent<AgentTrainBehaviour>(), agent.GetComponent<NewBornBuilder>().cellNb);
-        NewbornBrain.SetBrainName(agent.GetComponent<AgentTrainBehaviour>(), responseId);
-        newbornManager.academy.broadcastHub.broadcastingBrains.Add(agent.GetComponent<AgentTrainBehaviour>().brain);
+        agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseId, infoResponse);
       }
     }
 

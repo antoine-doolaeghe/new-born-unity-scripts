@@ -88,7 +88,7 @@ namespace Newborn
         cell.transform.parent = transform;
         cell.GetComponent<SphereCollider>().radius /= 2f;
       }
-
+      transform.GetComponent<AgentTrainBehaviour>().enabled = true;
       cellNb = newborn.Cells.Count;
     }
 
@@ -148,18 +148,6 @@ namespace Newborn
       AddBodyPart(false);
     }
 
-    public void BuildNewBornFromFetch()
-    {
-      Debug.Log("Building Newborn From Fetch");
-      if (partNb == 0 && threshold == 0f)
-      {
-        partNb = AgentConfig.layerNumber;
-        threshold = AgentConfig.threshold;
-      }
-
-      requestApiData = true;
-      handleCellInfoResponse();
-    }
 
     public IEnumerator BuildAgentRandomNewBorn()
     {
@@ -177,6 +165,8 @@ namespace Newborn
       BuildNewBorn(AgentConfig.layerNumber, AgentConfig.threshold);
       checkMinCellNb();
       AddBodyPart(true);
+      Academy academy = GameObject.Find("Academy").transform.GetComponent<Academy>();
+      academy.broadcastHub.broadcastingBrains.Add(atBehaviour.brain);
       NewbornBrain.SetBrainParameters(atBehaviour, cellNb);
     }
 
@@ -196,19 +186,31 @@ namespace Newborn
       atBehaviour.brain = brain;
     }
 
-    public void handleCellInfoResponse()
+    public void BuildNewbornFromResponse(GameObject agent, string responseId, List<float> infoResponse)
     {
-      List<float> cellInfoResponse = NewbornService.cellInfoResponse;
-      if (cellInfoResponse.Count != 0 && !Initialised)
+      Debug.Log("Building Newborn From Fetch");
+      if (partNb == 0 && threshold == 0f)
+      {
+        partNb = AgentConfig.layerNumber;
+        threshold = AgentConfig.threshold;
+      }
+
+      requestApiData = true;
+
+      if (infoResponse.Count != 0 && !Initialised)
       {
         GeneInformations.Add(new GeneInformation(new List<float>()));
-        for (int i = 0; i < cellInfoResponse.Count; i++)
+        for (int i = 0; i < infoResponse.Count; i++)
         {
-          GeneInformations[0].info.Add(cellInfoResponse[i]);
+          GeneInformations[0].info.Add(infoResponse[i]);
         }
         BuildNewBorn(partNb, threshold);
         checkMinCellNb();
         AddBodyPart(true);
+        Academy academy = GameObject.Find("Academy").transform.GetComponent<Academy>();
+        NewbornBrain.SetBrainParameters(agent.GetComponent<AgentTrainBehaviour>(), agent.GetComponent<NewBornBuilder>().cellNb);
+        NewbornBrain.SetBrainName(agent.GetComponent<AgentTrainBehaviour>(), responseId);
+        academy.broadcastHub.broadcastingBrains.Add(agent.GetComponent<AgentTrainBehaviour>().brain);
         Initialised = true;
       }
     }

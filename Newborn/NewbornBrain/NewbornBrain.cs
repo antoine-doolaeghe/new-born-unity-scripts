@@ -12,7 +12,7 @@ namespace Newborn
     {
       atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
       atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { cellNb * 3 };
-      atBehaviour.brain.brainParameters.vectorObservationSize = (cellNb) * 13 - 4;
+      atBehaviour.brain.brainParameters.vectorObservationSize = (cellNb - 1) * 13 - 4;
     }
 
     public static void SetBrainName(AgentTrainBehaviour atBehaviour, string responseId)

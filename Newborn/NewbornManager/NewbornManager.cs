@@ -30,7 +30,6 @@ namespace Newborn
     [ConditionalField("isTrainingMode")] public bool isTargetDynamic;
     [Header("Academy parameters")]
     public Academy academy;
-    public bool control;
     [Header("Brain parameters")]
     public Brain brainObject;
     public int vectorObservationSize;
@@ -80,8 +79,6 @@ namespace Newborn
           // Randomly place the agents.
         }
 
-        SetBrainParams(brain, Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""));
-
         if (!isTargetDynamic && isTrainingMode)
         {
           Instantiate(StaticTarget, spawner.transform);
@@ -94,9 +91,6 @@ namespace Newborn
           NewbornAgent newborn;
           GameObject newBornAgent;
           spawner.GetComponent<NewbornSpawner>().Agents.Add(spawner.GetComponent<NewbornSpawner>().BuildAgent(spawner, requestApiData, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn));
-          spawner.GetComponent<NewbornSpawner>().AddBrainToAgentBehaviour(atBehaviour, brain);
-          // spawner.GetComponent<NewbornSpawner>().SetApiRequestParameter(newBornBuilder, atBehaviour, requestApiData);
-          // spawner.GetComponent<NewbornSpawner>().AddMinCellNb(newBornBuilder, minCellNb);
         }
 
         AssignTarget(spawner.GetComponent<NewbornSpawner>().Agents);
@@ -124,26 +118,6 @@ namespace Newborn
         {
           newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = StaticTarget.transform;
         }
-      }
-    }
-
-    public void PostTrainingNewborns()
-    {
-      Debug.Log("Posting training NewBorns to the server...");
-      string generationId = GenerationService.generations[GenerationService.generations.Count - 1]; // Get the latest generation;
-      GameObject[] agentList = GameObject.FindGameObjectsWithTag("agent");
-      for (int agent = 0; agent < agentList.Length; agent++)
-      {
-        NewbornAgent newborn = agentList[agent].transform.GetComponent<NewbornAgent>();
-        NewBornBuilder newBornBuilder = agentList[agent].transform.GetComponent<NewBornBuilder>();
-        AgentTrainBehaviour agentTrainBehaviour = agentList[agent].transform.GetComponent<AgentTrainBehaviour>();
-        string newbornId = agentTrainBehaviour.brain.name;
-        string newbornName = newborn.title;
-        string newbornSex = newborn.Sex;
-        string newbornHex = "mock hex";
-        // DO a generation check ? 
-        NewBornPostData newBornPostData = new NewBornPostData(newbornName, newbornId, generationId, newbornSex, newbornHex);
-        newBornBuilder.PostNewborn(newBornPostData, agentList[agent]);
       }
     }
 
@@ -181,14 +155,6 @@ namespace Newborn
       {
         Debug.Log(agent.name);
       }
-    }
-
-    private void SetBrainParams(Brain brain, string brainName)
-    {
-      brain.name = brainName;
-      brain.brainParameters.vectorActionSize = new int[1] { vectorActionSize };
-      academy.broadcastHub.broadcastingBrains.Add(brain);
-      academy.broadcastHub.SetControlled(brain, control);
     }
 
     private GameObject CreateTrainingFloor(int floor)

@@ -19,6 +19,8 @@ namespace Newborn
     public Brain brainObject;
     private float timer = 0.0f;
     public NewbornService newbornService;
+    public int vectorActionSize;
+    public bool control;
     public void Update()
     {
       timer += Time.deltaTime;
@@ -30,6 +32,8 @@ namespace Newborn
     }
     public GameObject BuildAgent(GameObject spawner, bool requestApiData, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out NewbornAgent newborn)
     {
+      Brain brain = Instantiate(brainObject);
+      SetBrainParams(brain, Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""));
       newBornAgent = Instantiate(AgentPrefab, spawner.transform);
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
@@ -38,7 +42,28 @@ namespace Newborn
       newBornAgent.transform.localPosition = new Vector3(UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex), 0f, UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex));
       spawner.GetComponent<NewbornSpawner>().SetApiRequestParameter(newBornBuilder, atBehaviour, requestApiData);
       spawner.GetComponent<NewbornSpawner>().AddMinCellNb(newBornBuilder, minCellNb);
+      spawner.GetComponent<NewbornSpawner>().AddBrainToAgentBehaviour(atBehaviour, brain);
       return newBornAgent;
+    }
+
+    public void PostTrainingNewborns()
+    {
+      Debug.Log("Posting training NewBorns to the server...");
+      string generationId = GenerationService.generations[GenerationService.generations.Count - 1]; // Get the latest generation;
+      GameObject[] agentList = GameObject.FindGameObjectsWithTag("agent");
+      foreach (GameObject agent in Agents)
+      {
+        NewbornAgent newborn = agent.transform.GetComponent<NewbornAgent>();
+        NewBornBuilder newBornBuilder = agent.transform.GetComponent<NewBornBuilder>();
+        AgentTrainBehaviour agentTrainBehaviour = agent.transform.GetComponent<AgentTrainBehaviour>();
+        string newbornId = agentTrainBehaviour.brain.name;
+        string newbornName = newborn.title;
+        string newbornSex = newborn.Sex;
+        string newbornHex = "mock hex";
+        // DO a generation check ? 
+        NewBornPostData newBornPostData = new NewBornPostData(newbornName, newbornId, generationId, newbornSex, newbornHex);
+        newBornBuilder.PostNewborn(newBornPostData, agent);
+      }
     }
 
     public void BuildAllAgentsRandomGeneration()
@@ -70,6 +95,14 @@ namespace Newborn
           DestroyImmediate(child.gameObject);
         }
       }
+    }
+
+    private void SetBrainParams(Brain brain, string brainName)
+    {
+      CrawlerAcademy academy = GameObject.Find("Academy").GetComponent<CrawlerAcademy>();
+      brain.name = brainName;
+      brain.brainParameters.vectorActionSize = new int[1] { vectorActionSize };
+      academy.broadcastHub.SetControlled(brain, control);
     }
 
     public void AddBrainToAgentBehaviour(AgentTrainBehaviour atBehaviour, Brain brain)

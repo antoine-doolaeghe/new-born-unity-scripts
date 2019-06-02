@@ -83,10 +83,13 @@ namespace Newborn
       }
 
       EditorGUILayout.LabelField("API Post request");
-
       if (GUILayout.Button("Post Training NewBorn"))
       {
-        manager.PostTrainingNewborns();
+        manager.ClearBroadCastingBrains();
+        foreach (GameObject spawner in manager.Spawners)
+        {
+          spawner.GetComponent<NewbornSpawner>().PostTrainingNewborns();
+        }
       }
     }
   }
