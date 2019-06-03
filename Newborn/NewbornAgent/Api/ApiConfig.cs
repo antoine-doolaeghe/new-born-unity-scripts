@@ -13,5 +13,6 @@ public class ApiConfig : ScriptableObject
   public static string modelGraphQlMutation = "mutation ModelPost {createModel(input: {id: '$id^', cellInfos: $cellInfos^, cellPositions: $cellPositions^, modelNewbornId: '$modelNewbornId^'}) { id, cellInfos }}";
   public static string newBornGraphQlQuery = "query getNewBorn {getNewborn(id: '$id^') { id, name, models { items { cellInfos } }, generation { id, index }  }}";
   public static string trainingGraphQlQuery = "query GetPost {start(newbornId: '$id^')}";
+  public static string fetchModelGraphQlQuery = "query GetPost {fetchModel(newbornId: '$id^')}";
   public static string updateNewbornInstanceId = "mutation UpdateNewbornInstanceId {updateNewborn(input: {id: '$id^', instanceId: $instanceId^}) { id, instanceId }}";
 }

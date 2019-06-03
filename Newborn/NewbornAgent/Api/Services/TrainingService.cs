@@ -29,11 +29,31 @@ namespace Newborn
 
     public static IEnumerator TrainNewborn(string newbornId)
     {
-      // TODO: call the newborn instance with the new newborn id
       byte[] postData;
       Dictionary<string, string> postHeader;
       TrainingService.variable["id"] = "\"" + newbornId + "\"";
 
+      WWW www;
+      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.trainingGraphQlQuery, ApiConfig.apiKey, ApiConfig.url);
+      yield return www;
+      if (www.error != null)
+      {
+        throw new Exception("There was an error sending request: " + www.error);
+      }
+      else
+      {
+        Debug.Log("Training Instance successfully launched");
+        string instanceId = JSON.Parse(www.text)["data"]["start"];
+        yield return NewbornService.UpdateInstanceId(newbornId, instanceId);
+      }
+    }
+
+    public static IEnumerator StreamNewbornTrainingModel(string newbornId)
+    {
+      byte[] postData;
+      Dictionary<string, string> postHeader;
+      TrainingService.variable["id"] = "\"" + newbornId + "\"";
+      Debug.Log("Requesting the trained newborn model");
       WWW www;
       ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.trainingGraphQlQuery, ApiConfig.apiKey, ApiConfig.url);
       yield return www;

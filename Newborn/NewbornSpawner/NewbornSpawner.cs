@@ -18,7 +18,6 @@ namespace Newborn
     public int minCellNb;
     public Brain brainObject;
     private float timer = 0.0f;
-    public NewbornService newbornService;
     public int vectorActionSize;
     public bool control;
     public void Update()
@@ -33,16 +32,16 @@ namespace Newborn
     public GameObject BuildAgent(GameObject spawner, bool requestApiData, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out NewbornAgent newborn)
     {
       Brain brain = Instantiate(brainObject);
-      SetBrainParams(brain, NewbornBrain.GenerateRandomBrainName());
       newBornAgent = Instantiate(AgentPrefab, spawner.transform);
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
       newborn = newBornAgent.transform.GetComponent<NewbornAgent>();
       newborn.Sex = SexConfig.sexes[UnityEngine.Random.Range(0, 2)]; // Randomly select male or female
       newBornAgent.transform.localPosition = new Vector3(UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex), 0f, UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex));
-      spawner.GetComponent<NewbornSpawner>().SetApiRequestParameter(newBornBuilder, atBehaviour, requestApiData);
-      spawner.GetComponent<NewbornSpawner>().AddMinCellNb(newBornBuilder, minCellNb);
-      spawner.GetComponent<NewbornSpawner>().AddBrainToAgentBehaviour(atBehaviour, brain);
+      SetBrainParams(newBornBuilder, brain, NewbornBrain.GenerateRandomBrainName());
+      SetApiRequestParameter(newBornBuilder, atBehaviour, requestApiData);
+      AddMinCellNb(newBornBuilder, minCellNb);
+      AddBrainToAgentBehaviour(atBehaviour, brain);
       return newBornAgent;
     }
 
@@ -60,12 +59,12 @@ namespace Newborn
         string newbornName = newborn.title;
         string newbornSex = newborn.Sex;
         string newbornHex = "mock hex";
-        // DO a generation check ? 
         NewBornPostData newBornPostData = new NewBornPostData(newbornName, newbornId, generationId, newbornSex, newbornHex);
-        newBornBuilder.PostNewborn(newBornPostData, agent);
+        StartCoroutine(newBornBuilder.PostNewborn(newBornPostData, agent));
       }
     }
 
+    #region editor methods
     public void BuildAllAgentsRandomGeneration()
     {
       foreach (GameObject agent in Agents)
@@ -96,13 +95,14 @@ namespace Newborn
         }
       }
     }
+    #endregion
 
-    private void SetBrainParams(Brain brain, string brainName)
+    #region helper methods
+    private void SetBrainParams(NewBornBuilder newbornBuilder, Brain brain, string brainName)
     {
-      CrawlerAcademy academy = GameObject.Find("Academy").GetComponent<CrawlerAcademy>();
       brain.name = brainName;
       brain.brainParameters.vectorActionSize = new int[1] { vectorActionSize };
-      academy.broadcastHub.SetControlled(brain, control);
+      newbornBuilder.academy.broadcastHub.SetControlled(brain, control);
     }
 
     public void AddBrainToAgentBehaviour(AgentTrainBehaviour atBehaviour, Brain brain)
@@ -120,5 +120,6 @@ namespace Newborn
     {
       newBornBuilder.minCellNb = minCellNb;
     }
+    #endregion
   }
 }
