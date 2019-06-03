@@ -586,8 +586,9 @@ namespace MLAgents
             info.vectorObservation.Count));
       }
 
-      info.stackedVectorObservation.RemoveRange(
-          0, param.vectorObservationSize);
+      // info.stackedVectorObservation.RemoveRange(
+      //     0, param.vectorObservationSize);
+      info.stackedVectorObservation.Clear();
       info.stackedVectorObservation.AddRange(info.vectorObservation);
 
       info.visualObservations.Clear();
