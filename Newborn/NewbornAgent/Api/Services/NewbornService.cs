@@ -21,34 +21,14 @@ namespace Newborn
     public GameObject cell;
     public delegate void QueryComplete();
     public static event QueryComplete onQueryComplete;
-
     public enum Status { Neutral, Loading, Complete, Error };
-
     public static Dictionary<string, string> variable = new Dictionary<string, string>();
     public static Dictionary<string, string[]> array = new Dictionary<string, string[]>();
     private NewbornAgent newborn;
-
     private static String graphQlInput;
-
     static byte[] postData;
     static Dictionary<string, string> postHeader;
-
     public delegate void BuildAgentCallback(Transform transform, WWW www, GameObject agent);
-
-    public static void RebuildAgent(Transform transform, WWW www, GameObject agent)
-    {
-      Debug.Log("Newborn Model successfully posted!");
-      DestroyAgent(transform);
-      // HERE you need to make the adjustment for whether what need to be done. 
-      List<float> infoResponse = new List<float>();
-      JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
-      string responseId = responseData["id"];
-      foreach (var cellInfo in responseData["cellInfos"].AsArray)
-      {
-        infoResponse.Add(cellInfo.Value.AsFloat);
-      }
-      agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseId, infoResponse);
-    }
 
     public static IEnumerator GetNewborn(string id, GameObject agent, bool IsGetAfterPost)
     {
@@ -121,6 +101,19 @@ namespace Newborn
       {
         callback(transform, www, agent);
       }
+    }
+    public static void RebuildAgent(Transform transform, WWW www, GameObject agent)
+    {
+      Debug.Log("Newborn Model successfully posted!");
+      List<float> infoResponse = new List<float>();
+      DestroyAgent(transform);
+      JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
+      string responseId = responseData["id"];
+      foreach (var cellInfo in responseData["cellInfos"].AsArray)
+      {
+        infoResponse.Add(cellInfo.Value.AsFloat);
+      }
+      agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseId, infoResponse);
     }
     public static IEnumerator PostNewborn(NewBornPostData newBornPostData, GameObject agent = null)
     {

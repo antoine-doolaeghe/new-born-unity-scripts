@@ -120,17 +120,6 @@ namespace Newborn
         }
       }
     }
-
-    public IEnumerator PostGeneration(int generationIndex)
-    {
-      yield return StartCoroutine(GenerationService.PostGeneration(Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""), generationIndex));
-    }
-
-    public IEnumerator RequestGenerations()
-    {
-      yield return StartCoroutine(GenerationService.GetGenerations());
-    }
-
     public IEnumerator RequestNewbornAgentInfo()
     {
       Debug.Log("Request Agent info from server...");
@@ -185,11 +174,6 @@ namespace Newborn
           spawnerTransform.localPosition = new Vector3(spawnerTransformGroundScale.x, 0f, spawnerTransformGroundScale.z);
           break;
       }
-    }
-
-    private static void PositionProductionSpawner()
-    {
-      Debug.Log("TO-DO: Position the production spawner");
     }
 
     private GameObject InstantiateSpawner(GameObject parent, int floor, int squarePosition, out GameObject spawner)

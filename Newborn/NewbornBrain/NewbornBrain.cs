@@ -19,5 +19,10 @@ namespace Newborn
     {
       atBehaviour.brain.name = responseId;
     }
+
+    public static string GenerateRandomBrainName()
+    {
+      return Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
+    }
   }
 }

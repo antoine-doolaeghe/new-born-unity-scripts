@@ -10,6 +10,8 @@ namespace Newborn
   public class NewBornBuilder : MonoBehaviour
   {
     private NewbornAgent newborn;
+    private AgentTrainBehaviour atBehaviour;
+    private Academy academy;
     [Header("Connection to API Service")]
     public NewbornService newbornService;
     public bool requestApiData;
@@ -26,6 +28,8 @@ namespace Newborn
     void Awake()
     {
       newborn = transform.GetComponent<NewbornAgent>();
+      atBehaviour = transform.GetComponent<AgentTrainBehaviour>();
+      academy = GameObject.Find("Academy").transform.GetComponent<Academy>();
     }
     public void DeleteCells()
     {
@@ -36,6 +40,7 @@ namespace Newborn
       cellInfoIndex = 0;
       Initialised = false;
       GeneInformations.Clear();
+      academy.broadcastHub.broadcastingBrains.Clear();
       cellNb = 0;
     }
 
@@ -88,7 +93,7 @@ namespace Newborn
         cell.transform.parent = transform;
         cell.GetComponent<SphereCollider>().radius /= 2f;
       }
-      transform.GetComponent<AgentTrainBehaviour>().enabled = true;
+      atBehaviour.enabled = true;
       cellNb = newborn.Cells.Count;
     }
 
@@ -154,18 +159,14 @@ namespace Newborn
       yield return StartCoroutine(GenerationService.GetGenerations()); /// This check should be made as you build the AGENT and not as you post the agents.
       if (GenerationService.generations.Count == 0)
       {
-        yield return StartCoroutine(GenerationService.PostGeneration(Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""), 1));
+        yield return StartCoroutine(GenerationService.PostGeneration(NewbornBrain.GenerateRandomBrainName(), 1));
       }
-      // Handle starting/communication with api data
-      AgentTrainBehaviour atBehaviour = transform.GetComponent<AgentTrainBehaviour>();
-      NewbornAgent newborn = transform.GetComponent<NewbornAgent>();
       newborn.GenerationIndex = GenerationService.generations.Count;
       newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
       requestApiData = false;
       BuildNewBorn(AgentConfig.threshold);
       checkMinCellNb();
       AddBodyPart(true);
-      Academy academy = GameObject.Find("Academy").transform.GetComponent<Academy>();
       academy.broadcastHub.broadcastingBrains.Add(atBehaviour.brain);
       NewbornBrain.SetBrainParameters(atBehaviour, cellNb);
     }
@@ -173,7 +174,6 @@ namespace Newborn
     public void BuildAgentRandomGeneration(Transform agent)
     {
       NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
-      AgentTrainBehaviour atBehaviour = agent.GetComponent<AgentTrainBehaviour>();
       newBornBuilder.threshold = AgentConfig.threshold;
       // SetApiRequestParameter(newBornBuilder, atBehaviour, false);
       newBornBuilder.BuildNewGeneration(newBornBuilder.GeneInformations.Count, false);
@@ -204,10 +204,9 @@ namespace Newborn
         BuildNewBorn(threshold);
         checkMinCellNb();
         AddBodyPart(true);
-        Academy academy = GameObject.Find("Academy").transform.GetComponent<Academy>();
-        NewbornBrain.SetBrainParameters(agent.GetComponent<AgentTrainBehaviour>(), cellNb + 1);
-        NewbornBrain.SetBrainName(agent.GetComponent<AgentTrainBehaviour>(), responseId);
-        academy.broadcastHub.broadcastingBrains.Add(agent.GetComponent<AgentTrainBehaviour>().brain);
+        NewbornBrain.SetBrainParameters(atBehaviour, cellNb + 1);
+        NewbornBrain.SetBrainName(atBehaviour, responseId);
+        academy.broadcastHub.broadcastingBrains.Add(atBehaviour.brain);
         Initialised = true;
       }
     }
@@ -232,7 +231,7 @@ namespace Newborn
     {
       List<float> modelInfos = ReturnGeneInformations(modelIndex);
       List<PositionPostData> cellPositions = AnatomyHelpers.ReturnModelPositions(newborn);
-      string id = Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
+      string id = NewbornBrain.GenerateRandomBrainName();
       GenerationPostData generationPostData = new GenerationPostData(newbornId, cellPositions, modelInfos);
       yield return NewbornService.PostNewbornModel(transform, generationPostData, newbornId, agent, responseCallback);
     }
@@ -269,7 +268,6 @@ namespace Newborn
 
     private void AddBodyPart(bool init)
     {
-      aTBehaviour = transform.gameObject.GetComponent<AgentTrainBehaviour>();
       aTBehaviour.initPart = newborn.Cells[0].transform;
       for (int i = 1; i < cellNb; i++)
       {
@@ -304,7 +302,7 @@ namespace Newborn
 
     private void SetAgentNameFromBrainName()
     {
-      transform.gameObject.name = transform.GetComponent<AgentTrainBehaviour>().brain + "";
+      transform.gameObject.name = atBehaviour.brain + "";
     }
 
     private void checkMinCellNb()

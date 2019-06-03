@@ -33,7 +33,7 @@ namespace Newborn
     public GameObject BuildAgent(GameObject spawner, bool requestApiData, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out NewbornAgent newborn)
     {
       Brain brain = Instantiate(brainObject);
-      SetBrainParams(brain, Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", ""));
+      SetBrainParams(brain, NewbornBrain.GenerateRandomBrainName());
       newBornAgent = Instantiate(AgentPrefab, spawner.transform);
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
@@ -45,7 +45,6 @@ namespace Newborn
       spawner.GetComponent<NewbornSpawner>().AddBrainToAgentBehaviour(atBehaviour, brain);
       return newBornAgent;
     }
-
 
     public void PostTrainingNewborns()
     {

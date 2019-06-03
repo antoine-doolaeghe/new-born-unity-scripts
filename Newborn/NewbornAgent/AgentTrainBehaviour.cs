@@ -261,12 +261,11 @@ public class AgentTrainBehaviour : Agent
       List<GeneInformation> newGene = GeneHelper.ReturnMixedForReproduction(femaleGene, maleGene);
       // prepare post data
       string newNewbornName = "name";
-      string newNewbornId = Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
       string newNewbornGenerationId = newborn.GenerationId;
       string newNewbornSex = "male";
       string newNewbornHex = "MOCK HEX";
       // DO a generation check ? 
-      NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, newNewbornId, newNewbornGenerationId, newNewbornSex, newNewbornHex);
+      NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, NewbornBrain.GenerateRandomBrainName(), newNewbornGenerationId, newNewbornSex, newNewbornHex);
       // SEND THE TRAINING INSTANCE HERE;
       yield return NewbornService.PostReproducedNewborn(newBornPostData, transform.gameObject, touchingNewborn);
       NewbornService.BuildAgentCallback Callback = NewbornService.SuccessfullReproductionCallback;
