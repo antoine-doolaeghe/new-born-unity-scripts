@@ -26,151 +26,128 @@ using System.Collections.Generic;
 using Amazon.CognitoIdentity;
 using Amazon;
 
-namespace AWSSDK.Examples
+public class S3Service : MonoBehaviour
 {
-  public class S3Service : MonoBehaviour
+  public string S3Region = RegionEndpoint.USEast1.SystemName;
+  private RegionEndpoint _S3Region
   {
-    public string IdentityPoolId = "";
-    public string CognitoIdentityRegion = RegionEndpoint.USEast1.SystemName;
-    private RegionEndpoint _CognitoIdentityRegion
+    get { return RegionEndpoint.GetBySystemName(S3Region); }
+  }
+  public string S3BucketName = "newborn-training-models";
+
+  void Awake()
+  {
+    UnityInitializer.AttachToGameObject(this.gameObject);
+    AWSConfigs.HttpClient = AWSConfigs.HttpClientOption.UnityWebRequest;
+  }
+
+  #region private members
+
+  private IAmazonS3 _s3Client;
+  private AWSCredentials _credentials;
+
+  private AWSCredentials Credentials
+  {
+    get
     {
-      get { return RegionEndpoint.GetBySystemName(CognitoIdentityRegion); }
+      if (_credentials == null)
+        _credentials = new CognitoAWSCredentials(
+            "eu-west-1:7eb0715c-0ce5-476b-9ffc-b60dec05e8ab", // ID du groupe d'identités
+            RegionEndpoint.EUWest1 // Région
+        );
+      return _credentials;
     }
-    public string S3Region = RegionEndpoint.USEast1.SystemName;
-    private RegionEndpoint _S3Region
+  }
+
+  private IAmazonS3 Client
+  {
+    get
     {
-      get { return RegionEndpoint.GetBySystemName(S3Region); }
+      if (_s3Client == null)
+      {
+        _s3Client = new AmazonS3Client(Credentials, _S3Region);
+      }
+      //test comment
+      return _s3Client;
     }
-    public string S3BucketName = null;
-    public string SampleFileName = null;
-    public Button GetBucketListButton = null;
-    public Button PostBucketButton = null;
-    public Button GetObjectsListButton = null;
-    public Button DeleteObjectButton = null;
-    public Button GetObjectButton = null;
-    public Text ResultText = null;
-
-    void Start()
-    {
-      UnityInitializer.AttachToGameObject(this.gameObject);
-      GetBucketListButton.onClick.AddListener(() => { GetBucketList(); });
-      PostBucketButton.onClick.AddListener(() => { PostObject(); });
-      GetObjectsListButton.onClick.AddListener(() => { GetObjects(); });
-      DeleteObjectButton.onClick.AddListener(() => { DeleteObject(); });
-      GetObjectButton.onClick.AddListener(() => { GetObject(); });
-    }
-
-    #region private members
-
-    private IAmazonS3 _s3Client;
-    private AWSCredentials _credentials;
-
-    private AWSCredentials Credentials
-    {
-      get
-      {
-        if (_credentials == null)
-          _credentials = new CognitoAWSCredentials(IdentityPoolId, _CognitoIdentityRegion);
-        return _credentials;
-      }
-    }
-
-    private IAmazonS3 Client
-    {
-      get
-      {
-        if (_s3Client == null)
-        {
-          _s3Client = new AmazonS3Client(Credentials, _S3Region);
-        }
-        //test comment
-        return _s3Client;
-      }
-    }
-
-    #endregion
-
-    /// <summary>
-    /// Get Object from S3 Bucket
-    /// </summary>
-    private void GetObject()
-    {
-      ResultText.text = string.Format("fetching {0} from bucket {1}", SampleFileName, S3BucketName);
-      Client.GetObjectAsync(S3BucketName, SampleFileName, (responseObj) =>
-      {
-        string data = null;
-        var response = responseObj.Response;
-        if (response.ResponseStream != null)
-        {
-          using (StreamReader reader = new StreamReader(response.ResponseStream))
-          {
-            data = reader.ReadToEnd();
-          }
-
-          ResultText.text += "\n";
-          ResultText.text += data;
-        }
-      });
-    }
-
-    #region helper methods
-
-    private string GetFileHelper()
-    {
-      var fileName = SampleFileName;
-
-      if (!File.Exists(Application.persistentDataPath + Path.DirectorySeparatorChar + fileName))
-      {
-        var streamReader = File.CreateText(Application.persistentDataPath + Path.DirectorySeparatorChar + fileName);
-        streamReader.WriteLine("This is a sample s3 file uploaded from unity s3 sample");
-        streamReader.Close();
-      }
-      return fileName;
-    }
-
-    private string GetPostPolicy(string bucketName, string key, string contentType)
-    {
-      bucketName = bucketName.Trim();
-
-      key = key.Trim();
-      // uploadFileName cannot start with /
-      if (!string.IsNullOrEmpty(key) && key[0] == '/')
-      {
-        throw new ArgumentException("uploadFileName cannot start with / ");
-      }
-
-      contentType = contentType.Trim();
-
-      if (string.IsNullOrEmpty(bucketName))
-      {
-        throw new ArgumentException("bucketName cannot be null or empty. It's required to build post policy");
-      }
-      if (string.IsNullOrEmpty(key))
-      {
-        throw new ArgumentException("uploadFileName cannot be null or empty. It's required to build post policy");
-      }
-      if (string.IsNullOrEmpty(contentType))
-      {
-        throw new ArgumentException("contentType cannot be null or empty. It's required to build post policy");
-      }
-
-      string policyString = null;
-      int position = key.LastIndexOf('/');
-      if (position == -1)
-      {
-        policyString = "{\"expiration\": \"" + DateTime.UtcNow.AddHours(24).ToString("yyyy-MM-ddTHH:mm:ssZ") + "\",\"conditions\": [{\"bucket\": \"" +
-            bucketName + "\"},[\"starts-with\", \"$key\", \"" + "\"],{\"acl\": \"private\"},[\"eq\", \"$Content-Type\", " + "\"" + contentType + "\"" + "]]}";
-      }
-      else
-      {
-        policyString = "{\"expiration\": \"" + DateTime.UtcNow.AddHours(24).ToString("yyyy-MM-ddTHH:mm:ssZ") + "\",\"conditions\": [{\"bucket\": \"" +
-            bucketName + "\"},[\"starts-with\", \"$key\", \"" + key.Substring(0, position) + "/\"],{\"acl\": \"private\"},[\"eq\", \"$Content-Type\", " + "\"" + contentType + "\"" + "]]}";
-      }
-
-      return policyString;
-    }
-
   }
 
   #endregion
+
+  /// <summary>
+  /// Get Object from S3 Bucket
+  /// </summary>
+  public void GetObject(string newbornId)
+  {
+    Debug.Log("Fetching model from S3");
+    string SampleFileName = newbornId + ".nn";
+    Client.GetObjectAsync(S3BucketName, SampleFileName, (responseObj) =>
+    {
+      var response = responseObj.Response;
+      Debug.Log(response);
+      Debug.Log(responseObj.Exception);
+      if (response.ResponseStream != null)
+      {
+        using (StreamReader reader = new StreamReader(response.ResponseStream))
+        {
+          using (var fs = System.IO.File.Create(@"./Assets/Newborn/Resources/" + SampleFileName))
+          {
+            byte[] buffer = new byte[81920];
+            int count;
+            while ((count = response.ResponseStream.Read(buffer, 0, buffer.Length)) != 0)
+              fs.Write(buffer, 0, count);
+            fs.Flush();
+          }
+        }
+      }
+    });
+  }
+
+  #region helper methods
+
+
+  private string GetPostPolicy(string bucketName, string key, string contentType)
+  {
+    bucketName = bucketName.Trim();
+
+    key = key.Trim();
+    // uploadFileName cannot start with /
+    if (!string.IsNullOrEmpty(key) && key[0] == '/')
+    {
+      throw new ArgumentException("uploadFileName cannot start with / ");
+    }
+
+    contentType = contentType.Trim();
+
+    if (string.IsNullOrEmpty(bucketName))
+    {
+      throw new ArgumentException("bucketName cannot be null or empty. It's required to build post policy");
+    }
+    if (string.IsNullOrEmpty(key))
+    {
+      throw new ArgumentException("uploadFileName cannot be null or empty. It's required to build post policy");
+    }
+    if (string.IsNullOrEmpty(contentType))
+    {
+      throw new ArgumentException("contentType cannot be null or empty. It's required to build post policy");
+    }
+
+    string policyString = null;
+    int position = key.LastIndexOf('/');
+    if (position == -1)
+    {
+      policyString = "{\"expiration\": \"" + DateTime.UtcNow.AddHours(24).ToString("yyyy-MM-ddTHH:mm:ssZ") + "\",\"conditions\": [{\"bucket\": \"" +
+          bucketName + "\"},[\"starts-with\", \"$key\", \"" + "\"],{\"acl\": \"private\"},[\"eq\", \"$Content-Type\", " + "\"" + contentType + "\"" + "]]}";
+    }
+    else
+    {
+      policyString = "{\"expiration\": \"" + DateTime.UtcNow.AddHours(24).ToString("yyyy-MM-ddTHH:mm:ssZ") + "\",\"conditions\": [{\"bucket\": \"" +
+          bucketName + "\"},[\"starts-with\", \"$key\", \"" + key.Substring(0, position) + "/\"],{\"acl\": \"private\"},[\"eq\", \"$Content-Type\", " + "\"" + contentType + "\"" + "]]}";
+    }
+
+    return policyString;
+  }
+
 }
+
+#endregion

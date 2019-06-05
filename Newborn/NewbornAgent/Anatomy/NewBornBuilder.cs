@@ -17,10 +17,9 @@ namespace Newborn
     public List<GeneInformation> GeneInformations;
     private int cellInfoIndex = 0;
     private bool Initialised = false;
-    private AgentTrainBehaviour aTBehaviour;
     private NewbornManager trainingManager;
     public NewbornAgent newborn;
-    private AgentTrainBehaviour atBehaviour;
+    private AgentTrainBehaviour aTBehaviour;
     [HideInInspector] public Academy academy;
     [HideInInspector] public float threshold;
     [HideInInspector] public int partNb;
@@ -28,7 +27,7 @@ namespace Newborn
     void Awake()
     {
       newborn = transform.GetComponent<NewbornAgent>();
-      atBehaviour = transform.GetComponent<AgentTrainBehaviour>();
+      aTBehaviour = transform.GetComponent<AgentTrainBehaviour>();
       academy = GameObject.Find("Academy").transform.GetComponent<Academy>();
     }
     public void DeleteCells()
@@ -93,7 +92,7 @@ namespace Newborn
         cell.transform.parent = transform;
         cell.GetComponent<SphereCollider>().radius /= 2f;
       }
-      atBehaviour.enabled = true;
+      aTBehaviour.enabled = true;
       cellNb = newborn.Cells.Count;
     }
 
@@ -163,8 +162,8 @@ namespace Newborn
       BuildNewBorn(AgentConfig.threshold);
       checkMinCellNb();
       AddBodyPart(true);
-      academy.broadcastHub.broadcastingBrains.Add(atBehaviour.brain);
-      NewbornBrain.SetBrainParameters(atBehaviour, cellNb);
+      academy.broadcastHub.broadcastingBrains.Add(aTBehaviour.brain);
+      NewbornBrain.SetBrainParameters(aTBehaviour, cellNb);
     }
 
     public void BuildAgentRandomGeneration(Transform agent)
@@ -177,7 +176,7 @@ namespace Newborn
       brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
       brain.brainParameters.vectorActionSize = new int[1] { newBornBuilder.cellNb * 3 };
       brain.brainParameters.vectorObservationSize = newBornBuilder.cellNb * 13 - 4;
-      atBehaviour.brain = brain;
+      aTBehaviour.brain = brain;
     }
 
     public void BuildNewbornFromResponse(GameObject agent, string responseId, List<float> infoResponse)
@@ -198,9 +197,9 @@ namespace Newborn
         BuildNewBorn(threshold);
         checkMinCellNb();
         AddBodyPart(true);
-        NewbornBrain.SetBrainParameters(atBehaviour, cellNb + 1);
-        NewbornBrain.SetBrainName(atBehaviour, responseId);
-        academy.broadcastHub.broadcastingBrains.Add(atBehaviour.brain);
+        NewbornBrain.SetBrainParameters(aTBehaviour, cellNb + 1);
+        NewbornBrain.SetBrainName(aTBehaviour, responseId);
+        academy.broadcastHub.broadcastingBrains.Add(aTBehaviour.brain);
         Initialised = true;
       }
     }
@@ -282,7 +281,7 @@ namespace Newborn
 
     private void SetAgentNameFromBrainName()
     {
-      transform.gameObject.name = atBehaviour.brain + "";
+      transform.gameObject.name = aTBehaviour.brain + "";
     }
 
     private void checkMinCellNb()
