@@ -28,6 +28,7 @@ using Amazon;
 using MLAgents;
 using Tensor = MLAgents.InferenceBrain.Tensor;
 using Barracuda;
+using Newborn;
 
 public class S3Service : MonoBehaviour
 {
@@ -98,8 +99,7 @@ public class S3Service : MonoBehaviour
             while ((count = response.ResponseStream.Read(buffer, 0, buffer.Length)) != 0)
               fs.Write(buffer, 0, count);
             fs.Flush();
-            MLAgents.InferenceBrain.NNModel brainmodel = Resources.Load<MLAgents.InferenceBrain.NNModel>("20181245602442");
-            agent.GetComponent<NewbornAgent>().learningBrain.model = brainmodel;
+            agent.GetComponent<NewBornBuilder>().LoadModelToLearningBrain(newbornId);
           }
         }
       }

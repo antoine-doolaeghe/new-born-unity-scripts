@@ -16,7 +16,7 @@ namespace Newborn
     public GameObject AgentPrefab;
     public float randomPositionIndex;
     public int minCellNb;
-    public Brain brainObject;
+    public bool isLearningBrain;
     private float timer = 0.0f;
     public int vectorActionSize;
     public bool control;
@@ -31,17 +31,15 @@ namespace Newborn
     }
     public GameObject BuildAgent(GameObject spawner, bool requestApiData, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out NewbornAgent newborn)
     {
-      Brain brain = Instantiate(brainObject);
       newBornAgent = Instantiate(AgentPrefab, spawner.transform);
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
       newborn = newBornAgent.transform.GetComponent<NewbornAgent>();
       newborn.Sex = SexConfig.sexes[UnityEngine.Random.Range(0, 2)]; // Randomly select male or female
       newBornAgent.transform.localPosition = new Vector3(UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex), 0f, UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex));
-      SetBrainParams(newBornBuilder, brain, NewbornBrain.GenerateRandomBrainName());
+      InstantiateTrainingBrain(newBornAgent, atBehaviour, newBornBuilder);
       SetApiRequestParameter(newBornBuilder, atBehaviour, requestApiData);
       AddMinCellNb(newBornBuilder, minCellNb);
-      AddBrainToAgentBehaviour(atBehaviour, brain);
       return newBornAgent;
     }
 
@@ -98,6 +96,25 @@ namespace Newborn
     #endregion
 
     #region helper methods
+    private void InstantiateTrainingBrain(GameObject newBornAgent, AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder)
+    {
+      if (isLearningBrain)
+      {
+        LearningBrain brain = Instantiate(newBornAgent.GetComponent<NewbornAgent>().learningBrain);
+        UpdateTrainingParamFromBrain(atBehaviour, newBornBuilder, brain);
+      }
+      else
+      {
+        PlayerBrain brain = Instantiate(newBornAgent.GetComponent<NewbornAgent>().playerBrain);
+        UpdateTrainingParamFromBrain(atBehaviour, newBornBuilder, brain);
+      }
+    }
+
+    private void UpdateTrainingParamFromBrain(AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, LearningBrain brain)
+    {
+      SetBrainParams(newBornBuilder, brain, NewbornBrain.GenerateRandomBrainName());
+      AddBrainToAgentBehaviour(atBehaviour, brain);
+    }
     private void SetBrainParams(NewBornBuilder newbornBuilder, Brain brain, string brainName)
     {
       brain.name = brainName;

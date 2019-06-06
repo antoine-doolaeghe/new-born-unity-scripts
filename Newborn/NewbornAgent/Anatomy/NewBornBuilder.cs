@@ -215,6 +215,12 @@ namespace Newborn
       return ModelInfos;
     }
 
+    public void LoadModelToLearningBrain(string newbornId)
+    {
+      MLAgents.InferenceBrain.NNModel brainmodel = Resources.Load<MLAgents.InferenceBrain.NNModel>(newbornId);
+      transform.GetComponent<NewbornAgent>().learningBrain.model = brainmodel;
+    }
+
     private void StoreNewbornCell(GameObject cell, Vector3 cellPosition, Vector3 cellLocalPosition)
     {
       newborn.Cells.Add(cell);
