@@ -99,7 +99,7 @@ public class S3Service : MonoBehaviour
               fs.Write(buffer, 0, count);
             fs.Flush();
             MLAgents.InferenceBrain.NNModel brainmodel = Resources.Load<MLAgents.InferenceBrain.NNModel>("20181245602442");
-            agent.GetComponent<NewbornAgent>().model = brainmodel;
+            agent.GetComponent<NewbornAgent>().learningBrain.model = brainmodel;
           }
         }
       }
