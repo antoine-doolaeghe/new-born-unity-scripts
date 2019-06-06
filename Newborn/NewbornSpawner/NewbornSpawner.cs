@@ -79,13 +79,12 @@ namespace Newborn
       }
     }
 
-    public void DeleteCell()
+    public void ClearAgents()
     {
       foreach (GameObject agent in Agents)
       {
         agent.SetActive(true);
-        agent.GetComponent<NewBornBuilder>().DeleteCells();
-        agent.GetComponent<AgentTrainBehaviour>().DeleteBodyParts();
+        agent.GetComponent<NewBornBuilder>().ClearNewborns();
         Transform[] childs = agent.transform.Cast<Transform>().ToArray();
         foreach (Transform child in childs)
         {
@@ -101,16 +100,21 @@ namespace Newborn
       if (isLearningBrain)
       {
         LearningBrain brain = Instantiate(newBornAgent.GetComponent<NewbornAgent>().learningBrain);
-        UpdateTrainingParamFromBrain(atBehaviour, newBornBuilder, brain);
+        UpdateTrainingParamFromLearningBrain(atBehaviour, newBornBuilder, brain);
       }
       else
       {
         PlayerBrain brain = Instantiate(newBornAgent.GetComponent<NewbornAgent>().playerBrain);
-        UpdateTrainingParamFromBrain(atBehaviour, newBornBuilder, brain);
+        UpdateTrainingParamFromPlayerBrain(atBehaviour, newBornBuilder, brain);
       }
     }
 
-    private void UpdateTrainingParamFromBrain(AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, LearningBrain brain)
+    private void UpdateTrainingParamFromLearningBrain(AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, LearningBrain brain)
+    {
+      SetBrainParams(newBornBuilder, brain, NewbornBrain.GenerateRandomBrainName());
+      AddBrainToAgentBehaviour(atBehaviour, brain);
+    }
+    private void UpdateTrainingParamFromPlayerBrain(AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, PlayerBrain brain)
     {
       SetBrainParams(newBornBuilder, brain, NewbornBrain.GenerateRandomBrainName());
       AddBrainToAgentBehaviour(atBehaviour, brain);

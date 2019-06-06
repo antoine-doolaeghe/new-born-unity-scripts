@@ -166,8 +166,7 @@ namespace Newborn
     {
       Transform[] childs = transform.Cast<Transform>().ToArray();
       transform.gameObject.SetActive(true);
-      transform.GetComponent<NewBornBuilder>().DeleteCells();
-      transform.GetComponent<AgentTrainBehaviour>().DeleteBodyParts();
+      transform.GetComponent<NewBornBuilder>().ClearNewborns();
       foreach (Transform child in childs)
       {
         DestroyImmediate(child.gameObject);

@@ -43,7 +43,7 @@ namespace Newborn
       {
         foreach (GameObject spawner in manager.Spawners)
         {
-          spawner.GetComponent<NewbornSpawner>().DeleteCell();
+          spawner.GetComponent<NewbornSpawner>().ClearAgents();
         }
       }
 

@@ -17,8 +17,8 @@ namespace Newborn
     public List<GeneInformation> GeneInformations;
     private int cellInfoIndex = 0;
     private bool Initialised = false;
-    private NewbornManager trainingManager;
-    public NewbornAgent newborn;
+    private NewbornAgent newborn;
+    private NewBornBuilder newBornBuilder;
     private AgentTrainBehaviour aTBehaviour;
     [HideInInspector] public Academy academy;
     [HideInInspector] public float threshold;
@@ -27,10 +27,11 @@ namespace Newborn
     void Awake()
     {
       newborn = transform.GetComponent<NewbornAgent>();
+      newBornBuilder = transform.GetComponent<NewBornBuilder>();
       aTBehaviour = transform.GetComponent<AgentTrainBehaviour>();
       academy = GameObject.Find("Academy").transform.GetComponent<Academy>();
     }
-    public void DeleteCells()
+    public void ClearNewborns()
     {
       newborn.Cells.Clear();
       newborn.NewBornGenerations.Clear();
@@ -38,9 +39,10 @@ namespace Newborn
       newborn.CelllocalPositions.Clear();
       cellInfoIndex = 0;
       Initialised = false;
-      GeneInformations.Clear();
+      newborn.GeneInformations.Clear();
       academy.broadcastHub.broadcastingBrains.Clear();
       cellNb = 0;
+      aTBehaviour.DeleteBodyParts();
     }
 
     public void BuildNewBorn(float threshold)
@@ -48,9 +50,9 @@ namespace Newborn
       SetAgentNameFromBrainName();
       InitaliseNewbornInformation();
 
-      if (GeneInformations.Count == 0)
+      if (newborn.GeneInformations.Count == 0)
       {
-        GeneInformations.Add(new GeneInformation(new List<float>()));
+        newborn.GeneInformations.Add(new GeneInformation(new List<float>()));
       }
 
       newborn.NewBornGenerations.Add(new List<GameObject>());
@@ -66,7 +68,7 @@ namespace Newborn
         {
           for (int z = 0; z < AnatomyHelpers.Sides.Count; z++)
           {
-            if (!requestApiData || cellInfoIndex < GeneInformations[0].info.Count)
+            if (!requestApiData || cellInfoIndex < newborn.GeneInformations[0].info.Count)
             {
               bool IsValidPosition = true;
               float cellInfo = 0f;
@@ -92,7 +94,7 @@ namespace Newborn
         cell.transform.parent = transform;
         cell.GetComponent<SphereCollider>().radius /= 2f;
       }
-      aTBehaviour.enabled = true;
+      // aTBehaviour.enabled = true;
       cellNb = newborn.Cells.Count;
     }
 
@@ -119,7 +121,7 @@ namespace Newborn
 
       if (!isAfterRequest)
       {
-        GeneInformations.Add(new GeneInformation(new List<float>()));
+        newborn.GeneInformations.Add(new GeneInformation(new List<float>()));
       }
 
       newborn.NewBornGenerations.Add(new List<GameObject>());
@@ -132,7 +134,7 @@ namespace Newborn
           float cellInfo = 0f;
           Vector3 cellPosition = newborn.NewBornGenerations[germNb][i].transform.position + AnatomyHelpers.Sides[z];
           IsValidPosition = AnatomyHelpers.IsValidPosition(newborn, IsValidPosition, cellPosition);
-          cellInfo = HandleCellInfos(GeneInformations.Count - 1, indexInfo);
+          cellInfo = HandleCellInfos(newborn.GeneInformations.Count - 1, indexInfo);
           indexInfo++;
           if (IsValidPosition)
           {
@@ -168,9 +170,8 @@ namespace Newborn
 
     public void BuildAgentRandomGeneration(Transform agent)
     {
-      NewBornBuilder newBornBuilder = agent.GetComponent<NewBornBuilder>();
       newBornBuilder.threshold = AgentConfig.threshold;
-      newBornBuilder.BuildNewGeneration(newBornBuilder.GeneInformations.Count, false);
+      newBornBuilder.BuildNewGeneration(newborn.GeneInformations.Count, false);
       Brain brain = Resources.Load<Brain>("Brains/agentBrain0");
       agent.gameObject.name = brain + "";
       brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
@@ -192,8 +193,8 @@ namespace Newborn
 
       if (infoResponse.Count != 0 && !Initialised)
       {
-        GeneInformations.Add(new GeneInformation(new List<float>()));
-        GeneInformations[0].info = infoResponse;
+        newborn.GeneInformations.Add(new GeneInformation(new List<float>()));
+        newborn.GeneInformations[0].info = infoResponse;
         BuildNewBorn(threshold);
         checkMinCellNb();
         AddBodyPart(true);
@@ -207,9 +208,9 @@ namespace Newborn
     {
       List<float> ModelInfos = new List<float>();
 
-      for (int i = 0; i < GeneInformations[modelIndex].info.Count; i++)
+      for (int i = 0; i < newborn.GeneInformations[modelIndex].info.Count; i++)
       {
-        ModelInfos.Add(GeneInformations[modelIndex].info[i]);
+        ModelInfos.Add(newborn.GeneInformations[modelIndex].info[i]);
       }
 
       return ModelInfos;
@@ -219,6 +220,7 @@ namespace Newborn
     {
       MLAgents.InferenceBrain.NNModel brainmodel = Resources.Load<MLAgents.InferenceBrain.NNModel>(newbornId);
       transform.GetComponent<NewbornAgent>().learningBrain.model = brainmodel;
+      aTBehaviour.enabled = true;
     }
 
     private void StoreNewbornCell(GameObject cell, Vector3 cellPosition, Vector3 cellLocalPosition)
@@ -232,13 +234,13 @@ namespace Newborn
     {
       if (requestApiData)
       {
-        float cellInfo = GeneInformations[generationIndex].info[cellIndex];
+        float cellInfo = newborn.GeneInformations[generationIndex].info[cellIndex];
         return cellInfo;
       }
       else
       {
         float cellInfo = Random.Range(0f, 1f);
-        GeneInformations[generationIndex].info.Add(cellInfo);
+        newborn.GeneInformations[generationIndex].info.Add(cellInfo);
         return cellInfo;
       }
     }

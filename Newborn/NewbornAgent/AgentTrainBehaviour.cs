@@ -256,8 +256,8 @@ public class AgentTrainBehaviour : Agent
     {
       Debug.Log("Compatible partner");
       newborn.isGestating = true;
-      List<GeneInformation> femaleGene = newBornBuilder.GeneInformations;
-      List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewBornBuilder>().GeneInformations;
+      List<GeneInformation> femaleGene = newborn.GeneInformations;
+      List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewbornAgent>().GeneInformations;
       List<GeneInformation> newGene = GeneHelper.ReturnMixedForReproduction(femaleGene, maleGene);
       // prepare post data
       string newNewbornName = "name";
