@@ -15,6 +15,7 @@ public class NewbornAgent : MonoBehaviour
   public int GenerationIndex;
   public string GenerationId;
   public GameObject CellPrefab;
+  public MLAgents.InferenceBrain.NNModel model;
   public List<List<GameObject>> NewBornGenerations;
   public List<GameObject> Cells;
   public List<Vector3> CellPositions;

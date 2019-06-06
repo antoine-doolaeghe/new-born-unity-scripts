@@ -25,6 +25,9 @@ using Amazon.S3.Util;
 using System.Collections.Generic;
 using Amazon.CognitoIdentity;
 using Amazon;
+using MLAgents;
+using Tensor = MLAgents.InferenceBrain.Tensor;
+using Barracuda;
 
 public class S3Service : MonoBehaviour
 {
@@ -77,15 +80,13 @@ public class S3Service : MonoBehaviour
   /// <summary>
   /// Get Object from S3 Bucket
   /// </summary>
-  public void GetObject(string newbornId)
+  public void GetObject(string newbornId, GameObject agent)
   {
     Debug.Log("Fetching model from S3");
     string SampleFileName = newbornId + ".nn";
     Client.GetObjectAsync(S3BucketName, SampleFileName, (responseObj) =>
     {
       var response = responseObj.Response;
-      Debug.Log(response);
-      Debug.Log(responseObj.Exception);
       if (response.ResponseStream != null)
       {
         using (StreamReader reader = new StreamReader(response.ResponseStream))
@@ -97,6 +98,8 @@ public class S3Service : MonoBehaviour
             while ((count = response.ResponseStream.Read(buffer, 0, buffer.Length)) != 0)
               fs.Write(buffer, 0, count);
             fs.Flush();
+            MLAgents.InferenceBrain.NNModel brainmodel = Resources.Load<MLAgents.InferenceBrain.NNModel>("20181245602442");
+            agent.GetComponent<NewbornAgent>().model = brainmodel;
           }
         }
       }
