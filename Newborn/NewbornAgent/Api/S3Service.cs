@@ -87,19 +87,23 @@ public class S3Service : MonoBehaviour
     string SampleFileName = newbornId + ".nn";
     Client.GetObjectAsync(S3BucketName, SampleFileName, (responseObj) =>
     {
+      byte[] data = null;
       var response = responseObj.Response;
       if (response.ResponseStream != null)
       {
         using (StreamReader reader = new StreamReader(response.ResponseStream))
         {
-          using (var fs = System.IO.File.Create(@"./Assets/Newborn/Resources/" + SampleFileName))
+          using (var memstream = new MemoryStream())
           {
-            byte[] buffer = new byte[81920];
-            int count;
-            while ((count = response.ResponseStream.Read(buffer, 0, buffer.Length)) != 0)
-              fs.Write(buffer, 0, count);
-            fs.Flush();
-            agent.GetComponent<NewBornBuilder>().LoadModelToLearningBrain(newbornId);
+            var buffer = new byte[512];
+            var bytesRead = default(int);
+            while ((bytesRead = reader.BaseStream.Read(buffer, 0, buffer.Length)) > 0)
+              memstream.Write(buffer, 0, bytesRead);
+            data = memstream.ToArray();
+            MLAgents.InferenceBrain.NNModel model = ScriptableObject.CreateInstance<MLAgents.InferenceBrain.NNModel>();
+
+            model.Value = data;
+            agent.GetComponent<NewBornBuilder>().LoadModelToLearningBrain(newbornId, model);
           }
         }
       }

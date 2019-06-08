@@ -44,7 +44,6 @@ namespace Newborn
           GameObject newBornAgent;
           GameObject agent = spawner.GetComponent<NewbornSpawner>().BuildAgent(spawner, true, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn);
           yield return StartCoroutine(NewbornService.GetNewborn(newbornId.Value["id"], agent, false));
-          Debug.Log("HERE1");
           GameObject.Find("S3Service").GetComponent<S3Service>().GetObject(newbornId.Value["id"], agent);
         };
       }

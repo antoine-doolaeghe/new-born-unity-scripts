@@ -20,13 +20,18 @@ namespace Newborn
     private float timer = 0.0f;
     public int vectorActionSize;
     public bool control;
+
+    public bool isListeningToTrainedBorn;
     public void Update()
     {
-      timer += Time.deltaTime;
-      if (timer > 10f)
+      if (isListeningToTrainedBorn)
       {
-        StartCoroutine(transform.GetComponent<SpawnerService>().ListTrainedNewborn(transform.gameObject));
-        timer = 0.0f;
+        timer += Time.deltaTime;
+        if (timer > 10f)
+        {
+          StartCoroutine(transform.GetComponent<SpawnerService>().ListTrainedNewborn(transform.gameObject));
+          timer = 0.0f;
+        }
       }
     }
     public GameObject BuildAgent(GameObject spawner, bool requestApiData, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out NewbornAgent newborn)

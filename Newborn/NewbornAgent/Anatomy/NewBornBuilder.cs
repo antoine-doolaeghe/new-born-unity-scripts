@@ -68,7 +68,7 @@ namespace Newborn
         {
           for (int z = 0; z < AnatomyHelpers.Sides.Count; z++)
           {
-            if (!requestApiData || cellInfoIndex < newborn.GeneInformations[0].info.Count)
+            if (!requestApiData || cellInfoIndex < newborn.GeneInformations[0].info.Count) // solution ???????
             {
               bool IsValidPosition = true;
               float cellInfo = 0f;
@@ -198,9 +198,10 @@ namespace Newborn
         BuildNewBorn(threshold);
         checkMinCellNb();
         AddBodyPart(true);
-        NewbornBrain.SetBrainParameters(aTBehaviour, cellNb + 1);
+        NewbornBrain.SetBrainParameters(aTBehaviour, cellNb);
         NewbornBrain.SetBrainName(aTBehaviour, responseId);
         academy.broadcastHub.broadcastingBrains.Add(aTBehaviour.brain);
+        academy.broadcastHub.SetControlled(aTBehaviour.brain, true);
         Initialised = true;
       }
     }
@@ -216,10 +217,12 @@ namespace Newborn
       return ModelInfos;
     }
 
-    public void LoadModelToLearningBrain(string newbornId)
+    public void LoadModelToLearningBrain(string newbornId, MLAgents.InferenceBrain.NNModel model)
     {
-      MLAgents.InferenceBrain.NNModel brainmodel = Resources.Load<MLAgents.InferenceBrain.NNModel>(newbornId);
-      transform.GetComponent<NewbornAgent>().learningBrain.model = brainmodel;
+      transform.GetComponent<NewbornAgent>().learningBrain.model = model;
+      aTBehaviour.brain = transform.GetComponent<NewbornAgent>().learningBrain;
+      NewbornBrain.SetBrainParameters(aTBehaviour, cellNb);
+      NewbornBrain.SetBrainName(aTBehaviour, newbornId);
       aTBehaviour.enabled = true;
     }
 
