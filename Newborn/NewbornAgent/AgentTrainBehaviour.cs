@@ -42,10 +42,16 @@ public class AgentTrainBehaviour : Agent
   private bool isNewDecisionStep;
   private int currentDecisionStep;
 
+  private bool initialized = false;
+
   public override void InitializeAgent()
   {
-    initBodyParts();
-    currentDecisionStep = 1;
+    if (!initialized)
+    {
+      initBodyParts();
+      currentDecisionStep = 1;
+      initialized = true;
+    }
   }
 
   public void initBodyParts()

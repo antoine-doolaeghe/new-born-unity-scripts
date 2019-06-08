@@ -357,7 +357,7 @@ namespace MLAgents
                 gameObject.name));
       }
 
-      // InitializeAgent();
+      InitializeAgent();
     }
 
     /// Monobehavior function that is called when the attached GameObject

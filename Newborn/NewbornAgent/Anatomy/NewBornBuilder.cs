@@ -268,7 +268,7 @@ namespace Newborn
       }
       if (init)
       {
-        aTBehaviour.initBodyParts();
+        aTBehaviour.InitializeAgent();
       }
     }
 

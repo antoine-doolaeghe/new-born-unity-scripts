@@ -81,6 +81,32 @@ namespace Newborn
       }
     }
 
+    public static IEnumerator UpdateDevelopmentStage(string id, string stage)
+    {
+      NewbornService.variable["id"] = "\"" + id + "\"";
+      NewbornService.variable["stage"] = "\"" + stage + "\"";
+      WWW www;
+      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateDevelopmentStage, ApiConfig.apiKey, ApiConfig.url);
+      yield return www;
+      if (www.error != null)
+      {
+        Debug.Log(www.text);
+        throw new Exception("There was an error sending request: " + www.error);
+      }
+      else
+      {
+        JSONNode responseData = JSON.Parse(www.text);
+        if (responseData["data"]["updateNewborn"] != null)
+        {
+          Debug.Log("NewBorn instanceId successfully updated!");
+        }
+        else
+        {
+          throw new Exception("There was an error sending request: " + responseData);
+        }
+      }
+    }
+
     public static IEnumerator PostNewbornModel(Transform transform, GenerationPostData generationPostData, string modelId, GameObject agent, BuildAgentCallback callback)
     {
       string cellPositionsString = BuildCellPositionString(generationPostData);

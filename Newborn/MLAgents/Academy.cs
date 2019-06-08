@@ -286,7 +286,6 @@ namespace MLAgents
         x => x != null && x is LearningBrain && broadcastHub.IsControlled(x));
       foreach (LearningBrain brain in controlledBrains)
       {
-        Debug.Log("HERE controll");
         brain.SetToControlledExternally();
       }
 
