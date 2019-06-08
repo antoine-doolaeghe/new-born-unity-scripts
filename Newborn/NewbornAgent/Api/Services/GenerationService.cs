@@ -10,9 +10,9 @@ using SimpleJSON;
 using UnityEngine;
 using UnityEngine.Networking;
 using UnityEngine.UI;
-using Gene;
+using Newborn;
 
-namespace Gene
+namespace Newborn
 {
   [ExecuteInEditMode]
   public class GenerationService : MonoBehaviour

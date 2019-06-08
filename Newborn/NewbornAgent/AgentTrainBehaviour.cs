@@ -1,7 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
-using Gene;
+using Newborn;
 using MLAgents;
 using UnityEngine;
 using UnityEngine.UI;
@@ -42,10 +42,16 @@ public class AgentTrainBehaviour : Agent
   private bool isNewDecisionStep;
   private int currentDecisionStep;
 
+  private bool initialized = false;
+
   public override void InitializeAgent()
   {
-    initBodyParts();
-    currentDecisionStep = 1;
+    if (!initialized)
+    {
+      initBodyParts();
+      currentDecisionStep = 1;
+      initialized = true;
+    }
   }
 
   public void initBodyParts()
@@ -119,7 +125,7 @@ public class AgentTrainBehaviour : Agent
 
     foreach (var bodyPart in jdController.bodyPartsDict.Values)
     {
-      if (bodyPart.collisionController && !IsDone() && !transform.gameObject.GetComponent<Newborn>().isGestating && bodyPart.collisionController.touchingNewborn != null)
+      if (bodyPart.collisionController && !IsDone() && !transform.gameObject.GetComponent<NewbornAgent>().isGestating && bodyPart.collisionController.touchingNewborn != null)
       {
         TouchedNewborn(bodyPart.collisionController.touchingNewborn);
       }
@@ -244,29 +250,28 @@ public class AgentTrainBehaviour : Agent
 
   public IEnumerator handleTouchedNewborn(GameObject touchingNewborn)
   {
-    Newborn newborn = transform.gameObject.GetComponent<Newborn>();
+    NewbornAgent newborn = transform.gameObject.GetComponent<NewbornAgent>();
     NewBornBuilder newBornBuilder = transform.gameObject.GetComponent<NewBornBuilder>();
     // CREATE A COROUTINE HERE 
     string sex = newborn.Sex;
     int generationIndex = newborn.GenerationIndex;
-    string partnerSex = touchingNewborn.GetComponent<Newborn>().Sex;
-    int partnerGenerationIndex = touchingNewborn.GetComponent<Newborn>().GenerationIndex;
+    string partnerSex = touchingNewborn.GetComponent<NewbornAgent>().Sex;
+    int partnerGenerationIndex = touchingNewborn.GetComponent<NewbornAgent>().GenerationIndex;
 
     if (sex == "female" && partnerSex == "male" && generationIndex == partnerGenerationIndex) // Generation must be equal ? 
     {
       Debug.Log("Compatible partner");
       newborn.isGestating = true;
-      List<GeneInformation> femaleGene = newBornBuilder.GeneInformations;
-      List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewBornBuilder>().GeneInformations;
+      List<GeneInformation> femaleGene = newborn.GeneInformations;
+      List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewbornAgent>().GeneInformations;
       List<GeneInformation> newGene = GeneHelper.ReturnMixedForReproduction(femaleGene, maleGene);
       // prepare post data
       string newNewbornName = "name";
-      string newNewbornId = Regex.Replace(System.Guid.NewGuid().ToString(), @"[^0-9]", "");
       string newNewbornGenerationId = newborn.GenerationId;
       string newNewbornSex = "male";
       string newNewbornHex = "MOCK HEX";
       // DO a generation check ? 
-      NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, newNewbornId, newNewbornGenerationId, newNewbornSex, newNewbornHex);
+      NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, NewbornBrain.GenerateRandomBrainName(), newNewbornGenerationId, newNewbornSex, newNewbornHex);
       // SEND THE TRAINING INSTANCE HERE;
       yield return NewbornService.PostReproducedNewborn(newBornPostData, transform.gameObject, touchingNewborn);
       NewbornService.BuildAgentCallback Callback = NewbornService.SuccessfullReproductionCallback;

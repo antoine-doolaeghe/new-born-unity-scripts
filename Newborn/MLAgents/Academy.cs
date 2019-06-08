@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 #if UNITY_EDITOR
-using Gene;
+using Newborn;
 using UnityEditor;
 
 
@@ -101,7 +101,7 @@ namespace MLAgents
     [HideInInspector] public bool initialized;
     public BroadcastHub broadcastHub = new BroadcastHub();
 
-    public Gene.NewbornManager manager;
+    public Newborn.NewbornManager manager;
 
     private const string kApiVersion = "API-6";
 
@@ -286,7 +286,6 @@ namespace MLAgents
         x => x != null && x is LearningBrain && broadcastHub.IsControlled(x));
       foreach (LearningBrain brain in controlledBrains)
       {
-        Debug.Log("HERE controll");
         brain.SetToControlledExternally();
       }
 

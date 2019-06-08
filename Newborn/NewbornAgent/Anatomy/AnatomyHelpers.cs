@@ -4,7 +4,7 @@ using System.Text.RegularExpressions;
 // using MLAgents;
 using UnityEngine;
 
-namespace Gene
+namespace Newborn
 {
   public class AnatomyHelpers
   {
@@ -34,13 +34,13 @@ namespace Gene
       part.gameObject.GetComponent<Rigidbody>().useGravity = true;
       part.gameObject.GetComponent<Rigidbody>().mass = 1f;
     }
-    public static void InitPosition(List<Vector3> sides, int y, int i, int z, GameObject cell, Newborn newborn)
+    public static void InitPosition(List<Vector3> sides, int y, int i, int z, GameObject cell, NewbornAgent newborn)
     {
       cell.transform.parent = newborn.NewBornGenerations[y - 1][i].transform;
       cell.transform.localPosition = sides[z];
     }
 
-    public static bool IsValidPosition(Newborn newborn, bool isValid, Vector3 cellPosition)
+    public static bool IsValidPosition(NewbornAgent newborn, bool isValid, Vector3 cellPosition)
     {
       foreach (var position in newborn.CellPositions)
       {
@@ -58,7 +58,7 @@ namespace Gene
       cell.GetComponent<Rigidbody>().mass = 1f;
     }
 
-    public static List<PositionPostData> ReturnModelPositions(Newborn newborn)
+    public static List<PositionPostData> ReturnModelPositions(NewbornAgent newborn)
     {
       List<PositionPostData> positions = new List<PositionPostData>();
       for (int i = 0; i < newborn.CelllocalPositions.Count; i++)

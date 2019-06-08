@@ -3,7 +3,7 @@ using NUnit.Framework;
 using UnityEngine;
 using System.IO.Abstractions.TestingHelpers;
 
-namespace Gene
+namespace Newborn
 {
   public class NewbornServiceTest : NewbornService
   {

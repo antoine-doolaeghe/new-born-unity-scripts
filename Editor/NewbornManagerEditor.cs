@@ -6,7 +6,7 @@ using MyBox;
 using UnityEditor;
 using UnityEngine;
 
-namespace Gene
+namespace Newborn
 {
   [CustomEditor(typeof(NewbornManager))]
   public class NewbornManagerBuildEditor : Editor
@@ -15,102 +15,82 @@ namespace Gene
     public override void OnInspectorGUI()
     {
       DrawDefaultInspector();
-      NewbornManager spawner = (NewbornManager)target;
+      NewbornManager manager = (NewbornManager)target;
 
       EditorGUILayout.LabelField("Environmnet Parameters");
 
       if (GUILayout.Button("Build environment"))
       {
-        spawner.BuildSpawners();
+        manager.BuildSpawners();
       }
 
       if (GUILayout.Button("Delete environment"))
       {
-        spawner.DeleteSpawner();
+        manager.DeleteSpawner();
       }
 
       EditorGUILayout.LabelField("Random NewBorn Builds");
 
-      if (spawner.isTrainingMode)
+      if (GUILayout.Button("Build NewBorn Production Cells"))
       {
-        if (GUILayout.Button("Build NewBorn Training Cells"))
+        foreach (GameObject spawner in manager.Spawners)
         {
-          for (int i = 0; i < spawner.Agents.Count; i++)
-          {
-            spawner.BuildRandomTrainingNewBornCoroutine(false, i);
-          }
-        }
-      }
-
-      if (!spawner.isTrainingMode)
-      {
-        if (GUILayout.Button("Build NewBorn Production Cells"))
-        {
-          foreach (GameObject agent in GameObject.FindGameObjectsWithTag("agent"))
-          {
-            spawner.BuildRandomProductionNewBornCoroutine(agent.transform);
-          }
+          spawner.GetComponent<NewbornSpawner>().BuildAllAgentsRandomNewBorn();
         }
       }
 
       if (GUILayout.Button("Delete NewBorn Cells"))
       {
-        spawner.DeleteCell();
+        foreach (GameObject spawner in manager.Spawners)
+        {
+          spawner.GetComponent<NewbornSpawner>().ClearAgents();
+        }
       }
 
       if (GUILayout.Button("Add Agent Generation"))
       {
-        spawner.BuildRandomGeneration();
+        manager.ClearBroadCastingBrains();
+        foreach (GameObject spawner in manager.Spawners)
+        {
+          spawner.GetComponent<NewbornSpawner>().BuildAllAgentsRandomGeneration();
+        }
       }
 
       EditorGUILayout.LabelField("Serviced Newborn Builds");
 
-      if (spawner.isTrainingMode)
+      if (manager.isTrainingMode)
       {
         if (GUILayout.Button("Request Training NewBorn"))
         {
-          spawner.RequestNewborn();
+          manager.RequestNewborn();
         }
       }
 
-      if (!spawner.isTrainingMode)
+      if (!manager.isTrainingMode)
       {
         if (GUILayout.Button("Request Production NewBorn"))
         {
-          spawner.RequestProductionAgentInfo();
+          manager.RequestProductionAgentInfo();
         }
       }
 
-      if (spawner.isTrainingMode)
+      if (manager.isTrainingMode)
       {
         if (GUILayout.Button("Request Training NewBorn (target generation)"))
         {
-          spawner.RequestNewborn();
+          manager.RequestNewborn();
         }
       }
 
-      // TO-DO 
-      // if (!spawner.isTrainingMode)
-      // {
-      //   if (GUILayout.Button("Request Production NewBorn (target generation)"))
-      //   {
-      //     spawner.RequestProductionAgentInfo();
-      //   }
-      // }
-
       EditorGUILayout.LabelField("API Post request");
-
       if (GUILayout.Button("Post Training NewBorn"))
       {
-        spawner.PostTrainingNewborns();
+        manager.ClearBroadCastingBrains();
+        foreach (GameObject spawner in manager.Spawners)
+        {
+          spawner.GetComponent<NewbornSpawner>().PostTrainingNewborns();
+        }
       }
-
-
-      // TO-DO
-      // if (GUILayout.Button("Update Training NewBorn"))
-      // {
-      //   // this will need to be the possibility to load a specific model number
-      // }
     }
   }
 }

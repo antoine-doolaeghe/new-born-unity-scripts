@@ -1,8 +1,9 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using MLAgents;
 
-public class Newborn : MonoBehaviour
+public class NewbornAgent : MonoBehaviour
 {
   private string bio;
   private string bornPlace;
@@ -15,6 +16,8 @@ public class Newborn : MonoBehaviour
   public int GenerationIndex;
   public string GenerationId;
   public GameObject CellPrefab;
+  public LearningBrain learningBrain;
+  public PlayerBrain playerBrain;
   public List<List<GameObject>> NewBornGenerations;
   public List<GameObject> Cells;
   public List<Vector3> CellPositions;
