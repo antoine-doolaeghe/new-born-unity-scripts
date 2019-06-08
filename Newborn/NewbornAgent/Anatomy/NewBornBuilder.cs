@@ -317,7 +317,7 @@ namespace Newborn
       yield return StartCoroutine(NewbornService.PostNewborn(newBornPostData, agent));
     }
 
-    public IEnumerator PostNewbornModel(string newbornId, int modelIndex, GameObject agent, NewbornService.BuildAgentCallback responseCallback)
+    public IEnumerator PostNewbornModel(string newbornId, int modelIndex, GameObject agent, NewbornService.PostModelCallback responseCallback)
     {
       List<float> modelInfos = ReturnGeneInformations(modelIndex);
       List<PositionPostData> cellPositions = AnatomyHelpers.ReturnModelPositions(newborn);

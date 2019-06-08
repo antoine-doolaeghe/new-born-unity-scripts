@@ -265,18 +265,15 @@ public class AgentTrainBehaviour : Agent
       List<GeneInformation> femaleGene = newborn.GeneInformations;
       List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewbornAgent>().GeneInformations;
       List<GeneInformation> newGene = GeneHelper.ReturnMixedForReproduction(femaleGene, maleGene);
-      // prepare post data
+      // Prepare post data here
       string newNewbornName = "name";
       string newNewbornGenerationId = newborn.GenerationId;
       string newNewbornSex = "male";
       string newNewbornHex = "MOCK HEX";
-      // DO a generation check ? 
+
       NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, NewbornBrain.GenerateRandomBrainName(), newNewbornGenerationId, newNewbornSex, newNewbornHex);
-      // SEND THE TRAINING INSTANCE HERE;
-      yield return NewbornService.PostReproducedNewborn(newBornPostData, transform.gameObject, touchingNewborn);
-      NewbornService.BuildAgentCallback Callback = NewbornService.SuccessfullReproductionCallback;
-      yield return newBornBuilder.PostNewbornModel(newborn.childs[newborn.childs.Count - 1], 0, transform.gameObject, Callback); // will it always be first generation
-      yield return TrainingService.TrainNewborn(newborn.childs[newborn.childs.Count - 1]);
+      NewbornService.PostNewbornFromReproductionCallback PostNewbornFromReproductionCallback = NewbornService.SuccessfullPostNewbornFromReproductionCallback;
+      yield return NewbornService.PostNewbornFromReproduction(newBornPostData, transform.gameObject, touchingNewborn, PostNewbornFromReproductionCallback);
     }
   }
   public void TouchedFood()

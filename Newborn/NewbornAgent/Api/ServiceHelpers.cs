@@ -108,4 +108,15 @@ public class ServiceHelpers
     Debug.Log("This is solution " + solution);
     return solution;
   }
+
+  public static string ReturnNewbornChilds(List<string> childs)
+  {
+    string childString = "";
+    foreach (var child in childs)
+    {
+      childString = childString + "\"" + child + "\"" + ",";
+    }
+
+    return childString;
+  }
 }

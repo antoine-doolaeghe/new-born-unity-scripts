@@ -28,7 +28,9 @@ namespace Newborn
     private static String graphQlInput;
     static byte[] postData;
     static Dictionary<string, string> postHeader;
-    public delegate void BuildAgentCallback(Transform transform, WWW www, GameObject agent);
+    public delegate IEnumerator PostModelCallback(Transform transform, WWW www, GameObject agent, string newbornId);
+
+    public delegate IEnumerator PostNewbornFromReproductionCallback(GameObject agent, GameObject agentPartner, string newbornId);
 
     public static IEnumerator GetNewborn(string id, GameObject agent, bool IsGetAfterPost)
     {
@@ -43,9 +45,13 @@ namespace Newborn
       }
       else
       {
+        JSONNode responseData = JSON.Parse(www.text)["data"]["getNewborn"];
+        if (responseData == null)
+        {
+          throw new Exception("There was an error sending request: " + responseData);
+        }
         Debug.Log("NewBorn successfully requested!");
         List<float> infoResponse = new List<float>();
-        JSONNode responseData = JSON.Parse(www.text)["data"]["getNewborn"];
         string responseId = responseData["id"];
         foreach (var cellInfo in responseData["models"]["items"][0]["cellInfos"].AsArray)
         {
@@ -64,7 +70,6 @@ namespace Newborn
       yield return www;
       if (www.error != null)
       {
-        Debug.Log(www.text);
         throw new Exception("There was an error sending request: " + www.error);
       }
       else
@@ -107,7 +112,7 @@ namespace Newborn
       }
     }
 
-    public static IEnumerator PostNewbornModel(Transform transform, GenerationPostData generationPostData, string modelId, GameObject agent, BuildAgentCallback callback)
+    public static IEnumerator PostNewbornModel(Transform transform, GenerationPostData generationPostData, string modelId, GameObject agent, PostModelCallback callback)
     {
       string cellPositionsString = BuildCellPositionString(generationPostData);
       NewbornService.variable["id"] = generationPostData.id;
@@ -125,10 +130,14 @@ namespace Newborn
       }
       else
       {
-        callback(transform, www, agent);
+        if (JSON.Parse(www.text)["data"]["createModel"] == null)
+        {
+          throw new Exception("There was an error sending request: " + www.error);
+        }
+        yield return callback(transform, www, agent, modelId);
       }
     }
-    public static void RebuildAgent(Transform transform, WWW www, GameObject agent)
+    public static IEnumerator RebuildAgent(Transform transform, WWW www, GameObject agent, string newbornId)
     {
       Debug.Log("Newborn Model successfully posted!");
       List<float> infoResponse = new List<float>();
@@ -140,6 +149,7 @@ namespace Newborn
         infoResponse.Add(cellInfo.Value.AsFloat);
       }
       agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseId, infoResponse);
+      yield return "";
     }
     public static IEnumerator PostNewborn(NewBornPostData newBornPostData, GameObject agent = null)
     {
@@ -158,15 +168,18 @@ namespace Newborn
       }
       else
       {
-        Debug.Log(www.text);
+        if (JSON.Parse(www.text)["data"]["createNewborn"] == null)
+        {
+          throw new Exception("There was an error sending request: " + www.error);
+        }
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
         agent.transform.GetComponent<NewbornAgent>().GenerationIndex = JSON.Parse(www.text)["data"]["createNewborn"]["generation"]["index"];
-        NewbornService.BuildAgentCallback handler = NewbornService.RebuildAgent;
-        yield return agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(createdNewBornId, 0, agent, handler); // will it always be first generation
+        NewbornService.PostModelCallback callback = NewbornService.RebuildAgent;
+        yield return agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(createdNewBornId, 0, agent, callback); // will it always be first generation
       }
     }
 
-    public static IEnumerator PostReproducedNewborn(NewBornPostData newBornPostData, GameObject agent, GameObject agentPartner)
+    public static IEnumerator PostNewbornFromReproduction(NewBornPostData newBornPostData, GameObject agent, GameObject agentPartner, PostNewbornFromReproductionCallback callback)
     {
       NewbornService.variable["id"] = newBornPostData.id;
       NewbornService.variable["name"] = "\"newborn\"";
@@ -175,7 +188,7 @@ namespace Newborn
       NewbornService.variable["parentA"] = "\"" + agent.GetComponent<AgentTrainBehaviour>().brain.name + "\"";
       NewbornService.variable["parentB"] = "\"" + agentPartner.GetComponent<AgentTrainBehaviour>().brain.name + "\"";
       WWW www;
-      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.postReproducedNewbornGraphQlMutation, ApiConfig.apiKey, ApiConfig.url);
+      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.postNewbornFromReproductionGraphQlMutation, ApiConfig.apiKey, ApiConfig.url);
       yield return www;
       if (www.error != null)
       {
@@ -183,46 +196,46 @@ namespace Newborn
       }
       else
       {
+        if (JSON.Parse(www.text)["data"]["createNewborn"] == null)
+        {
+          throw new Exception("There was an error sending request: " + www.error);
+        }
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
-        agent.transform.GetComponent<NewbornAgent>().childs.Add(createdNewBornId);
-        yield return NewbornService.UpdateNewbornChilds(agent.transform.GetComponent<AgentTrainBehaviour>().brain.name, agent.transform.GetComponent<NewbornAgent>().childs);
-        agentPartner.transform.GetComponent<NewbornAgent>().childs.Add(createdNewBornId);
+        yield return callback(agent, agentPartner, createdNewBornId);
       }
     }
 
-    // TO DOOOoooooooo
     public static IEnumerator UpdateNewbornChilds(string newbornId, List<string> childs)
     {
-      string childstring = "";
-      foreach (var s in childs)
-      {
-        Debug.Log(s);
-        childstring = childstring + "\"" + s + "\"" + ",";
-      }
       NewbornService.variable["id"] = "\"" + newbornId + "\"";
-      NewbornService.variable["childs"] = childstring;
+      NewbornService.variable["childs"] = ServiceHelpers.ReturnNewbornChilds(childs);
       WWW www;
       ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateNewbornChilds, ApiConfig.apiKey, ApiConfig.url);
       yield return www;
-      Debug.Log(graphQlInput);
       if (www.error != null)
       {
-        Debug.Log(www.text);
         throw new Exception("There was an error sending request: " + www.error);
       }
       else
       {
         JSONNode responseData = JSON.Parse(www.text);
-        Debug.Log(JSON.Parse(www.text));
-        if (responseData["data"]["updateNewborn"] != null)
-        {
-          Debug.Log("NewBorn childs successfully updated!");
-        }
-        else
+        if (responseData["data"]["updateNewborn"] == null)
         {
           throw new Exception("There was an error sending request: " + responseData);
         }
+        Debug.Log("NewBorn childs successfully updated!");
       }
+    }
+
+    private static string ReturnNewbornChilds(List<string> childs)
+    {
+      string childString = "";
+      foreach (var child in childs)
+      {
+        childString = childString + "\"" + child + "\"" + ",";
+      }
+
+      return childString;
     }
 
     public static void DestroyAgent(Transform transform)
@@ -247,10 +260,20 @@ namespace Newborn
       return cellPositionsString;
     }
 
-    public static void SuccessfullReproductionCallback(Transform transform, WWW www, GameObject agent)
+    public static IEnumerator SuccessfullModelCallback(Transform transform, WWW www, GameObject agent, string newbornId = null)
     {
       Debug.Log("Successfull Newborn reproduction");
-      // TODO: Action after a successfull newborn reproduction;
+      yield return TrainingService.TrainNewborn(newbornId);
+    }
+
+    public static IEnumerator SuccessfullPostNewbornFromReproductionCallback(GameObject agent, GameObject agentPartner, string newbornId)
+    {
+      agent.transform.GetComponent<NewbornAgent>().childs.Add(newbornId);
+      agentPartner.transform.GetComponent<NewbornAgent>().childs.Add(newbornId);
+      yield return NewbornService.UpdateNewbornChilds(agent.transform.GetComponent<AgentTrainBehaviour>().brain.name, agent.transform.GetComponent<NewbornAgent>().childs);
+      yield return NewbornService.UpdateNewbornChilds(agentPartner.transform.GetComponent<AgentTrainBehaviour>().brain.name, agentPartner.transform.GetComponent<NewbornAgent>().childs);
+      NewbornService.PostModelCallback PostModelCallback = NewbornService.SuccessfullModelCallback;
+      yield return agent.GetComponent<NewBornBuilder>().PostNewbornModel(newbornId, 0, agent, PostModelCallback); // will it always be first generation
     }
   }
 }

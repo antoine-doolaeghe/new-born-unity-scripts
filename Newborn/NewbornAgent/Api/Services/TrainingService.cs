@@ -24,7 +24,7 @@ namespace Newborn
 
     private static String graphQlInput;
 
-    public delegate void BuildAgentCallback(Transform transform, WWW www, GameObject agent);
+    public delegate void PostModelCallback(Transform transform, WWW www, GameObject agent);
 
 
     public static IEnumerator TrainNewborn(string newbornId)
