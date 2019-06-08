@@ -185,18 +185,26 @@ namespace Newborn
       {
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
         agent.transform.GetComponent<NewbornAgent>().childs.Add(createdNewBornId);
+        yield return NewbornService.UpdateNewbornChilds(agent.transform.GetComponent<AgentTrainBehaviour>().brain.name, agent.transform.GetComponent<NewbornAgent>().childs);
         agentPartner.transform.GetComponent<NewbornAgent>().childs.Add(createdNewBornId);
       }
     }
 
     // TO DOOOoooooooo
-    public static IEnumerator UpdateNewbornChilds(string id, string stage)
+    public static IEnumerator UpdateNewbornChilds(string newbornId, List<string> childs)
     {
-      NewbornService.variable["id"] = "\"" + id + "\"";
-      NewbornService.variable["stage"] = "\"" + stage + "\"";
+      string childstring = "";
+      foreach (var s in childs)
+      {
+        Debug.Log(s);
+        childstring = childstring + "\"" + s + "\"" + ",";
+      }
+      NewbornService.variable["id"] = "\"" + newbornId + "\"";
+      NewbornService.variable["childs"] = childstring;
       WWW www;
-      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateDevelopmentStage, ApiConfig.apiKey, ApiConfig.url);
+      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateNewbornChilds, ApiConfig.apiKey, ApiConfig.url);
       yield return www;
+      Debug.Log(graphQlInput);
       if (www.error != null)
       {
         Debug.Log(www.text);
@@ -205,9 +213,10 @@ namespace Newborn
       else
       {
         JSONNode responseData = JSON.Parse(www.text);
+        Debug.Log(JSON.Parse(www.text));
         if (responseData["data"]["updateNewborn"] != null)
         {
-          Debug.Log("NewBorn instanceId successfully updated!");
+          Debug.Log("NewBorn childs successfully updated!");
         }
         else
         {

@@ -17,4 +17,5 @@ public class ApiConfig : ScriptableObject
   public static string fetchModelGraphQlQuery = "query GetPost {fetchModel(newbornId: '$id^')}";
   public static string updateNewbornInstanceId = "mutation UpdateNewbornInstanceId {updateNewborn(input: {id: '$id^', instanceId: $instanceId^}) { id, instanceId }}";
   public static string updateDevelopmentStage = "mutation UpdateDevelopmentStage {updateNewborn(input: {id: '$id^', developmentStage: $stage^}) { id }}";
+  public static string updateNewbornChilds = "mutation updateNewbornChilds {updateNewborn(input: {id: '$id^', childs: [$childs^]}) { id }}";
 }
