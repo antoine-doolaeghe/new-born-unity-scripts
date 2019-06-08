@@ -172,9 +172,10 @@ namespace Newborn
       NewbornService.variable["name"] = "\"newborn\"";
       NewbornService.variable["sex"] = "\"female\"";
       NewbornService.variable["newbornGenerationId"] = newBornPostData.generationId;
-
+      NewbornService.variable["parentA"] = "\"" + agent.GetComponent<AgentTrainBehaviour>().brain.name + "\"";
+      NewbornService.variable["parentB"] = "\"" + agentPartner.GetComponent<AgentTrainBehaviour>().brain.name + "\"";
       WWW www;
-      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.newbornGraphQlMutation, ApiConfig.apiKey, ApiConfig.url);
+      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.postReproducedNewbornGraphQlMutation, ApiConfig.apiKey, ApiConfig.url);
       yield return www;
       if (www.error != null)
       {
@@ -185,6 +186,33 @@ namespace Newborn
         string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
         agent.transform.GetComponent<NewbornAgent>().childs.Add(createdNewBornId);
         agentPartner.transform.GetComponent<NewbornAgent>().childs.Add(createdNewBornId);
+      }
+    }
+
+    // TO DOOOoooooooo
+    public static IEnumerator UpdateNewbornChilds(string id, string stage)
+    {
+      NewbornService.variable["id"] = "\"" + id + "\"";
+      NewbornService.variable["stage"] = "\"" + stage + "\"";
+      WWW www;
+      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateDevelopmentStage, ApiConfig.apiKey, ApiConfig.url);
+      yield return www;
+      if (www.error != null)
+      {
+        Debug.Log(www.text);
+        throw new Exception("There was an error sending request: " + www.error);
+      }
+      else
+      {
+        JSONNode responseData = JSON.Parse(www.text);
+        if (responseData["data"]["updateNewborn"] != null)
+        {
+          Debug.Log("NewBorn instanceId successfully updated!");
+        }
+        else
+        {
+          throw new Exception("There was an error sending request: " + responseData);
+        }
       }
     }
 
