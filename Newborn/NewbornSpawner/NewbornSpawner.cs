@@ -37,14 +37,17 @@ namespace Newborn
       }
     }
 
-    public void handleTarget()
+    public void BuildTarget()
     {
-      /// ALL OF THIS LOGIC SHOULD BE HANDLED BY THE SPAWNER NOT THE MANAGER
       if (!isTargetDynamic)
       {
-        Instantiate(StaticTarget, transform);
+        GameObject target = Instantiate(StaticTarget, transform);
+        AssignTarget(Agents, target);
       }
-      AssignTarget(Agents);
+      else
+      {
+        AssignTarget(Agents, null);
+      }
     }
 
     public void BuildAgents(bool requestApiData)
@@ -56,6 +59,10 @@ namespace Newborn
         NewbornAgent newborn;
         GameObject newBornAgent;
         Agents.Add(BuildAgent(requestApiData, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn));
+        if (transform.Find("Ground") != null)
+        {
+          AssignGround(transform.Find("Ground").transform);
+        }
       }
     }
     public GameObject BuildAgent(bool requestApiData, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out NewbornAgent newborn)
@@ -138,11 +145,11 @@ namespace Newborn
       }
     }
 
-    private void AssignTarget(List<GameObject> newBornAgents)
+    private void AssignTarget(List<GameObject> newBornAgents, GameObject target)
     {
       for (int y = 0; y < newBornAgents.Count; y++)
       {
-        if (isTargetDynamic)
+        if (isTargetDynamic || target == null)
         {
           if (y != newBornAgents.Count - 1)
           {
@@ -155,10 +162,19 @@ namespace Newborn
         }
         else
         {
-          newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = StaticTarget.transform;
+          newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = target.transform;
         }
       }
     }
+
+    private void AssignGround(Transform ground)
+    {
+      foreach (GameObject agent in Agents)
+      {
+        agent.GetComponent<AgentTrainBehaviour>().ground = ground;
+      }
+    }
+
     private void UpdateTrainingParamFromLearningBrain(AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, LearningBrain brain)
     {
       SetBrainParams(newBornBuilder, brain, NewbornBrain.GenerateRandomBrainName());

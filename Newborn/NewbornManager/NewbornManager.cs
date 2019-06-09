@@ -72,8 +72,8 @@ namespace Newborn
           PositionTrainingSpawner(squarePosition, spawner);
         }
 
-        spawner.GetComponent<NewbornSpawner>().handleTarget();
         spawner.GetComponent<NewbornSpawner>().BuildAgents(requestApiData);
+        spawner.GetComponent<NewbornSpawner>().BuildTarget();
 
         squarePosition++;
       }
