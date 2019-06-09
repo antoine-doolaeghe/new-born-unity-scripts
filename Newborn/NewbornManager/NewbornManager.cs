@@ -17,7 +17,6 @@ namespace Newborn
     public bool isTrainingMode;
     [Header("Environment parameters")]
     public int spawnerNumber;
-    public int agentNumber;
     public GameObject TrainingPrefab;
     [ConditionalField("isTrainingMode")] public Vector3 agentScale;
     [ConditionalField("isTrainingMode")] public Vector3 groundScale;
@@ -25,9 +24,7 @@ namespace Newborn
     [Header("Agent parameters")]
     public bool requestApiData;
     public string newbornId;
-    [Header("Target parameters")]
-    [ConditionalField("isTrainingMode")] public GameObject StaticTarget;
-    [ConditionalField("isTrainingMode")] public bool isTargetDynamic;
+
     [Header("Academy parameters")]
     public Academy academy;
     [Header("Brain parameters")]
@@ -74,52 +71,14 @@ namespace Newborn
         {
           PositionTrainingSpawner(squarePosition, spawner);
         }
-        else
-        {
-          // Randomly place the agents.
-        }
 
-        if (!isTargetDynamic && isTrainingMode)
-        {
-          Instantiate(StaticTarget, spawner.transform);
-        }
-
-        for (int y = 0; y < agentNumber; y++)
-        {
-          AgentTrainBehaviour atBehaviour;
-          NewBornBuilder newBornBuilder;
-          NewbornAgent newborn;
-          GameObject newBornAgent;
-          spawner.GetComponent<NewbornSpawner>().Agents.Add(spawner.GetComponent<NewbornSpawner>().BuildAgent(spawner, requestApiData, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn));
-        }
-
-        AssignTarget(spawner.GetComponent<NewbornSpawner>().Agents);
+        spawner.GetComponent<NewbornSpawner>().handleTarget();
+        spawner.GetComponent<NewbornSpawner>().BuildAgents(requestApiData);
 
         squarePosition++;
       }
     }
 
-    private void AssignTarget(List<GameObject> newBornAgents)
-    {
-      for (int y = 0; y < newBornAgents.Count; y++)
-      {
-        if (isTargetDynamic)
-        {
-          if (y != newBornAgents.Count - 1)
-          {
-            newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = newBornAgents[y + 1].transform;
-          }
-          else
-          {
-            newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = newBornAgents[0].transform;
-          }
-        }
-        else
-        {
-          newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = StaticTarget.transform;
-        }
-      }
-    }
     public IEnumerator RequestNewbornAgentInfo()
     {
       Debug.Log("Request Agent info from server...");

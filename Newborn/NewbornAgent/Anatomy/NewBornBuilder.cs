@@ -33,13 +33,28 @@ namespace Newborn
     }
     public void ClearNewborns()
     {
-      newborn.Cells.Clear();
-      newborn.NewBornGenerations.Clear();
-      newborn.CellPositions.Clear();
-      newborn.CelllocalPositions.Clear();
+      if (newborn.Cells != null)
+      {
+        newborn.Cells.Clear();
+      }
+      if (newborn.NewBornGenerations != null)
+      {
+        newborn.NewBornGenerations.Clear();
+      };
+      if (newborn.CellPositions != null)
+      {
+        newborn.CellPositions.Clear();
+      }
+      if (newborn.CelllocalPositions != null)
+      {
+        newborn.CelllocalPositions.Clear();
+      }
+      if (newborn.GeneInformations != null)
+      {
+        newborn.GeneInformations.Clear();
+      }
       cellInfoIndex = 0;
       Initialised = false;
-      newborn.GeneInformations.Clear();
       academy.broadcastHub.broadcastingBrains.Clear();
       cellNb = 0;
       aTBehaviour.DeleteBodyParts();

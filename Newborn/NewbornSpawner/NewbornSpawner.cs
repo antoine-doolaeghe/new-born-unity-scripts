@@ -13,6 +13,7 @@ namespace Newborn
   public class NewbornSpawner : MonoBehaviour
   {
     [HideInInspector] public List<GameObject> Agents = new List<GameObject>();
+    public int agentNumber;
     public GameObject AgentPrefab;
     public float randomPositionIndex;
     public int minCellNb;
@@ -20,7 +21,8 @@ namespace Newborn
     private float timer = 0.0f;
     public int vectorActionSize;
     public bool control;
-
+    public GameObject StaticTarget;
+    public bool isTargetDynamic;
     public bool isListeningToTrainedBorn;
     public void Update()
     {
@@ -34,9 +36,31 @@ namespace Newborn
         }
       }
     }
-    public GameObject BuildAgent(GameObject spawner, bool requestApiData, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out NewbornAgent newborn)
+
+    public void handleTarget()
     {
-      newBornAgent = Instantiate(AgentPrefab, spawner.transform);
+      /// ALL OF THIS LOGIC SHOULD BE HANDLED BY THE SPAWNER NOT THE MANAGER
+      if (!isTargetDynamic)
+      {
+        Instantiate(StaticTarget, transform);
+      }
+      AssignTarget(Agents);
+    }
+
+    public void BuildAgents(bool requestApiData)
+    {
+      for (int y = 0; y < agentNumber; y++)
+      {
+        AgentTrainBehaviour atBehaviour;
+        NewBornBuilder newBornBuilder;
+        NewbornAgent newborn;
+        GameObject newBornAgent;
+        Agents.Add(BuildAgent(requestApiData, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn));
+      }
+    }
+    public GameObject BuildAgent(bool requestApiData, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out NewbornAgent newborn)
+    {
+      newBornAgent = Instantiate(AgentPrefab, transform);
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
       newborn = newBornAgent.transform.GetComponent<NewbornAgent>();
@@ -114,6 +138,27 @@ namespace Newborn
       }
     }
 
+    private void AssignTarget(List<GameObject> newBornAgents)
+    {
+      for (int y = 0; y < newBornAgents.Count; y++)
+      {
+        if (isTargetDynamic)
+        {
+          if (y != newBornAgents.Count - 1)
+          {
+            newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = newBornAgents[y + 1].transform;
+          }
+          else
+          {
+            newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = newBornAgents[0].transform;
+          }
+        }
+        else
+        {
+          newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = StaticTarget.transform;
+        }
+      }
+    }
     private void UpdateTrainingParamFromLearningBrain(AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, LearningBrain brain)
     {
       SetBrainParams(newBornBuilder, brain, NewbornBrain.GenerateRandomBrainName());
