@@ -29,7 +29,6 @@ namespace Newborn
       yield return www;
       if (www.error != null)
       {
-        Debug.Log(www.text);
         throw new Exception("There was an error sending request: " + www.error);
       }
       else
@@ -41,6 +40,18 @@ namespace Newborn
           NewBornBuilder newBornBuilder;
           NewbornAgent newborn;
           GameObject newBornAgent;
+
+          // unset gestation for the female partner
+          for (int i = 0; i < newbornId.Value["parents"].Count; i++)
+          {
+            if (GameObject.Find(newbornId.Value["parents"][i]).GetComponent<NewbornAgent>().isGestating)
+            {
+              Debug.Log("Ending newborn gestation");
+              GameObject.Find(newbornId.Value["parents"][i]).GetComponent<NewbornAgent>().UnsetNewbornInGestation();
+              StartCoroutine(NewbornService.UpdateDevelopmentStage(newbornId.Value["parents"][i], "living"));
+            }
+          }
+
           GameObject agent = spawner.GetComponent<NewbornSpawner>().BuildAgent(spawner, true, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn);
           yield return StartCoroutine(NewbornService.GetNewborn(newbornId.Value["id"], agent, false));
           GameObject.Find("S3Service").GetComponent<S3Service>().GetObject(newbornId.Value["id"], agent);

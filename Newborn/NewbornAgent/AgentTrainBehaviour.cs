@@ -261,7 +261,7 @@ public class AgentTrainBehaviour : Agent
     if (sex == "female" && partnerSex == "male" && generationIndex == partnerGenerationIndex) // Generation must be equal ? 
     {
       Debug.Log("Compatible partner");
-      newborn.isGestating = true;
+      newborn.SetNewbornInGestation();
       List<GeneInformation> femaleGene = newborn.GeneInformations;
       List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewbornAgent>().GeneInformations;
       List<GeneInformation> newGene = GeneHelper.ReturnMixedForReproduction(femaleGene, maleGene);
@@ -276,6 +276,7 @@ public class AgentTrainBehaviour : Agent
       yield return NewbornService.PostNewbornFromReproduction(newBornPostData, transform.gameObject, touchingNewborn, PostNewbornFromReproductionCallback);
     }
   }
+
   public void TouchedFood()
   {
     AddReward(15f);

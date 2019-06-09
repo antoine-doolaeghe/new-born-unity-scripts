@@ -119,4 +119,15 @@ public class ServiceHelpers
 
     return childString;
   }
+
+  public static string ReturnNewbornPartners(List<string> partners)
+  {
+    string partnerString = "";
+    foreach (var partner in partners)
+    {
+      partnerString = partnerString + "\"" + partner + "\"" + ",";
+    }
+
+    return partnerString;
+  }
 }

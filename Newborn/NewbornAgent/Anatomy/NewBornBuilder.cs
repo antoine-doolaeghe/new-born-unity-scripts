@@ -173,7 +173,7 @@ namespace Newborn
       newBornBuilder.threshold = AgentConfig.threshold;
       newBornBuilder.BuildNewGeneration(newborn.GeneInformations.Count, false);
       Brain brain = Resources.Load<Brain>("Brains/agentBrain0");
-      agent.gameObject.name = brain + "";
+      agent.gameObject.name = brain.name;
       brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
       brain.brainParameters.vectorActionSize = new int[1] { newBornBuilder.cellNb * 3 };
       brain.brainParameters.vectorObservationSize = newBornBuilder.cellNb * 13 - 4;
@@ -292,7 +292,7 @@ namespace Newborn
 
     private void SetAgentNameFromBrainName()
     {
-      transform.gameObject.name = aTBehaviour.brain + "";
+      transform.gameObject.name = aTBehaviour.brain.name;
     }
 
     private void checkMinCellNb()

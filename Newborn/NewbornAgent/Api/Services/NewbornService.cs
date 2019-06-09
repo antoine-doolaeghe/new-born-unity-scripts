@@ -205,12 +205,13 @@ namespace Newborn
       }
     }
 
-    public static IEnumerator UpdateNewbornChilds(string newbornId, List<string> childs)
+    public static IEnumerator UpdateNewbornChildsAndPartners(string newbornId, List<string> childs, List<string> partners)
     {
       NewbornService.variable["id"] = "\"" + newbornId + "\"";
       NewbornService.variable["childs"] = ServiceHelpers.ReturnNewbornChilds(childs);
+      NewbornService.variable["partners"] = ServiceHelpers.ReturnNewbornPartners(partners);
       WWW www;
-      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateNewbornChilds, ApiConfig.apiKey, ApiConfig.url);
+      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateNewbornChildsAndPartners, ApiConfig.apiKey, ApiConfig.url);
       yield return www;
       if (www.error != null)
       {
@@ -225,17 +226,6 @@ namespace Newborn
         }
         Debug.Log("NewBorn childs successfully updated!");
       }
-    }
-
-    private static string ReturnNewbornChilds(List<string> childs)
-    {
-      string childString = "";
-      foreach (var child in childs)
-      {
-        childString = childString + "\"" + child + "\"" + ",";
-      }
-
-      return childString;
     }
 
     public static void DestroyAgent(Transform transform)
@@ -270,8 +260,10 @@ namespace Newborn
     {
       agent.transform.GetComponent<NewbornAgent>().childs.Add(newbornId);
       agentPartner.transform.GetComponent<NewbornAgent>().childs.Add(newbornId);
-      yield return NewbornService.UpdateNewbornChilds(agent.transform.GetComponent<AgentTrainBehaviour>().brain.name, agent.transform.GetComponent<NewbornAgent>().childs);
-      yield return NewbornService.UpdateNewbornChilds(agentPartner.transform.GetComponent<AgentTrainBehaviour>().brain.name, agentPartner.transform.GetComponent<NewbornAgent>().childs);
+      agent.transform.GetComponent<NewbornAgent>().partners.Add(agentPartner.name);
+      agentPartner.transform.GetComponent<NewbornAgent>().partners.Add(agent.name);
+      yield return NewbornService.UpdateNewbornChildsAndPartners(agent.name, agent.transform.GetComponent<NewbornAgent>().childs, agent.transform.GetComponent<NewbornAgent>().partners);
+      yield return NewbornService.UpdateNewbornChildsAndPartners(agentPartner.name, agentPartner.transform.GetComponent<NewbornAgent>().childs, agentPartner.transform.GetComponent<NewbornAgent>().partners);
       NewbornService.PostModelCallback PostModelCallback = NewbornService.SuccessfullModelCallback;
       yield return agent.GetComponent<NewBornBuilder>().PostNewbornModel(newbornId, 0, agent, PostModelCallback); // will it always be first generation
     }
