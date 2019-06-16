@@ -70,7 +70,7 @@ namespace Newborn
       yield return www;
       if (www.error != null)
       {
-        throw new Exception("There was an error sending request: " + www.error);
+        throw new Exception("❌There was an error sending request: " + www.error);
       }
       else
       {
@@ -81,7 +81,7 @@ namespace Newborn
         }
         else
         {
-          throw new Exception("There was an error sending request: " + responseData);
+          throw new Exception("❌There was an error sending request: " + responseData);
         }
       }
     }
@@ -107,7 +107,7 @@ namespace Newborn
         }
         else
         {
-          throw new Exception("There was an error sending request: " + responseData);
+          throw new Exception("❌There was an error sending request: " + responseData);
         }
       }
     }
@@ -126,13 +126,13 @@ namespace Newborn
       yield return www;
       if (www.error != null)
       {
-        throw new Exception("There was an error sending request: " + www.error);
+        throw new Exception("❌There was an error sending request: " + www.error);
       }
       else
       {
         if (JSON.Parse(www.text)["data"]["createModel"] == null)
         {
-          throw new Exception("There was an error sending request: " + www.error);
+          throw new Exception("❌There was an error sending request: " + www.error);
         }
         yield return callback(transform, www, agent, modelId);
       }
@@ -164,7 +164,7 @@ namespace Newborn
       yield return www;
       if (www.error != null)
       {
-        throw new Exception("There was an error sending request: " + www.error);
+        throw new Exception("❌There was an error sending request: " + www.error);
       }
       else
       {
@@ -192,7 +192,7 @@ namespace Newborn
       yield return www;
       if (www.error != null)
       {
-        throw new Exception("There was an error sending request: " + www.error);
+        throw new Exception("❌There was an error sending request: " + www.error);
       }
       else
       {
@@ -215,14 +215,14 @@ namespace Newborn
       yield return www;
       if (www.error != null)
       {
-        throw new Exception("There was an error sending request: " + www.error);
+        throw new Exception("❌There was an error sending request: " + www.error);
       }
       else
       {
         JSONNode responseData = JSON.Parse(www.text);
         if (responseData["data"]["updateNewborn"] == null)
         {
-          throw new Exception("There was an error sending request: " + responseData);
+          throw new Exception("❌There was an error sending request: " + responseData);
         }
         Debug.Log("NewBorn childs successfully updated!");
       }
@@ -252,7 +252,7 @@ namespace Newborn
 
     public static IEnumerator SuccessfullModelCallback(Transform transform, WWW www, GameObject agent, string newbornId = null)
     {
-      Debug.Log("Successfull Newborn reproduction");
+      Debug.Log("Successfull Newborn reproduction 🏩💦🍆");
       yield return TrainingService.TrainNewborn(newbornId);
     }
 

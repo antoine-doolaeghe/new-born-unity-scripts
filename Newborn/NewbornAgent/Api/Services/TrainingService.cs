@@ -48,6 +48,27 @@ namespace Newborn
       }
     }
 
+    public static IEnumerator UpdateTrainingStage(string newbornId, string stage)
+    {
+      byte[] postData;
+      Dictionary<string, string> postHeader;
+      TrainingService.variable["id"] = "\"" + newbornId + "\"";
+      TrainingService.variable["stage"] = "\"" + stage + "\"";
+
+      WWW www;
+      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateTrainingStageQuery, ApiConfig.apiKey, ApiConfig.url);
+      yield return www;
+      if (www.error != null)
+      {
+        throw new Exception("There was an error sending request: " + www.error);
+      }
+      else
+      {
+        Debug.Log(JSON.Parse(www.text));
+        Debug.Log("Training Stage successfully updated");
+      }
+    }
+
     public static IEnumerator StreamNewbornTrainingModel(string newbornId)
     {
       byte[] postData;

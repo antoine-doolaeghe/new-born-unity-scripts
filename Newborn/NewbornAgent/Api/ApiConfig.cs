@@ -5,7 +5,7 @@ using UnityEngine;
 public class ApiConfig : ScriptableObject
 {
   public static string url = "https://sw2hs7ufb5gevarvuyswhrndjm.appsync-api.eu-west-1.amazonaws.com/graphql";
-  public static string apiKey = "da2-bwhkcmyrfvgqfccovxokq2btva";
+  public static string apiKey = "da2-gpogt2u3kzbgpo54oikxxgg7am";
   public static string generationsGraphQlQuery = "query getGenerations {listGenerations { items {id} }}";
   public static string generationsGraphQlMutation = "mutation createGeneration {createGeneration(input: {id: $id^, index: $index^}) { id, index }}";
   public static string newbornGraphQlMutation = "mutation NewbornPost {createNewborn(input: {id: '$id^', name: $name^, sex: $sex^, newbornGenerationId: '$newbornGenerationId^'}) {id, name, generation{index}}}";
@@ -18,4 +18,5 @@ public class ApiConfig : ScriptableObject
   public static string updateNewbornInstanceId = "mutation UpdateNewbornInstanceId {updateNewborn(input: {id: '$id^', instanceId: $instanceId^}) { id, instanceId }}";
   public static string updateDevelopmentStage = "mutation UpdateDevelopmentStage {updateNewborn(input: {id: '$id^', developmentStage: $stage^}) { id }}";
   public static string updateNewbornChildsAndPartners = "mutation updateNewbornChilds {updateNewborn(input: {id: '$id^', childs: [$childs^], partners: [$partners^]}) { id }}";
+  public static string updateTrainingStageQuery = "mutation updateNewbornTrainingStage {updateNewborn(input: {id: '$id^', trainingStage: '$stage^'}) { id }}";
 }

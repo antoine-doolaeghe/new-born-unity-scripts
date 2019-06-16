@@ -101,7 +101,6 @@ public class S3Service : MonoBehaviour
               memstream.Write(buffer, 0, bytesRead);
             data = memstream.ToArray();
             MLAgents.InferenceBrain.NNModel model = ScriptableObject.CreateInstance<MLAgents.InferenceBrain.NNModel>();
-
             model.Value = data;
             agent.GetComponent<NewBornBuilder>().LoadModelToLearningBrain(newbornId, model);
           }

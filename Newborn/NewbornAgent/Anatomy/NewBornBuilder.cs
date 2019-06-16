@@ -55,7 +55,7 @@ namespace Newborn
       }
       cellInfoIndex = 0;
       Initialised = false;
-      academy.broadcastHub.broadcastingBrains.Clear();
+      // academy.broadcastHub.broadcastingBrains.Clear();
       cellNb = 0;
       aTBehaviour.DeleteBodyParts();
     }
@@ -173,14 +173,17 @@ namespace Newborn
     public IEnumerator BuildAgentRandomNewBorn()
     {
       yield return StartCoroutine(checkNewbornGeneration());
+      string name = NewbornBrain.GenerateRandomName();
       newborn.GenerationIndex = GenerationService.generations.Count;
       newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
       requestApiData = false;
       BuildNewBorn(AgentConfig.threshold);
+      SetGameObjectName(name);
       checkMinCellNb();
       AddBodyPart(true);
-      academy.broadcastHub.broadcastingBrains.Add(aTBehaviour.brain);
       NewbornBrain.SetBrainParameters(aTBehaviour, cellNb);
+      NewbornBrain.SetBrainName(aTBehaviour, name);
+      aTBehaviour.enabled = true;
     }
 
     public void BuildAgentRandomGeneration(Transform agent)
@@ -197,7 +200,7 @@ namespace Newborn
 
     public void BuildNewbornFromResponse(GameObject agent, string responseId, List<float> infoResponse)
     {
-      Debug.Log("Building Newborn From Fetch");
+      Debug.Log("Building Newborn From Fetch Response 🏗️");
       if (partNb == 0 && threshold == 0f)
       {
         partNb = AgentConfig.layerNumber;
@@ -211,15 +214,17 @@ namespace Newborn
         newborn.GeneInformations.Add(new GeneInformation(new List<float>()));
         newborn.GeneInformations[0].info = infoResponse;
         BuildNewBorn(threshold);
+        SetGameObjectName(responseId);
         checkMinCellNb();
         AddBodyPart(true);
         NewbornBrain.SetBrainParameters(aTBehaviour, cellNb);
         NewbornBrain.SetBrainName(aTBehaviour, responseId);
-        academy.broadcastHub.broadcastingBrains.Add(aTBehaviour.brain);
-        academy.broadcastHub.SetControlled(aTBehaviour.brain, true);
         Initialised = true;
+        aTBehaviour.enabled = true;
       }
     }
+
+
     public List<float> ReturnGeneInformations(int modelIndex)
     {
       List<float> ModelInfos = new List<float>();
@@ -281,10 +286,6 @@ namespace Newborn
           aTBehaviour.parts.Add(newborn.Cells[i].transform);
         }
       }
-      if (init)
-      {
-        aTBehaviour.InitializeAgent();
-      }
     }
 
     private void InitaliseNewbornInformation()
@@ -318,12 +319,17 @@ namespace Newborn
         transform.gameObject.SetActive(false);
       }
     }
+
+    private void SetGameObjectName(string name)
+    {
+      transform.name = name;
+    }
     public IEnumerator checkNewbornGeneration()
     {
       yield return StartCoroutine(GenerationService.GetGenerations()); /// This check should be made as you build the AGENT and not as you post the agents.
       if (GenerationService.generations.Count == 0)
       {
-        yield return StartCoroutine(GenerationService.PostGeneration(NewbornBrain.GenerateRandomBrainName(), 1));
+        yield return StartCoroutine(GenerationService.PostGeneration(NewbornBrain.GenerateRandomName(), 1));
       }
     }
 
@@ -336,7 +342,7 @@ namespace Newborn
     {
       List<float> modelInfos = ReturnGeneInformations(modelIndex);
       List<PositionPostData> cellPositions = AnatomyHelpers.ReturnModelPositions(newborn);
-      string id = NewbornBrain.GenerateRandomBrainName();
+      string id = NewbornBrain.GenerateRandomName();
       GenerationPostData generationPostData = new GenerationPostData(newbornId, cellPositions, modelInfos);
       yield return NewbornService.PostNewbornModel(transform, generationPostData, newbornId, agent, responseCallback);
     }

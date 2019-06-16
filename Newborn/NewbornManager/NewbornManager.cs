@@ -81,8 +81,10 @@ namespace Newborn
 
     public IEnumerator RequestNewbornAgentInfo()
     {
-      Debug.Log("Request Agent info from server...");
+      Debug.Log("Request Agent info from server...📡");
       GameObject[] agents = GameObject.FindGameObjectsWithTag("agent");
+      Debug.Log("number of agents found");
+      Debug.Log(agents.Length);
       for (int a = 0; a < agents.Length; a++)
       {
         yield return StartCoroutine(NewbornService.GetNewborn(newbornId, agents[a], false));

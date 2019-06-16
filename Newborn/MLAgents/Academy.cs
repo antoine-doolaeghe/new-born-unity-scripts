@@ -97,8 +97,7 @@ namespace MLAgents
     "docs/Learning-Environment-Design-Academy.md")]
   public abstract class Academy : MonoBehaviour
   {
-    [SerializeField]
-    [HideInInspector] public bool initialized;
+    [HideInInspector] public bool initialized = false;
     public BroadcastHub broadcastHub = new BroadcastHub();
 
     public Newborn.NewbornManager manager;
@@ -235,6 +234,7 @@ namespace MLAgents
     /// </summary>
     void Awake()
     {
+      initialized = false;
       bool hasNewbornId = false;
       string[] arguments = Environment.GetCommandLineArgs();
       for (int x = 0; x < arguments.Length; x++)

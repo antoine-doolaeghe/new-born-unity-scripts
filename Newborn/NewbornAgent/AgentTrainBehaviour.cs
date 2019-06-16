@@ -22,13 +22,11 @@ public class AgentTrainBehaviour : Agent
   public Transform target;
   public Transform ground;
   public bool respawnFoodWhenTouched;
-  public float foodSpawnRadius;
 
   [Header("Joint Settings")]
   [Space(10)]
   public JointDriveController jdController;
   Vector3 dirToTarget;
-  float initTargetDistance;
   float movingTowardsDot;
   float facingDot;
 
@@ -39,16 +37,26 @@ public class AgentTrainBehaviour : Agent
   public bool rewardUseTimePenalty; // Hurry up
   public bool penaltyFunctionMovingAgainst; // stay in the zone
 
+  [Header("Training Parameters")]
+  [Space(10)]
+  public bool allowReproduction;
+  public float maximumStaticTargetDistance;
+  public float foodSpawnRadius;
+  public float foodSpawnRadiusIncrementor;
+  [HideInInspector] public NewbornSpawner spawner;
+  [HideInInspector] public TargetController targetController;
+  private int timePenaltyMultiplier = 0;
   private bool isNewDecisionStep;
   private int currentDecisionStep;
-
   private bool initialized = false;
+
 
   public override void InitializeAgent()
   {
     if (!initialized)
     {
       initBodyParts();
+      StartCoroutine(TrainingService.UpdateTrainingStage(brain.name, TargetController.trainingStage.ToString()));
       currentDecisionStep = 1;
       initialized = true;
     }
@@ -56,9 +64,11 @@ public class AgentTrainBehaviour : Agent
 
   public void initBodyParts()
   {
+    Debug.Log("INIT BOD");
+    /// THE PROBLEM HERE IS THAT IT WILL RESET ON ENABLE
     jdController.target = target;
     jdController.SetupBodyPart(initPart);
-    initTargetDistance = Vector3.Distance(initPart.position, target.position);
+    targetController.minimumTargetDistance = Vector3.Distance(initPart.position, target.position);
     foreach (var part in parts)
     {
       jdController.SetupBodyPart(part);
@@ -122,17 +132,16 @@ public class AgentTrainBehaviour : Agent
 
   public override void AgentAction(float[] vectorAction, string textAction)
   {
-
     foreach (var bodyPart in jdController.bodyPartsDict.Values)
     {
-      if (bodyPart.collisionController && !IsDone() && !transform.gameObject.GetComponent<NewbornAgent>().isGestating && bodyPart.collisionController.touchingNewborn != null)
+      if (allowReproduction && bodyPart.collisionController && !IsDone() && !transform.gameObject.GetComponent<NewbornAgent>().isGestating && bodyPart.collisionController.touchingNewborn != null)
       {
-        TouchedNewborn(bodyPart.collisionController.touchingNewborn);
+        targetController.TouchedNewborn(bodyPart.collisionController.touchingNewborn);
       }
 
       if (bodyPart.collisionController && !IsDone() && bodyPart.collisionController.touchingFood)
       {
-        TouchedFood();
+        targetController.TouchedFood();
       }
     }
 
@@ -186,7 +195,7 @@ public class AgentTrainBehaviour : Agent
   void RewardFunctionMovingTowards()
   {
     movingTowardsDot = Vector3.Dot(jdController.bodyPartsDict[initPart].rb.velocity, dirToTarget.normalized);
-    AddReward(0.03f * movingTowardsDot);
+    AddReward((0.03f * movingTowardsDot));
   }
 
   /// <summary>
@@ -194,9 +203,9 @@ public class AgentTrainBehaviour : Agent
   /// </summary>
   void PenaltyFunctionMovingAgainst()
   {
-    if (initTargetDistance < Vector3.Distance(initPart.position, target.position) - 10f)
+    if (targetController.minimumTargetDistance < Vector3.Distance(initPart.position, target.position) - 10f)
     {
-      Debug.Log("HERE PENALTY");
+      Debug.Log("PENALTY 🚩");
       SetReward(-10f);
       AgentReset();
     };
@@ -216,7 +225,7 @@ public class AgentTrainBehaviour : Agent
   /// </summary>
   void RewardFunctionTimePenalty()
   {
-    AddReward(-0.001f);
+    AddReward(-0.001f * timePenaltyMultiplier);
   }
 
   /// <summary>
@@ -234,66 +243,8 @@ public class AgentTrainBehaviour : Agent
     {
       bodyPart.Reset(bodyPart);
     }
-
+    // ConfigureAgent();
     isNewDecisionStep = true;
     currentDecisionStep = 1;
-  }
-
-  /// <summary>
-  /// Agent touched the target
-  /// </summary>
-  public void TouchedNewborn(GameObject touchingNewborn)
-  {
-    AddReward(15f);
-    StartCoroutine(handleTouchedNewborn(touchingNewborn));
-  }
-
-  public IEnumerator handleTouchedNewborn(GameObject touchingNewborn)
-  {
-    NewbornAgent newborn = transform.gameObject.GetComponent<NewbornAgent>();
-    NewBornBuilder newBornBuilder = transform.gameObject.GetComponent<NewBornBuilder>();
-    // CREATE A COROUTINE HERE 
-    string sex = newborn.Sex;
-    int generationIndex = newborn.GenerationIndex;
-    string partnerSex = touchingNewborn.GetComponent<NewbornAgent>().Sex;
-    int partnerGenerationIndex = touchingNewborn.GetComponent<NewbornAgent>().GenerationIndex;
-
-    if (sex == "female" && partnerSex == "male" && generationIndex == partnerGenerationIndex) // Generation must be equal ? 
-    {
-      Debug.Log("Compatible partner");
-      newborn.SetNewbornInGestation();
-      List<GeneInformation> femaleGene = newborn.GeneInformations;
-      List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewbornAgent>().GeneInformations;
-      List<GeneInformation> newGene = GeneHelper.ReturnMixedForReproduction(femaleGene, maleGene);
-      // Prepare post data here
-      string newNewbornName = "name";
-      string newNewbornGenerationId = newborn.GenerationId;
-      string newNewbornSex = "male";
-      string newNewbornHex = "MOCK HEX";
-
-      NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, NewbornBrain.GenerateRandomBrainName(), newNewbornGenerationId, newNewbornSex, newNewbornHex);
-      NewbornService.PostNewbornFromReproductionCallback PostNewbornFromReproductionCallback = NewbornService.SuccessfullPostNewbornFromReproductionCallback;
-      yield return NewbornService.PostNewbornFromReproduction(newBornPostData, transform.gameObject, touchingNewborn, PostNewbornFromReproductionCallback);
-    }
-  }
-
-  public void TouchedFood()
-  {
-    AddReward(15f);
-    AgentReset();
-    if (respawnFoodWhenTouched)
-    {
-      GetRandomFoodPos();
-    }
-  }
-
-  /// <summary>
-  /// Moves target to a random position within specified radius.
-  /// </summary>
-  public void GetRandomFoodPos()
-  {
-    Vector3 newTargetPos = Random.insideUnitSphere * foodSpawnRadius;
-    newTargetPos.y = 5;
-    target.position = newTargetPos + ground.position;
   }
 }
