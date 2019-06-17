@@ -1,7 +1,5 @@
 using UnityEngine;
-using System.Collections;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 public class TrainingAgentConfig
 {
   public static List<Vector3> positions = new List<Vector3> {

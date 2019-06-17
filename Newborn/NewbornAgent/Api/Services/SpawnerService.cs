@@ -1,16 +1,9 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Text.RegularExpressions;
-using Newborn;
 using SimpleJSON;
 using UnityEngine;
-using UnityEngine.Networking;
-using UnityEngine.UI;
+
 namespace Newborn
 {
   [ExecuteInEditMode]
@@ -34,6 +27,7 @@ namespace Newborn
       else
       {
         Debug.Log("NewBorn List successfully requested!");
+        Debug.Log(JSON.Parse(www.text));
         foreach (System.Collections.Generic.KeyValuePair<string, SimpleJSON.JSONNode> newbornId in JSON.Parse(www.text)["data"]["listNewborns"]["items"])
         {
           AgentTrainBehaviour atBehaviour;
@@ -48,14 +42,16 @@ namespace Newborn
             {
               Debug.Log("Ending newborn gestation");
               GameObject.Find(newbornId.Value["parents"][i]).GetComponent<NewbornAgent>().UnsetNewbornInGestation();
-              StartCoroutine(NewbornService.UpdateDevelopmentStage(newbornId.Value["parents"][i], "living"));
+              StartCoroutine(NewbornService.UpdateTrainedStatus(newbornId.Value["parents"][i], "true"));
             }
           }
 
           GameObject agent = spawner.GetComponent<NewbornSpawner>().BuildAgent(true, TrainingAgentConfig.positions[0], out newBornAgent, out atBehaviour, out newBornBuilder, out newborn);
+          agent.GetComponent<AgentTrainBehaviour>().target = agent.transform;
+          agent.GetComponent<TargetController>().target = agent.transform;
           yield return StartCoroutine(NewbornService.GetNewborn(newbornId.Value["id"], agent, false));
           GameObject.Find("S3Service").GetComponent<S3Service>().GetObject(newbornId.Value["id"], agent);
-          StartCoroutine(NewbornService.UpdateDevelopmentStage(newbornId.Value["id"], "living"));
+          StartCoroutine(NewbornService.UpdateTrainedStatus(newbornId.Value["id"], "true"));
         };
       }
     }

@@ -1,11 +1,8 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using MLAgents;
 using MyBox;
-using UnityEditor;
 using UnityEngine;
 
 namespace Newborn
@@ -88,6 +85,7 @@ namespace Newborn
       for (int a = 0; a < agents.Length; a++)
       {
         yield return StartCoroutine(NewbornService.GetNewborn(newbornId, agents[a], false));
+        agents[a].GetComponent<AgentTrainBehaviour>().enabled = true;
       }
       Debug.Log("Finished to build Agents");
       academy.InitializeEnvironment();

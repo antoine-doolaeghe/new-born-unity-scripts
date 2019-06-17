@@ -22,7 +22,7 @@ public class TargetController : MonoBehaviour
     timer += Time.deltaTime;
     if (timer > 10f)
     {
-      GetClosestEnemy(GameObject.FindGameObjectsWithTag("agent"));
+      assignTarget();
       timer = 0.0f;
     }
   }
@@ -122,16 +122,33 @@ public class TargetController : MonoBehaviour
     Vector3 currentPosition = transform.position;
     foreach (GameObject potentialTarget in targets)
     {
-      Vector3 directionToTarget = potentialTarget.transform.position - currentPosition;
-      float dSqrToTarget = directionToTarget.sqrMagnitude;
-      if (dSqrToTarget < closestDistanceSqr)
+      if (potentialTarget != this.gameObject)
       {
-        closestDistanceSqr = dSqrToTarget;
-        bestTarget = potentialTarget.transform;
+        Vector3 directionToTarget = potentialTarget.transform.position - currentPosition;
+        float dSqrToTarget = directionToTarget.sqrMagnitude;
+        if (dSqrToTarget < closestDistanceSqr)
+        {
+          closestDistanceSqr = dSqrToTarget;
+          bestTarget = potentialTarget.transform;
+        }
       }
     }
-    Debug.Log(bestTarget);
+
     return bestTarget;
+  }
+
+  void assignTarget()
+  {
+    Transform closestNewborn = GetClosestEnemy(GameObject.FindGameObjectsWithTag("agent"));
+    Transform closestTarget = GetClosestEnemy(GameObject.FindGameObjectsWithTag("food"));
+    if (!transform.GetComponent<NewbornAgent>().isGestating && !closestNewborn.GetComponent<NewbornAgent>().isGestating)
+    {
+      if (closestNewborn != null && closestNewborn.childCount > 0) { transform.GetComponent<AgentTrainBehaviour>().target = closestNewborn.GetChild(0); }
+    }
+    else
+    {
+      transform.GetComponent<AgentTrainBehaviour>().target = this.transform;
+    }
   }
 
   public static void MoveTargetForward(Transform target)

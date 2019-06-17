@@ -1,16 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Text.RegularExpressions;
-using Newborn;
 using SimpleJSON;
 using UnityEngine;
-using UnityEngine.Networking;
-using UnityEngine.UI;
 
 namespace Newborn
 {
@@ -32,7 +25,7 @@ namespace Newborn
 
     public delegate IEnumerator PostNewbornFromReproductionCallback(GameObject agent, GameObject agentPartner, string newbornId);
 
-    public static IEnumerator GetNewborn(string id, GameObject agent, bool IsGetAfterPost)
+    public static IEnumerator GetNewborn(string id, GameObject agent, bool IsPlayMode)
     {
       NewbornService.variable["id"] = id;
       WWW www;
@@ -86,12 +79,12 @@ namespace Newborn
       }
     }
 
-    public static IEnumerator UpdateDevelopmentStage(string id, string stage)
+    public static IEnumerator UpdateTrainedStatus(string id, string status)
     {
       NewbornService.variable["id"] = "\"" + id + "\"";
-      NewbornService.variable["stage"] = "\"" + stage + "\"";
+      NewbornService.variable["status"] = status;
       WWW www;
-      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateDevelopmentStage, ApiConfig.apiKey, ApiConfig.url);
+      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateTrainedStatus, ApiConfig.apiKey, ApiConfig.url);
       yield return www;
       if (www.error != null)
       {
@@ -189,9 +182,11 @@ namespace Newborn
       NewbornService.variable["parentB"] = "\"" + agentPartner.GetComponent<AgentTrainBehaviour>().brain.name + "\"";
       WWW www;
       ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.postNewbornFromReproductionGraphQlMutation, ApiConfig.apiKey, ApiConfig.url);
+      Debug.Log(graphQlInput);
       yield return www;
       if (www.error != null)
       {
+        Debug.Log(JSON.Parse(www.text));
         throw new Exception("❌There was an error sending request: " + www.error);
       }
       else

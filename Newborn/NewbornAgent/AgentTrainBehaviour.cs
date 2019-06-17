@@ -1,10 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+﻿using System.Collections.Generic;
 using Newborn;
 using MLAgents;
 using UnityEngine;
-using UnityEngine.UI;
 
 [RequireComponent(typeof(JointDriveController))] // Required to set joint forces
 public class AgentTrainBehaviour : Agent
@@ -233,7 +230,7 @@ public class AgentTrainBehaviour : Agent
   /// </summary>
   public override void AgentReset()
   {
-
+    Debug.Log(target.position);
     if (dirToTarget != Vector3.zero)
     {
       transform.rotation = Quaternion.LookRotation(dirToTarget);

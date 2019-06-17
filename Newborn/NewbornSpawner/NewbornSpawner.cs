@@ -1,11 +1,6 @@
-
-using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.RegularExpressions;
 using MLAgents;
-using UnityEditor;
 using UnityEngine;
 
 namespace Newborn
@@ -22,7 +17,6 @@ namespace Newborn
     public int vectorActionSize;
     public bool control;
     public GameObject StaticTarget;
-    public bool isTargetDynamic;
     public bool isListeningToTrainedBorn;
     private List<LearningBrain> learningBrains;
     private List<PlayerBrain> playerBrains;
@@ -41,16 +35,9 @@ namespace Newborn
 
     public void BuildTarget()
     {
-      if (!isTargetDynamic)
-      {
-        GameObject target = Instantiate(StaticTarget, transform);
-        target.transform.localPosition = new Vector3(0f, -18.5f, 0f);
-        AssignTarget(Agents, target);
-      }
-      else
-      {
-        AssignTarget(Agents, null);
-      }
+      GameObject target = Instantiate(StaticTarget, transform);
+      target.transform.localPosition = new Vector3(0f, -18.5f, 0f);
+      AssignTarget(Agents);
     }
 
     public void BuildAgents(bool requestApiData)
@@ -79,6 +66,8 @@ namespace Newborn
       newborn.Sex = SexConfig.sexes[UnityEngine.Random.Range(0, 2)]; // Randomly select male or female
       // newBornAgent.transform.localPosition = new Vector3(UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex), 0f, UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex));
       newBornAgent.transform.localPosition = position;
+      targetController.agentTrainBehaviour = atBehaviour;
+      targetController.spawner = this;
       atBehaviour.spawner = this;
       atBehaviour.targetController = targetController;
       SetApiRequestParameter(newBornBuilder, atBehaviour, requestApiData);
@@ -190,25 +179,12 @@ namespace Newborn
       }
     }
 
-    private void AssignTarget(List<GameObject> newBornAgents, GameObject target)
+    public void AssignTarget(List<GameObject> newBornAgents)
     {
       for (int y = 0; y < newBornAgents.Count; y++)
       {
-        if (isTargetDynamic || target == null)
-        {
-          if (y != newBornAgents.Count - 1)
-          {
-            newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = newBornAgents[y + 1].transform;
-          }
-          else
-          {
-            newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = newBornAgents[0].transform;
-          }
-        }
-        else
-        {
-          newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = target.transform;
-        }
+        newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = transform;
+        newBornAgents[y].GetComponent<TargetController>().target = transform;
       }
     }
 
@@ -217,6 +193,7 @@ namespace Newborn
       foreach (GameObject agent in Agents)
       {
         agent.GetComponent<AgentTrainBehaviour>().ground = ground;
+        agent.GetComponent<TargetController>().ground = ground;
       }
     }
 

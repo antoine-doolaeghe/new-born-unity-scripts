@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
-using System.Text.RegularExpressions;
 using MLAgents;
 using UnityEngine;
 
@@ -220,7 +219,7 @@ namespace Newborn
         NewbornBrain.SetBrainParameters(aTBehaviour, cellNb);
         NewbornBrain.SetBrainName(aTBehaviour, responseId);
         Initialised = true;
-        aTBehaviour.enabled = true;
+        // aTBehaviour.enabled = true;
       }
     }
 
