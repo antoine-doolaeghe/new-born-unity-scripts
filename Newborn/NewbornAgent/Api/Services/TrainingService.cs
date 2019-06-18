@@ -40,7 +40,7 @@ namespace Newborn
       }
     }
 
-    public static IEnumerator UpdateTrainingStatus(string newbornId, string stage)
+    public static IEnumerator UpdateTrainingStage(string newbornId, string stage)
     {
       byte[] postData;
       Dictionary<string, string> postHeader;
@@ -48,7 +48,7 @@ namespace Newborn
       TrainingService.variable["stage"] = "\"" + stage + "\"";
 
       WWW www;
-      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateTrainingStatusQuery, ApiConfig.apiKey, ApiConfig.url);
+      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateTrainingStageQuery, ApiConfig.apiKey, ApiConfig.url);
       yield return www;
       if (www.error != null)
       {

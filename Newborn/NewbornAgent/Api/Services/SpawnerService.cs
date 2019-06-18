@@ -42,7 +42,7 @@ namespace Newborn
             {
               Debug.Log("Ending newborn gestation");
               GameObject.Find(newbornId.Value["parents"][i]).GetComponent<NewbornAgent>().UnsetNewbornInGestation();
-              StartCoroutine(NewbornService.UpdateTrainedStatus(newbornId.Value["parents"][i], "true"));
+              StartCoroutine(NewbornService.UpdateLivingStatus(newbornId.Value["parents"][i], "true"));
             }
           }
 
@@ -50,7 +50,7 @@ namespace Newborn
           agent.GetComponent<TargetController>().target = agent.transform;
           yield return StartCoroutine(NewbornService.GetNewborn(newbornId.Value["id"], agent, false));
           GameObject.Find("S3Service").GetComponent<S3Service>().GetObject(newbornId.Value["id"], agent);
-          StartCoroutine(NewbornService.UpdateTrainedStatus(newbornId.Value["id"], "true"));
+          StartCoroutine(NewbornService.UpdateLivingStatus(newbornId.Value["id"], "true"));
         };
       }
     }

@@ -88,7 +88,7 @@ public class TargetController : MonoBehaviour
       {
         Debug.Log("MOVING TARGET BACKWARD ⏮️" + target.transform.localPosition.x);
         trainingStage = 1;
-        StartCoroutine(TrainingService.UpdateTrainingStatus(agentTrainBehaviour.brain.name, "1"));
+        StartCoroutine(TrainingService.UpdateTrainingStage(agentTrainBehaviour.brain.name, "1"));
         target.transform.localPosition = new Vector3(35f, target.transform.localPosition.y, 35f);
       }
       else
@@ -102,7 +102,7 @@ public class TargetController : MonoBehaviour
       if (target.transform.localPosition.x >= maximumStaticTargetDistance)
       {
         trainingStage = 2;
-        StartCoroutine(TrainingService.UpdateTrainingStatus(agentTrainBehaviour.brain.name, "2"));
+        StartCoroutine(TrainingService.UpdateTrainingStage(agentTrainBehaviour.brain.name, "2"));
         Debug.Log("MOVING TARGET RANDOMLY 🔀" + target.transform.localPosition.x);
         TargetController.MoveTargetRandom(target, ground, foodSpawnRadius);
         foodSpawnRadius += foodSpawnRadiusIncrementor;
