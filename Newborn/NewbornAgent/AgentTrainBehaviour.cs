@@ -1,54 +1,41 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using System.Text.RegularExpressions;
+﻿using System.Collections.Generic;
 using Newborn;
 using MLAgents;
 using UnityEngine;
-using UnityEngine.UI;
 
 [RequireComponent(typeof(JointDriveController))] // Required to set joint forces
 public class AgentTrainBehaviour : Agent
 {
   [Header("Morphology")]
-  [SerializeField] public List<Transform> parts;
-  [SerializeField] public Transform initPart;
+  [HideInInspector] [SerializeField] public List<Transform> parts;
+  [HideInInspector] [SerializeField] public Transform initPart;
   [Header("API Service")]
   public bool requestApiData;
   public string cellId;
-  public NewbornService newbornService;
-
-  [Header("Target")]
-  [Space(10)]
-  public Transform target;
-  public Transform ground;
-  public bool respawnFoodWhenTouched;
-  public float foodSpawnRadius;
-
   [Header("Joint Settings")]
   [Space(10)]
   public JointDriveController jdController;
   Vector3 dirToTarget;
-  float initTargetDistance;
   float movingTowardsDot;
   float facingDot;
-
   [Header("Reward Functions")]
   [Space(10)]
-  public bool rewardMovingTowardsTarget; // Agent should move towards target
-  public bool rewardFacingTarget; // Agent should face the target
-  public bool rewardUseTimePenalty; // Hurry up
-  public bool penaltyFunctionMovingAgainst; // stay in the zone
-
+  public bool rewardMovingTowardsTarget;
+  public bool rewardFacingTarget;
+  public bool rewardUseTimePenalty;
+  public bool penaltyFunctionMovingAgainst;
+  [HideInInspector] public NewbornSpawner spawner;
+  [HideInInspector] public TargetController targetController;
+  private int timePenaltyMultiplier = 0;
   private bool isNewDecisionStep;
   private int currentDecisionStep;
-
   private bool initialized = false;
-
   public override void InitializeAgent()
   {
     if (!initialized)
     {
       initBodyParts();
+      StartCoroutine(TrainingService.UpdateTrainingStatus(brain.name, targetController.trainingStage.ToString()));
       currentDecisionStep = 1;
       initialized = true;
     }
@@ -56,9 +43,10 @@ public class AgentTrainBehaviour : Agent
 
   public void initBodyParts()
   {
-    jdController.target = target;
+    Debug.Log("INIT BOD");
+    jdController.target = targetController.target;
     jdController.SetupBodyPart(initPart);
-    initTargetDistance = Vector3.Distance(initPart.position, target.position);
+    targetController.minimumTargetDistance = Vector3.Distance(initPart.position, targetController.target.position);
     foreach (var part in parts)
     {
       jdController.SetupBodyPart(part);
@@ -122,22 +110,22 @@ public class AgentTrainBehaviour : Agent
 
   public override void AgentAction(float[] vectorAction, string textAction)
   {
-
     foreach (var bodyPart in jdController.bodyPartsDict.Values)
     {
-      if (bodyPart.collisionController && !IsDone() && !transform.gameObject.GetComponent<NewbornAgent>().isGestating && bodyPart.collisionController.touchingNewborn != null)
+      NewbornAgent newbornAgent = transform.gameObject.GetComponent<NewbornAgent>();
+      if (newbornAgent.isReproducing && bodyPart.collisionController && !IsDone() && !newbornAgent.isGestating && bodyPart.collisionController.touchingNewborn != null)
       {
-        TouchedNewborn(bodyPart.collisionController.touchingNewborn);
+        targetController.TouchedNewborn(bodyPart.collisionController.touchingNewborn);
       }
 
       if (bodyPart.collisionController && !IsDone() && bodyPart.collisionController.touchingFood)
       {
-        TouchedFood();
+        targetController.TouchedFood();
       }
     }
 
     // Update pos to target
-    dirToTarget = target.position - initPart.position;
+    dirToTarget = targetController.target.position - initPart.position;
 
     // Joint update logic only needs to happen when a new decision is made
     if (isNewDecisionStep)
@@ -186,7 +174,7 @@ public class AgentTrainBehaviour : Agent
   void RewardFunctionMovingTowards()
   {
     movingTowardsDot = Vector3.Dot(jdController.bodyPartsDict[initPart].rb.velocity, dirToTarget.normalized);
-    AddReward(0.03f * movingTowardsDot);
+    AddReward((0.03f * movingTowardsDot));
   }
 
   /// <summary>
@@ -194,9 +182,9 @@ public class AgentTrainBehaviour : Agent
   /// </summary>
   void PenaltyFunctionMovingAgainst()
   {
-    if (initTargetDistance < Vector3.Distance(initPart.position, target.position) - 10f)
+    if (targetController.minimumTargetDistance < Vector3.Distance(initPart.position, targetController.target.position) - 10f)
     {
-      Debug.Log("HERE PENALTY");
+      Debug.Log("PENALTY 🚩");
       SetReward(-10f);
       AgentReset();
     };
@@ -216,7 +204,7 @@ public class AgentTrainBehaviour : Agent
   /// </summary>
   void RewardFunctionTimePenalty()
   {
-    AddReward(-0.001f);
+    AddReward(-0.001f * timePenaltyMultiplier);
   }
 
   /// <summary>
@@ -224,7 +212,6 @@ public class AgentTrainBehaviour : Agent
   /// </summary>
   public override void AgentReset()
   {
-
     if (dirToTarget != Vector3.zero)
     {
       transform.rotation = Quaternion.LookRotation(dirToTarget);
@@ -237,65 +224,5 @@ public class AgentTrainBehaviour : Agent
 
     isNewDecisionStep = true;
     currentDecisionStep = 1;
-  }
-
-  /// <summary>
-  /// Agent touched the target
-  /// </summary>
-  public void TouchedNewborn(GameObject touchingNewborn)
-  {
-    AddReward(15f);
-    StartCoroutine(handleTouchedNewborn(touchingNewborn));
-  }
-
-  public IEnumerator handleTouchedNewborn(GameObject touchingNewborn)
-  {
-    NewbornAgent newborn = transform.gameObject.GetComponent<NewbornAgent>();
-    NewBornBuilder newBornBuilder = transform.gameObject.GetComponent<NewBornBuilder>();
-    // CREATE A COROUTINE HERE 
-    string sex = newborn.Sex;
-    int generationIndex = newborn.GenerationIndex;
-    string partnerSex = touchingNewborn.GetComponent<NewbornAgent>().Sex;
-    int partnerGenerationIndex = touchingNewborn.GetComponent<NewbornAgent>().GenerationIndex;
-
-    if (sex == "female" && partnerSex == "male" && generationIndex == partnerGenerationIndex) // Generation must be equal ? 
-    {
-      Debug.Log("Compatible partner");
-      newborn.isGestating = true;
-      List<GeneInformation> femaleGene = newborn.GeneInformations;
-      List<GeneInformation> maleGene = touchingNewborn.GetComponent<NewbornAgent>().GeneInformations;
-      List<GeneInformation> newGene = GeneHelper.ReturnMixedForReproduction(femaleGene, maleGene);
-      // prepare post data
-      string newNewbornName = "name";
-      string newNewbornGenerationId = newborn.GenerationId;
-      string newNewbornSex = "male";
-      string newNewbornHex = "MOCK HEX";
-      // DO a generation check ? 
-      NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, NewbornBrain.GenerateRandomBrainName(), newNewbornGenerationId, newNewbornSex, newNewbornHex);
-      // SEND THE TRAINING INSTANCE HERE;
-      yield return NewbornService.PostReproducedNewborn(newBornPostData, transform.gameObject, touchingNewborn);
-      NewbornService.BuildAgentCallback Callback = NewbornService.SuccessfullReproductionCallback;
-      yield return newBornBuilder.PostNewbornModel(newborn.childs[newborn.childs.Count - 1], 0, transform.gameObject, Callback); // will it always be first generation
-      yield return TrainingService.TrainNewborn(newborn.childs[newborn.childs.Count - 1]);
-    }
-  }
-  public void TouchedFood()
-  {
-    AddReward(15f);
-    AgentReset();
-    if (respawnFoodWhenTouched)
-    {
-      GetRandomFoodPos();
-    }
-  }
-
-  /// <summary>
-  /// Moves target to a random position within specified radius.
-  /// </summary>
-  public void GetRandomFoodPos()
-  {
-    Vector3 newTargetPos = Random.insideUnitSphere * foodSpawnRadius;
-    newTargetPos.y = 5;
-    target.position = newTargetPos + ground.position;
   }
 }

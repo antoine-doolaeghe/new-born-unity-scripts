@@ -66,26 +66,16 @@ namespace Newborn
         }
       }
 
-      if (!manager.isTrainingMode)
+      if (GUILayout.Button("Request Training NewBorn (target generation)"))
       {
-        if (GUILayout.Button("Request Production NewBorn"))
-        {
-          manager.RequestProductionAgentInfo();
-        }
+        manager.RequestNewborn();
       }
 
-      if (manager.isTrainingMode)
-      {
-        if (GUILayout.Button("Request Training NewBorn (target generation)"))
-        {
-          manager.RequestNewborn();
-        }
-      }
 
       EditorGUILayout.LabelField("API Post request");
       if (GUILayout.Button("Post Training NewBorn"))
       {
-        manager.ClearBroadCastingBrains();
+        // manager.ClearBroadCastingBrains();
         foreach (GameObject spawner in manager.Spawners)
         {
           spawner.GetComponent<NewbornSpawner>().PostTrainingNewborns();

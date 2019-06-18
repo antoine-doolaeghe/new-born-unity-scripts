@@ -1,16 +1,8 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Text;
-using System.Text.RegularExpressions;
-using Newborn;
 using SimpleJSON;
 using UnityEngine;
-using UnityEngine.Networking;
-using UnityEngine.UI;
 
 namespace Newborn
 {
@@ -24,7 +16,7 @@ namespace Newborn
 
     private static String graphQlInput;
 
-    public delegate void BuildAgentCallback(Transform transform, WWW www, GameObject agent);
+    public delegate void PostModelCallback(Transform transform, WWW www, GameObject agent);
 
 
     public static IEnumerator TrainNewborn(string newbornId)
@@ -45,6 +37,27 @@ namespace Newborn
         Debug.Log("Training Instance successfully launched");
         string instanceId = JSON.Parse(www.text)["data"]["start"];
         yield return NewbornService.UpdateInstanceId(newbornId, instanceId);
+      }
+    }
+
+    public static IEnumerator UpdateTrainingStatus(string newbornId, string stage)
+    {
+      byte[] postData;
+      Dictionary<string, string> postHeader;
+      TrainingService.variable["id"] = "\"" + newbornId + "\"";
+      TrainingService.variable["stage"] = "\"" + stage + "\"";
+
+      WWW www;
+      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateTrainingStatusQuery, ApiConfig.apiKey, ApiConfig.url);
+      yield return www;
+      if (www.error != null)
+      {
+        throw new Exception("There was an error sending request: " + www.error);
+      }
+      else
+      {
+        Debug.Log(JSON.Parse(www.text));
+        Debug.Log("Training Stage successfully updated");
       }
     }
 

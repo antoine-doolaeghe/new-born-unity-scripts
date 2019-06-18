@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
 [CreateAssetMenu(fileName = "Agent config", menuName = "agentConfig")]
 public class AgentConfig : ScriptableObject
@@ -11,5 +9,5 @@ public class AgentConfig : ScriptableObject
   public static float lowLimit = 22.5f;
   public static float zLimit = 0f;
   public static float threshold = 0.75f;
-  public static int layerNumber = 11;
+  public static int layerNumber = 5;
 }

@@ -1,15 +1,8 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.Text;
-using Newborn;
-using SimpleJSON;
 using UnityEngine;
-using UnityEngine.Networking;
-using UnityEngine.UI;
 public class ServiceHelpers
 {
   public class Query
@@ -107,5 +100,27 @@ public class ServiceHelpers
     solution += "]";
     Debug.Log("This is solution " + solution);
     return solution;
+  }
+
+  public static string ReturnNewbornChilds(List<string> childs)
+  {
+    string childString = "";
+    foreach (var child in childs)
+    {
+      childString = childString + "\"" + child + "\"" + ",";
+    }
+
+    return childString;
+  }
+
+  public static string ReturnNewbornPartners(List<string> partners)
+  {
+    string partnerString = "";
+    foreach (var partner in partners)
+    {
+      partnerString = partnerString + "\"" + partner + "\"" + ",";
+    }
+
+    return partnerString;
   }
 }
