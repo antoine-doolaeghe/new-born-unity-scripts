@@ -7,53 +7,35 @@ using UnityEngine;
 public class AgentTrainBehaviour : Agent
 {
   [Header("Morphology")]
-  [SerializeField] public List<Transform> parts;
-  [SerializeField] public Transform initPart;
+  [HideInInspector] [SerializeField] public List<Transform> parts;
+  [HideInInspector] [SerializeField] public Transform initPart;
   [Header("API Service")]
   public bool requestApiData;
   public string cellId;
-  public NewbornService newbornService;
-
-  [Header("Target")]
-  [Space(10)]
-  public Transform target;
-  public Transform ground;
-  public bool respawnFoodWhenTouched;
-
   [Header("Joint Settings")]
   [Space(10)]
   public JointDriveController jdController;
   Vector3 dirToTarget;
   float movingTowardsDot;
   float facingDot;
-
   [Header("Reward Functions")]
   [Space(10)]
-  public bool rewardMovingTowardsTarget; // Agent should move towards target
-  public bool rewardFacingTarget; // Agent should face the target
-  public bool rewardUseTimePenalty; // Hurry up
-  public bool penaltyFunctionMovingAgainst; // stay in the zone
-
-  [Header("Training Parameters")]
-  [Space(10)]
-  public bool allowReproduction;
-  public float maximumStaticTargetDistance;
-  public float foodSpawnRadius;
-  public float foodSpawnRadiusIncrementor;
+  public bool rewardMovingTowardsTarget;
+  public bool rewardFacingTarget;
+  public bool rewardUseTimePenalty;
+  public bool penaltyFunctionMovingAgainst;
   [HideInInspector] public NewbornSpawner spawner;
   [HideInInspector] public TargetController targetController;
   private int timePenaltyMultiplier = 0;
   private bool isNewDecisionStep;
   private int currentDecisionStep;
   private bool initialized = false;
-
-
   public override void InitializeAgent()
   {
     if (!initialized)
     {
       initBodyParts();
-      StartCoroutine(TrainingService.UpdateTrainingStage(brain.name, TargetController.trainingStage.ToString()));
+      StartCoroutine(TrainingService.UpdateTrainingStatus(brain.name, targetController.trainingStage.ToString()));
       currentDecisionStep = 1;
       initialized = true;
     }
@@ -62,10 +44,9 @@ public class AgentTrainBehaviour : Agent
   public void initBodyParts()
   {
     Debug.Log("INIT BOD");
-    /// THE PROBLEM HERE IS THAT IT WILL RESET ON ENABLE
-    jdController.target = target;
+    jdController.target = targetController.target;
     jdController.SetupBodyPart(initPart);
-    targetController.minimumTargetDistance = Vector3.Distance(initPart.position, target.position);
+    targetController.minimumTargetDistance = Vector3.Distance(initPart.position, targetController.target.position);
     foreach (var part in parts)
     {
       jdController.SetupBodyPart(part);
@@ -131,7 +112,8 @@ public class AgentTrainBehaviour : Agent
   {
     foreach (var bodyPart in jdController.bodyPartsDict.Values)
     {
-      if (allowReproduction && bodyPart.collisionController && !IsDone() && !transform.gameObject.GetComponent<NewbornAgent>().isGestating && bodyPart.collisionController.touchingNewborn != null)
+      NewbornAgent newbornAgent = transform.gameObject.GetComponent<NewbornAgent>();
+      if (newbornAgent.isReproducing && bodyPart.collisionController && !IsDone() && !newbornAgent.isGestating && bodyPart.collisionController.touchingNewborn != null)
       {
         targetController.TouchedNewborn(bodyPart.collisionController.touchingNewborn);
       }
@@ -143,7 +125,7 @@ public class AgentTrainBehaviour : Agent
     }
 
     // Update pos to target
-    dirToTarget = target.position - initPart.position;
+    dirToTarget = targetController.target.position - initPart.position;
 
     // Joint update logic only needs to happen when a new decision is made
     if (isNewDecisionStep)
@@ -200,7 +182,7 @@ public class AgentTrainBehaviour : Agent
   /// </summary>
   void PenaltyFunctionMovingAgainst()
   {
-    if (targetController.minimumTargetDistance < Vector3.Distance(initPart.position, target.position) - 10f)
+    if (targetController.minimumTargetDistance < Vector3.Distance(initPart.position, targetController.target.position) - 10f)
     {
       Debug.Log("PENALTY 🚩");
       SetReward(-10f);
@@ -230,7 +212,6 @@ public class AgentTrainBehaviour : Agent
   /// </summary>
   public override void AgentReset()
   {
-    Debug.Log(target.position);
     if (dirToTarget != Vector3.zero)
     {
       transform.rotation = Quaternion.LookRotation(dirToTarget);
@@ -240,7 +221,7 @@ public class AgentTrainBehaviour : Agent
     {
       bodyPart.Reset(bodyPart);
     }
-    // ConfigureAgent();
+
     isNewDecisionStep = true;
     currentDecisionStep = 1;
   }

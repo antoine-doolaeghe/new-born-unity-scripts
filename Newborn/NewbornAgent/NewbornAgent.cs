@@ -14,6 +14,7 @@ public class NewbornAgent : MonoBehaviour
   public string title;
   public string Sex;
   public bool isGestating;
+  public bool isReproducing;
   public int GenerationIndex;
   public string GenerationId;
   public GameObject CellPrefab;

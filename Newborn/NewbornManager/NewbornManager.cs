@@ -70,7 +70,7 @@ namespace Newborn
         }
 
         spawner.GetComponent<NewbornSpawner>().BuildAgents(requestApiData);
-        spawner.GetComponent<NewbornSpawner>().BuildTarget();
+        spawner.GetComponent<FoodSpawner>().BuildTarget();
 
         squarePosition++;
       }

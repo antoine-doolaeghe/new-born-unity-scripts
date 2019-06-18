@@ -18,5 +18,6 @@ public class ApiConfig : ScriptableObject
   public static string updateNewbornInstanceId = "mutation UpdateNewbornInstanceId {updateNewborn(input: {id: '$id^', instanceId: $instanceId^}) { id, instanceId }}";
   public static string updateTrainedStatus = "mutation UpdateTrainedStatus {updateNewborn(input: {id: '$id^', training: $status^}) { id }}";
   public static string updateNewbornChildsAndPartners = "mutation updateNewbornChilds {updateNewborn(input: {id: '$id^', childs: [$childs^], partners: [$partners^]}) { id }}";
-  public static string updateTrainingStageQuery = "mutation updateNewbornTrainingStage {updateNewborn(input: {id: '$id^', trainingStage: '$stage^'}) { id }}";
+  public static string updateTrainingStatusQuery = "mutation updateNewbornTrainingStatus {updateNewborn(input: {id: '$id^', trainingStage: '$stage^'}) { id }}";
+  public static string updateLivingStatusQuery = "mutation updateNewbornTrainingStatus {updateNewborn(input: {id: '$id^', trainingStage: '$stage^'}) { id }}";
 }

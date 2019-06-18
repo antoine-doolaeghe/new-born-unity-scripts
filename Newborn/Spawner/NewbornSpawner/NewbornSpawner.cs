@@ -10,16 +10,16 @@ namespace Newborn
     [HideInInspector] public List<GameObject> Agents = new List<GameObject>();
     public int agentNumber;
     public GameObject AgentPrefab;
-    public float randomPositionIndex;
     public int minCellNb;
-    public bool isLearningBrain;
+    public bool hasLearningBrain;
     private float timer = 0.0f;
     public int vectorActionSize;
     public bool control;
-    public GameObject StaticTarget;
     public bool isListeningToTrainedBorn;
     private List<LearningBrain> learningBrains;
     private List<PlayerBrain> playerBrains;
+    public bool isRandomSpawn;
+    public float spawnRange;
     public void Update()
     {
       if (isListeningToTrainedBorn)
@@ -33,13 +33,6 @@ namespace Newborn
       }
     }
 
-    public void BuildTarget()
-    {
-      GameObject target = Instantiate(StaticTarget, transform);
-      target.transform.localPosition = new Vector3(0f, -18.5f, 0f);
-      AssignTarget(Agents);
-    }
-
     public void BuildAgents(bool requestApiData)
     {
       for (int y = 0; y < agentNumber; y++)
@@ -48,7 +41,9 @@ namespace Newborn
         NewBornBuilder newBornBuilder;
         NewbornAgent newborn;
         GameObject newBornAgent;
-        Agents.Add(BuildAgent(requestApiData, TrainingAgentConfig.positions[y], out newBornAgent, out atBehaviour, out newBornBuilder, out newborn));
+        // let make the region a bit more dynamic here
+        Vector3 agentPosition = ReturnAgentPosition(y);
+        Agents.Add(BuildAgent(requestApiData, agentPosition, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn));
         InstantiateTrainingBrain(newBornAgent, atBehaviour, newBornBuilder, y);
         if (transform.Find("Ground") != null)
         {
@@ -56,20 +51,21 @@ namespace Newborn
         }
       }
     }
+
     public GameObject BuildAgent(bool requestApiData, Vector3 position, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out NewbornAgent newborn)
     {
       newBornAgent = Instantiate(AgentPrefab, transform);
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
       newborn = newBornAgent.transform.GetComponent<NewbornAgent>();
-      TargetController targetController = newBornAgent.transform.GetComponent<TargetController>();
       newborn.Sex = SexConfig.sexes[UnityEngine.Random.Range(0, 2)]; // Randomly select male or female
-      // newBornAgent.transform.localPosition = new Vector3(UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex), 0f, UnityEngine.Random.Range(-randomPositionIndex, randomPositionIndex));
+      # region to refactor
+      TargetController targetController = newBornAgent.transform.GetComponent<TargetController>();
       newBornAgent.transform.localPosition = position;
-      targetController.agentTrainBehaviour = atBehaviour;
       targetController.spawner = this;
       atBehaviour.spawner = this;
       atBehaviour.targetController = targetController;
+      # endregion
       SetApiRequestParameter(newBornBuilder, atBehaviour, requestApiData);
       AddMinCellNb(newBornBuilder, minCellNb);
       return newBornAgent;
@@ -92,6 +88,44 @@ namespace Newborn
         NewBornPostData newBornPostData = new NewBornPostData(newbornName, newbornId, generationId, newbornSex, newbornHex);
         StartCoroutine(newBornBuilder.PostNewborn(newBornPostData, agent));
       }
+    }
+
+
+    private Vector3 ReturnAgentPosition(int y)
+    {
+      Vector3 agentPosition;
+      if (isRandomSpawn)
+      {
+        agentPosition = new Vector3(Random.Range(0f, spawnRange), 10f, Random.Range(0f, spawnRange));
+      }
+      else
+      {
+
+        agentPosition = PositionGridAgent(y);
+      }
+
+      return agentPosition;
+    }
+
+    private Vector3 PositionGridAgent(int y)
+    {
+      Vector3 position = new Vector3(0f, 0f, 0f);
+      switch (y % 4)
+      {
+        case 0:
+          position = new Vector3(20f * y, 0f, 20f * y);
+          break;
+        case 1:
+          position = new Vector3(20f * y, 0f, -20f * y);
+          break;
+        case 2:
+          position = new Vector3(-20f * y, 0f, 20f * y);
+          break;
+        case 3:
+          position = new Vector3(-20f * y, 0f, -20f * y);
+          break;
+      }
+      return position;
     }
 
     public void resetMinimumTargetDistance()
@@ -147,7 +181,7 @@ namespace Newborn
     #region helper methods
     private void InstantiateTrainingBrain(GameObject newBornAgent, AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, int y)
     {
-      if (isLearningBrain)
+      if (hasLearningBrain)
       {
         if (y == 0)
         {
@@ -179,20 +213,10 @@ namespace Newborn
       }
     }
 
-    public void AssignTarget(List<GameObject> newBornAgents)
-    {
-      for (int y = 0; y < newBornAgents.Count; y++)
-      {
-        newBornAgents[y].GetComponent<AgentTrainBehaviour>().target = transform;
-        newBornAgents[y].GetComponent<TargetController>().target = transform;
-      }
-    }
-
     private void AssignGround(Transform ground)
     {
       foreach (GameObject agent in Agents)
       {
-        agent.GetComponent<AgentTrainBehaviour>().ground = ground;
         agent.GetComponent<TargetController>().ground = ground;
       }
     }

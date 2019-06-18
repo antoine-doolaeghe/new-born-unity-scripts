@@ -7,23 +7,33 @@ public class TargetController : MonoBehaviour
 {
   public Transform target;
   public Transform ground;
-  private float timer = 0.0f;
-  public static float trainingStage = 2;
+
+  public bool isSearchingForTarget;
+  public float searchTargetFrequency;
+  public int trainingStage;
   public float maximumStaticTargetDistance;
   public float foodSpawnRadius;
   public float foodSpawnRadiusIncrementor;
   public float minimumTargetDistance;
-  private int timePenaltyMultiplier = 0;
   [HideInInspector] public NewbornSpawner spawner;
   [HideInInspector] public AgentTrainBehaviour agentTrainBehaviour;
+  private float timer = 0.0f;
+
+  void Awake()
+  {
+    agentTrainBehaviour = transform.GetComponent<AgentTrainBehaviour>();
+  }
 
   void Update()
   {
-    timer += Time.deltaTime;
-    if (timer > 10f)
+    if (isSearchingForTarget)
     {
-      assignTarget();
-      timer = 0.0f;
+      timer += Time.deltaTime;
+      if (timer > searchTargetFrequency)
+      {
+        SearchForTarget();
+        timer = 0.0f;
+      }
     }
   }
 
@@ -31,6 +41,14 @@ public class TargetController : MonoBehaviour
   {
     agentTrainBehaviour.AddReward(15f);
     StartCoroutine(handleTouchedNewborn(touchingNewborn));
+  }
+
+  public void TouchedFood()
+  {
+    Debug.Log("🍏🍏 TOUCHED FOOD 🍏🍏");
+    agentTrainBehaviour.AddReward(15f);
+    spawner.resetTrainingAgents();
+    handleFoodSpawn();
   }
 
   public IEnumerator handleTouchedNewborn(GameObject touchingNewborn)
@@ -62,23 +80,15 @@ public class TargetController : MonoBehaviour
     }
   }
 
-  public void TouchedFood()
-  {
-    Debug.Log("🍏🍏 TOUCHED FOOD 🍏🍏");
-    agentTrainBehaviour.AddReward(15f);
-    spawner.resetTrainingAgents();
-    handleFoodSpawn();
-  }
-
   private void handleFoodSpawn()
   {
-    if (TargetController.trainingStage == 0)
+    if (trainingStage == 0)
     {
       if (target.transform.localPosition.x <= -maximumStaticTargetDistance)
       {
         Debug.Log("MOVING TARGET BACKWARD ⏮️" + target.transform.localPosition.x);
-        TargetController.trainingStage = 1;
-        StartCoroutine(TrainingService.UpdateTrainingStage(agentTrainBehaviour.brain.name, "1"));
+        trainingStage = 1;
+        StartCoroutine(TrainingService.UpdateTrainingStatus(agentTrainBehaviour.brain.name, "1"));
         target.transform.localPosition = new Vector3(35f, target.transform.localPosition.y, 35f);
       }
       else
@@ -87,12 +97,12 @@ public class TargetController : MonoBehaviour
         TargetController.MoveTargetForward(target);
       }
     }
-    else if (TargetController.trainingStage == 1)
+    else if (trainingStage == 1)
     {
       if (target.transform.localPosition.x >= maximumStaticTargetDistance)
       {
-        TargetController.trainingStage = 2;
-        StartCoroutine(TrainingService.UpdateTrainingStage(agentTrainBehaviour.brain.name, "2"));
+        trainingStage = 2;
+        StartCoroutine(TrainingService.UpdateTrainingStatus(agentTrainBehaviour.brain.name, "2"));
         Debug.Log("MOVING TARGET RANDOMLY 🔀" + target.transform.localPosition.x);
         TargetController.MoveTargetRandom(target, ground, foodSpawnRadius);
         foodSpawnRadius += foodSpawnRadiusIncrementor;
@@ -103,7 +113,7 @@ public class TargetController : MonoBehaviour
         TargetController.MoveTargetBackward(target);
       }
     }
-    else if (TargetController.trainingStage == 2)
+    else if (trainingStage == 2)
     {
       Debug.Log("MOVING TARGET RANDOMLY 🔀" + target.transform.localPosition.x);
       TargetController.MoveTargetRandom(target, ground, foodSpawnRadius);
@@ -115,7 +125,7 @@ public class TargetController : MonoBehaviour
     spawner.resetMinimumTargetDistance();
   }
 
-  Transform GetClosestEnemy(GameObject[] targets)
+  Transform FindClosestTarget(GameObject[] targets)
   {
     Transform bestTarget = null;
     float closestDistanceSqr = Mathf.Infinity;
@@ -137,17 +147,17 @@ public class TargetController : MonoBehaviour
     return bestTarget;
   }
 
-  void assignTarget()
+  void SearchForTarget()
   {
-    Transform closestNewborn = GetClosestEnemy(GameObject.FindGameObjectsWithTag("agent"));
-    Transform closestTarget = GetClosestEnemy(GameObject.FindGameObjectsWithTag("food"));
+    Transform closestNewborn = FindClosestTarget(GameObject.FindGameObjectsWithTag("agent"));
+    Transform closestTarget = FindClosestTarget(GameObject.FindGameObjectsWithTag("food"));
     if (!transform.GetComponent<NewbornAgent>().isGestating && !closestNewborn.GetComponent<NewbornAgent>().isGestating)
     {
-      if (closestNewborn != null && closestNewborn.childCount > 0) { transform.GetComponent<AgentTrainBehaviour>().target = closestNewborn.GetChild(0); }
+      if (closestNewborn != null && closestNewborn.childCount > 0) { target = closestNewborn.GetChild(0); }
     }
     else
     {
-      transform.GetComponent<AgentTrainBehaviour>().target = this.transform;
+      target = this.transform;
     }
   }
 

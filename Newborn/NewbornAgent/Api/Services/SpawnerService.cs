@@ -47,7 +47,6 @@ namespace Newborn
           }
 
           GameObject agent = spawner.GetComponent<NewbornSpawner>().BuildAgent(true, TrainingAgentConfig.positions[0], out newBornAgent, out atBehaviour, out newBornBuilder, out newborn);
-          agent.GetComponent<AgentTrainBehaviour>().target = agent.transform;
           agent.GetComponent<TargetController>().target = agent.transform;
           yield return StartCoroutine(NewbornService.GetNewborn(newbornId.Value["id"], agent, false));
           GameObject.Find("S3Service").GetComponent<S3Service>().GetObject(newbornId.Value["id"], agent);
