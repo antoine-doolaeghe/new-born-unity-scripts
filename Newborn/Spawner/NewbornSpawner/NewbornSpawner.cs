@@ -20,6 +20,7 @@ namespace Newborn
     private List<PlayerBrain> playerBrains;
     public bool isRandomSpawn;
     public float spawnRange;
+
     public void Update()
     {
       if (isListeningToTrainedBorn)
@@ -58,7 +59,7 @@ namespace Newborn
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
       newborn = newBornAgent.transform.GetComponent<NewbornAgent>();
-      newborn.Sex = SexConfig.sexes[UnityEngine.Random.Range(0, 2)]; // Randomly select male or female
+      newborn.Sex = SexConfig.sexes[UnityEngine.Random.Range(0, 2)];             // Randomly select male or female
       # region to refactor
       TargetController targetController = newBornAgent.transform.GetComponent<TargetController>();
       newBornAgent.transform.localPosition = position;
@@ -74,7 +75,7 @@ namespace Newborn
     public void PostTrainingNewborns()
     {
       Debug.Log("Posting training NewBorns to the server...");
-      string generationId = GenerationService.generations[GenerationService.generations.Count - 1]; // Get the latest generation;
+      string generationId = GenerationService.generations[GenerationService.generations.Count - 1];  // Get the latest generation;
       GameObject[] agentList = GameObject.FindGameObjectsWithTag("agent");
       foreach (GameObject agent in Agents)
       {
