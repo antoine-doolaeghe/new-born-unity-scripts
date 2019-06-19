@@ -110,7 +110,7 @@ namespace Newborn
       NewbornService.variable["id"] = "\"" + id + "\"";
       NewbornService.variable["status"] = status;
       WWW www;
-      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateLivingStatus, ApiConfig.apiKey, ApiConfig.url);
+      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateLivingStatusQuery, ApiConfig.apiKey, ApiConfig.url);
       yield return www;
       if (www.error != null)
       {

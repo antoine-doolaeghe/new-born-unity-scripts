@@ -7,8 +7,8 @@ public class TargetController : MonoBehaviour
 {
   public Transform target;
   public Transform ground;
-
   public bool isSearchingForTarget;
+  public bool isRandomFoodRespawn;
   public float searchTargetFrequency;
   public int trainingStage;
   public float maximumStaticTargetDistance;
@@ -48,7 +48,7 @@ public class TargetController : MonoBehaviour
     Debug.Log("🍏🍏 TOUCHED FOOD 🍏🍏");
     agentTrainBehaviour.AddReward(15f);
     spawner.resetTrainingAgents();
-    handleFoodSpawn();
+    RespawnFood();
   }
 
   public IEnumerator handleTouchedNewborn(GameObject touchingNewborn)
@@ -80,49 +80,61 @@ public class TargetController : MonoBehaviour
     }
   }
 
-  private void handleFoodSpawn()
+  private void RespawnFood()
   {
-    if (trainingStage == 0)
+    if (isRandomFoodRespawn)
     {
-      if (target.transform.localPosition.x <= -maximumStaticTargetDistance)
-      {
-        Debug.Log("MOVING TARGET BACKWARD ⏮️" + target.transform.localPosition.x);
-        trainingStage = 1;
-        StartCoroutine(TrainingService.UpdateTrainingStage(agentTrainBehaviour.brain.name, "1"));
-        target.transform.localPosition = new Vector3(35f, target.transform.localPosition.y, 35f);
-      }
-      else
-      {
-        Debug.Log("MOVING TARGET FORWARD ⏩" + target.transform.localPosition.x);
-        TargetController.MoveTargetForward(target);
-      }
+      TargetController.MoveTargetRandom(target, ground, foodSpawnRadius);
     }
-    else if (trainingStage == 1)
+    else
     {
-      if (target.transform.localPosition.x >= maximumStaticTargetDistance)
+      if (trainingStage == 0)
       {
-        trainingStage = 2;
-        StartCoroutine(TrainingService.UpdateTrainingStage(agentTrainBehaviour.brain.name, "2"));
+        if (target.transform.localPosition.x <= -maximumStaticTargetDistance)
+        {
+          Debug.Log("MOVING TARGET BACKWARD ⏮️" + target.transform.localPosition.x);
+          trainingStage = 1;
+          StartCoroutine(TrainingService.UpdateTrainingStage(agentTrainBehaviour.brain.name, "1"));
+          target.transform.localPosition = new Vector3(35f, target.transform.localPosition.y, 35f);
+        }
+        else
+        {
+          Debug.Log("MOVING TARGET FORWARD ⏩" + target.transform.localPosition.x);
+          TargetController.MoveTargetForward(target);
+        }
+      }
+      else if (trainingStage == 1)
+      {
+        if (target.transform.localPosition.x >= maximumStaticTargetDistance)
+        {
+          trainingStage = 2;
+          StartCoroutine(TrainingService.UpdateTrainingStage(agentTrainBehaviour.brain.name, "2"));
+          Debug.Log("MOVING TARGET RANDOMLY 🔀" + target.transform.localPosition.x);
+          TargetController.MoveTargetRandom(target, ground, foodSpawnRadius);
+          foodSpawnRadius += foodSpawnRadiusIncrementor;
+        }
+        else
+        {
+          Debug.Log("MOVING TARGET BACKWARD ⏮️" + target.transform.localPosition.x);
+          TargetController.MoveTargetBackward(target);
+        }
+      }
+      else if (trainingStage == 2)
+      {
         Debug.Log("MOVING TARGET RANDOMLY 🔀" + target.transform.localPosition.x);
         TargetController.MoveTargetRandom(target, ground, foodSpawnRadius);
-        foodSpawnRadius += foodSpawnRadiusIncrementor;
+        if (foodSpawnRadius < maximumStaticTargetDistance)
+        {
+          foodSpawnRadius += foodSpawnRadiusIncrementor;
+        }
       }
-      else
-      {
-        Debug.Log("MOVING TARGET BACKWARD ⏮️" + target.transform.localPosition.x);
-        TargetController.MoveTargetBackward(target);
-      }
+      spawner.resetMinimumTargetDistance();
     }
-    else if (trainingStage == 2)
-    {
-      Debug.Log("MOVING TARGET RANDOMLY 🔀" + target.transform.localPosition.x);
-      TargetController.MoveTargetRandom(target, ground, foodSpawnRadius);
-      if (foodSpawnRadius < maximumStaticTargetDistance)
-      {
-        foodSpawnRadius += foodSpawnRadiusIncrementor;
-      }
-    }
-    spawner.resetMinimumTargetDistance();
+  }
+
+  private void RandomFoodRespawn()
+  {
+
   }
 
   Transform FindClosestTarget(GameObject[] targets)
@@ -147,7 +159,7 @@ public class TargetController : MonoBehaviour
     return bestTarget;
   }
 
-  void SearchForTarget()
+  public void SearchForTarget()
   {
     Transform closestNewborn = FindClosestTarget(GameObject.FindGameObjectsWithTag("agent"));
     Transform closestTarget = FindClosestTarget(GameObject.FindGameObjectsWithTag("food"));
@@ -157,7 +169,7 @@ public class TargetController : MonoBehaviour
     }
     else
     {
-      target = this.transform;
+      target = closestTarget;
     }
   }
 

@@ -109,6 +109,7 @@ namespace Newborn
 
     private Vector3 PositionGridAgent(int y)
     {
+      y += 1;
       Vector3 position = new Vector3(0f, 0f, 0f);
       switch (y % 4)
       {
