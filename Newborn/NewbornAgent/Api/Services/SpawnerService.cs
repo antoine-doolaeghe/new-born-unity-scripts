@@ -38,19 +38,24 @@ namespace Newborn
           // unset gestation for the female partner
           for (int i = 0; i < newbornId.Value["parents"].Count; i++)
           {
-            if (GameObject.Find(newbornId.Value["parents"][i]).GetComponent<NewbornAgent>().isGestating)
+            if (GameObject.Find(newbornId.Value["parents"][i]) != null && GameObject.Find(newbornId.Value["parents"][i]).GetComponent<NewbornAgent>().isGestating)
             {
               Debug.Log("Ending newborn gestation");
               GameObject.Find(newbornId.Value["parents"][i]).GetComponent<NewbornAgent>().UnsetNewbornInGestation();
-              StartCoroutine(NewbornService.UpdateTrainedStatus(newbornId.Value["parents"][i], "true"));
+              StartCoroutine(NewbornService.UpdateLivingStatus(newbornId.Value["parents"][i], "true"));
             }
           }
-
-          GameObject agent = spawner.GetComponent<NewbornSpawner>().BuildAgent(true, TrainingAgentConfig.positions[0], out newBornAgent, out atBehaviour, out newBornBuilder, out newborn);
+          Vector3 agentPosition = spawner.GetComponent<NewbornSpawner>().ReturnAgentPosition(0);
+          GameObject agent = spawner.GetComponent<NewbornSpawner>().BuildAgent(true, agentPosition, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn);
+          if (transform.Find("Ground") != null)
+          {
+            spawner.GetComponent<NewbornSpawner>().AssignGround(transform.Find("Ground").transform);
+          }
           agent.GetComponent<TargetController>().target = agent.transform;
           yield return StartCoroutine(NewbornService.GetNewborn(newbornId.Value["id"], agent, false));
+          Debug.Log(newbornId.Value["id"]);
           GameObject.Find("S3Service").GetComponent<S3Service>().GetObject(newbornId.Value["id"], agent);
-          StartCoroutine(NewbornService.UpdateTrainedStatus(newbornId.Value["id"], "true"));
+          StartCoroutine(NewbornService.UpdateLivingStatus(newbornId.Value["id"], "true"));
         };
       }
     }

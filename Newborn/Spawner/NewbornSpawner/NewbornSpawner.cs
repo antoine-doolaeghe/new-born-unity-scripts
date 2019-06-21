@@ -9,17 +9,20 @@ namespace Newborn
   {
     [HideInInspector] public List<GameObject> Agents = new List<GameObject>();
     public int agentNumber;
+    public bool isListeningToTrainedBorn;
     public GameObject AgentPrefab;
     public int minCellNb;
     public bool hasLearningBrain;
     private float timer = 0.0f;
     public int vectorActionSize;
     public bool control;
-    public bool isListeningToTrainedBorn;
     private List<LearningBrain> learningBrains;
     private List<PlayerBrain> playerBrains;
     public bool isRandomSpawn;
     public float spawnRange;
+
+    public bool instantiateSingleBrain;
+
     public void Update()
     {
       if (isListeningToTrainedBorn)
@@ -58,7 +61,7 @@ namespace Newborn
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
       newborn = newBornAgent.transform.GetComponent<NewbornAgent>();
-      newborn.Sex = SexConfig.sexes[UnityEngine.Random.Range(0, 2)]; // Randomly select male or female
+      newborn.Sex = SexConfig.sexes[UnityEngine.Random.Range(0, 2)];             // Randomly select male or female
       # region to refactor
       TargetController targetController = newBornAgent.transform.GetComponent<TargetController>();
       newBornAgent.transform.localPosition = position;
@@ -74,7 +77,7 @@ namespace Newborn
     public void PostTrainingNewborns()
     {
       Debug.Log("Posting training NewBorns to the server...");
-      string generationId = GenerationService.generations[GenerationService.generations.Count - 1]; // Get the latest generation;
+      string generationId = GenerationService.generations[GenerationService.generations.Count - 1];  // Get the latest generation;
       GameObject[] agentList = GameObject.FindGameObjectsWithTag("agent");
       foreach (GameObject agent in Agents)
       {
@@ -91,7 +94,7 @@ namespace Newborn
     }
 
 
-    private Vector3 ReturnAgentPosition(int y)
+    public Vector3 ReturnAgentPosition(int y)
     {
       Vector3 agentPosition;
       if (isRandomSpawn)
@@ -109,6 +112,7 @@ namespace Newborn
 
     private Vector3 PositionGridAgent(int y)
     {
+      y += 1;
       Vector3 position = new Vector3(0f, 0f, 0f);
       switch (y % 4)
       {
@@ -193,7 +197,17 @@ namespace Newborn
         }
         else
         {
-          UpdateTrainingParamFromLearningBrain(atBehaviour, newBornBuilder, learningBrains[0]);
+          if (instantiateSingleBrain)
+          {
+            UpdateTrainingParamFromLearningBrain(atBehaviour, newBornBuilder, learningBrains[0]);
+          }
+          else
+          {
+            LearningBrain brain = Instantiate(newBornAgent.GetComponent<NewbornAgent>().learningBrain);
+            AddBrainToAcademy(newBornBuilder, brain);
+            UpdateTrainingParamFromLearningBrain(atBehaviour, newBornBuilder, brain);
+            learningBrains.Add(brain);
+          }
         }
       }
       else
@@ -208,12 +222,22 @@ namespace Newborn
         }
         else
         {
-          UpdateTrainingParamFromPlayerBrain(atBehaviour, newBornBuilder, playerBrains[0]);
+          if (instantiateSingleBrain)
+          {
+            UpdateTrainingParamFromPlayerBrain(atBehaviour, newBornBuilder, playerBrains[0]);
+          }
+          else
+          {
+            PlayerBrain brain = Instantiate(newBornAgent.GetComponent<NewbornAgent>().playerBrain);
+            UpdateTrainingParamFromPlayerBrain(atBehaviour, newBornBuilder, brain);
+            AddBrainToAcademy(newBornBuilder, brain);
+            playerBrains.Add(brain);
+          }
         }
       }
     }
 
-    private void AssignGround(Transform ground)
+    public void AssignGround(Transform ground)
     {
       foreach (GameObject agent in Agents)
       {

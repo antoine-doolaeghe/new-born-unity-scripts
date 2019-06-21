@@ -35,7 +35,7 @@ public class AgentTrainBehaviour : Agent
     if (!initialized)
     {
       initBodyParts();
-      StartCoroutine(TrainingService.UpdateTrainingStatus(brain.name, targetController.trainingStage.ToString()));
+      StartCoroutine(NewbornService.UpdateTrainingStage(brain.name, targetController.trainingStage.ToString()));
       currentDecisionStep = 1;
       initialized = true;
     }

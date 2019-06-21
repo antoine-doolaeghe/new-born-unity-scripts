@@ -239,9 +239,10 @@ namespace Newborn
     public void LoadModelToLearningBrain(string newbornId, MLAgents.InferenceBrain.NNModel model)
     {
       transform.GetComponent<NewbornAgent>().learningBrain.model = model;
-      aTBehaviour.brain = transform.GetComponent<NewbornAgent>().learningBrain;
+      aTBehaviour.brain = Instantiate(transform.GetComponent<NewbornAgent>().learningBrain);
       NewbornBrain.SetBrainParameters(aTBehaviour, cellNb);
       NewbornBrain.SetBrainName(aTBehaviour, newbornId);
+      academy.broadcastHub.broadcastingBrains.Add(aTBehaviour.brain);
       aTBehaviour.enabled = true;
     }
 
