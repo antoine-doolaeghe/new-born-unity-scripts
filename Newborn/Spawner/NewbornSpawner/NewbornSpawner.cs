@@ -21,6 +21,8 @@ namespace Newborn
     public bool isRandomSpawn;
     public float spawnRange;
 
+    public bool instantiateSingleBrain;
+
     public void Update()
     {
       if (isListeningToTrainedBorn)
@@ -195,7 +197,17 @@ namespace Newborn
         }
         else
         {
-          UpdateTrainingParamFromLearningBrain(atBehaviour, newBornBuilder, learningBrains[0]);
+          if (instantiateSingleBrain)
+          {
+            UpdateTrainingParamFromLearningBrain(atBehaviour, newBornBuilder, learningBrains[0]);
+          }
+          else
+          {
+            LearningBrain brain = Instantiate(newBornAgent.GetComponent<NewbornAgent>().learningBrain);
+            AddBrainToAcademy(newBornBuilder, brain);
+            UpdateTrainingParamFromLearningBrain(atBehaviour, newBornBuilder, brain);
+            learningBrains.Add(brain);
+          }
         }
       }
       else
@@ -210,7 +222,17 @@ namespace Newborn
         }
         else
         {
-          UpdateTrainingParamFromPlayerBrain(atBehaviour, newBornBuilder, playerBrains[0]);
+          if (instantiateSingleBrain)
+          {
+            UpdateTrainingParamFromPlayerBrain(atBehaviour, newBornBuilder, playerBrains[0]);
+          }
+          else
+          {
+            PlayerBrain brain = Instantiate(newBornAgent.GetComponent<NewbornAgent>().playerBrain);
+            UpdateTrainingParamFromPlayerBrain(atBehaviour, newBornBuilder, brain);
+            AddBrainToAcademy(newBornBuilder, brain);
+            playerBrains.Add(brain);
+          }
         }
       }
     }
