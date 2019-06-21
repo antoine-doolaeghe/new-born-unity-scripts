@@ -7,6 +7,7 @@ namespace Newborn
 {
   public class FoodSpawner : MonoBehaviour
   {
+    public bool isRandomSpawn;
     public int foodNumber;
     public float spawnRange;
     public GameObject StaticTarget;
@@ -14,7 +15,7 @@ namespace Newborn
     // TODO spawn target in grid
     public void BuildTarget()
     {
-      if (foodNumber == 1)
+      if (!isRandomSpawn)
       {
         GameObject target = Instantiate(StaticTarget, transform);
         target.transform.localPosition = new Vector3(0f, 0f, 0f);

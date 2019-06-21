@@ -34,51 +34,16 @@ namespace Newborn
       }
       else
       {
-        Debug.Log("Training Instance successfully launched");
-        string instanceId = JSON.Parse(www.text)["data"]["start"];
-        yield return NewbornService.UpdateInstanceId(newbornId, instanceId);
-      }
-    }
-
-    public static IEnumerator UpdateTrainingStage(string newbornId, string stage)
-    {
-      byte[] postData;
-      Dictionary<string, string> postHeader;
-      TrainingService.variable["id"] = "\"" + newbornId + "\"";
-      TrainingService.variable["stage"] = "\"" + stage + "\"";
-
-      WWW www;
-      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateTrainingStageQuery, ApiConfig.apiKey, ApiConfig.url);
-      yield return www;
-      if (www.error != null)
-      {
-        throw new Exception("There was an error sending request: " + www.error);
-      }
-      else
-      {
-        Debug.Log(JSON.Parse(www.text));
-        Debug.Log("Training Stage successfully updated");
-      }
-    }
-
-    public static IEnumerator StreamNewbornTrainingModel(string newbornId)
-    {
-      byte[] postData;
-      Dictionary<string, string> postHeader;
-      TrainingService.variable["id"] = "\"" + newbornId + "\"";
-      Debug.Log("Requesting the trained newborn model");
-      WWW www;
-      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.trainingGraphQlQuery, ApiConfig.apiKey, ApiConfig.url);
-      yield return www;
-      if (www.error != null)
-      {
-        throw new Exception("There was an error sending request: " + www.error);
-      }
-      else
-      {
-        Debug.Log("Training Instance successfully launched");
-        string instanceId = JSON.Parse(www.text)["data"]["start"];
-        yield return NewbornService.UpdateInstanceId(newbornId, instanceId);
+        if (JSON.Parse(www.text)["data"]["start"])
+        {
+          Debug.Log("Training Instance successfully launched");
+          string instanceId = JSON.Parse(www.text)["data"]["start"];
+          yield return NewbornService.UpdateInstanceId(newbornId, instanceId);
+        }
+        else
+        {
+          throw new Exception("There was an error sending request: " + www.text);
+        }
       }
     }
   }

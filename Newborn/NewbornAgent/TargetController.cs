@@ -73,7 +73,7 @@ public class TargetController : MonoBehaviour
       string newNewbornGenerationId = newborn.GenerationId;
       string newNewbornSex = "male";
       string newNewbornHex = "MOCK HEX";
-
+      yield return StartCoroutine(transform.GetComponent<NewBornBuilder>().checkNewbornGeneration());
       NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, NewbornBrain.GenerateRandomName(), newNewbornGenerationId, newNewbornSex, newNewbornHex);
       NewbornService.PostNewbornFromReproductionCallback PostNewbornFromReproductionCallback = NewbornService.SuccessfullPostNewbornFromReproductionCallback;
       yield return NewbornService.PostNewbornFromReproduction(newBornPostData, transform.gameObject, touchingNewborn, PostNewbornFromReproductionCallback);
@@ -94,7 +94,7 @@ public class TargetController : MonoBehaviour
         {
           Debug.Log("MOVING TARGET BACKWARD ⏮️" + target.transform.localPosition.x);
           trainingStage = 1;
-          StartCoroutine(TrainingService.UpdateTrainingStage(agentTrainBehaviour.brain.name, "1"));
+          StartCoroutine(NewbornService.UpdateTrainingStage(agentTrainBehaviour.brain.name, "1"));
           target.transform.localPosition = new Vector3(35f, target.transform.localPosition.y, 35f);
         }
         else
@@ -108,7 +108,7 @@ public class TargetController : MonoBehaviour
         if (target.transform.localPosition.x >= maximumStaticTargetDistance)
         {
           trainingStage = 2;
-          StartCoroutine(TrainingService.UpdateTrainingStage(agentTrainBehaviour.brain.name, "2"));
+          StartCoroutine(NewbornService.UpdateTrainingStage(agentTrainBehaviour.brain.name, "2"));
           Debug.Log("MOVING TARGET RANDOMLY 🔀" + target.transform.localPosition.x);
           TargetController.MoveTargetRandom(target, ground, foodSpawnRadius);
           foodSpawnRadius += foodSpawnRadiusIncrementor;
@@ -130,11 +130,6 @@ public class TargetController : MonoBehaviour
       }
       spawner.resetMinimumTargetDistance();
     }
-  }
-
-  private void RandomFoodRespawn()
-  {
-
   }
 
   Transform FindClosestTarget(GameObject[] targets)
@@ -162,13 +157,14 @@ public class TargetController : MonoBehaviour
   public void SearchForTarget()
   {
     Transform closestNewborn = FindClosestTarget(GameObject.FindGameObjectsWithTag("agent"));
-    Transform closestTarget = FindClosestTarget(GameObject.FindGameObjectsWithTag("food"));
-    if (!transform.GetComponent<NewbornAgent>().isGestating && !closestNewborn.GetComponent<NewbornAgent>().isGestating)
+    if (!transform.GetComponent<NewbornAgent>().isGestating && closestNewborn != null && !closestNewborn.GetComponent<NewbornAgent>().isGestating)
     {
       if (closestNewborn != null && closestNewborn.childCount > 0) { target = closestNewborn.GetChild(0); }
     }
     else
     {
+      Transform closestTarget = FindClosestTarget(GameObject.FindGameObjectsWithTag("food"));
+      Debug.Log(closestTarget);
       target = closestTarget;
     }
   }

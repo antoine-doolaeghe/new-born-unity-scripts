@@ -9,13 +9,13 @@ namespace Newborn
   {
     [HideInInspector] public List<GameObject> Agents = new List<GameObject>();
     public int agentNumber;
+    public bool isListeningToTrainedBorn;
     public GameObject AgentPrefab;
     public int minCellNb;
     public bool hasLearningBrain;
     private float timer = 0.0f;
     public int vectorActionSize;
     public bool control;
-    public bool isListeningToTrainedBorn;
     private List<LearningBrain> learningBrains;
     private List<PlayerBrain> playerBrains;
     public bool isRandomSpawn;
@@ -92,7 +92,7 @@ namespace Newborn
     }
 
 
-    private Vector3 ReturnAgentPosition(int y)
+    public Vector3 ReturnAgentPosition(int y)
     {
       Vector3 agentPosition;
       if (isRandomSpawn)
@@ -215,7 +215,7 @@ namespace Newborn
       }
     }
 
-    private void AssignGround(Transform ground)
+    public void AssignGround(Transform ground)
     {
       foreach (GameObject agent in Agents)
       {
