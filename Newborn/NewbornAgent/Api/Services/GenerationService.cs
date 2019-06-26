@@ -28,8 +28,13 @@ namespace Newborn
       }
       else
       {
+        JSONNode generationsResponse = JSON.Parse(www.text)["data"]["listGenerations"]["items"];
+        if (generationsResponse == null)
+        {
+          throw new Exception("❌There was an error sending request: " + www.text);
+        }
         generations.Clear();
-        foreach (var generation in JSON.Parse(www.text)["data"]["listGenerations"]["items"].AsArray)
+        foreach (var generation in generationsResponse.AsArray)
         {
           generations.Add(generation.Value["id"]);
         }
@@ -53,8 +58,12 @@ namespace Newborn
       }
       else
       {
-        Debug.Log(JSON.Parse(www.text));
-        generations.Add(JSON.Parse(www.text)["data"]["createGeneration"]["id"]);
+        JSONNode responseData = JSON.Parse(www.text)["data"]["createGeneration"];
+        if (JSON.Parse(www.text)["data"]["createGeneration"] == null)
+        {
+          throw new Exception("❌There was an error sending request: " + www.text);
+        }
+        generations.Add(responseData["id"]);
       }
     }
   }

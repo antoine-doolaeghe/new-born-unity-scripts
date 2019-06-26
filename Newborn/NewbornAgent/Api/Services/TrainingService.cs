@@ -34,16 +34,14 @@ namespace Newborn
       }
       else
       {
-        if (JSON.Parse(www.text)["data"]["start"])
-        {
-          Debug.Log("Training Instance successfully launched");
-          string instanceId = JSON.Parse(www.text)["data"]["start"];
-          yield return NewbornService.UpdateInstanceId(newbornId, instanceId);
-        }
-        else
+        JSONNode responseData = JSON.Parse(www.text)["data"]["start"];
+        if (responseData == null)
         {
           throw new Exception("There was an error sending request: " + www.text);
         }
+        Debug.Log("Training Instance successfully launched");
+        string instanceId = responseData;
+        yield return NewbornService.UpdateInstanceId(newbornId, instanceId);
       }
     }
   }
