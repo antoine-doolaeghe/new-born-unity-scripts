@@ -201,10 +201,6 @@ namespace Newborn
       aTBehaviour.brain = brain;
     }
 
-    // assign newborn response to newborn Agent 
-    // build newborn responseId
-
-
     public void BuildNewbornFromResponse(GameObject agent, string responseId)
     {
       Debug.Log("Building Newborn From Fetch Response 🏗️");
