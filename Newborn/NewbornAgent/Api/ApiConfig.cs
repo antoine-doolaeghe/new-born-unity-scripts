@@ -8,11 +8,11 @@ public class ApiConfig : ScriptableObject
   public static string apiKey = "da2-ytkhrukddfhllkypvo66vjqvx4";
   public static string generationsGraphQlQuery = "query getGenerations {listGenerations { items {id} }}";
   public static string generationsGraphQlMutation = "mutation createGeneration {createGeneration(input: {id: $id^, index: $index^}) { id, index }}";
-  public static string newbornGraphQlMutation = "mutation NewbornPost {createNewborn(input: {id: '$id^', name: $name^, sex: $sex^, newbornGenerationId: '$newbornGenerationId^', living: false}) {id, name, living, generation{index}}}";
+  public static string newbornGraphQlMutation = "mutation NewbornPost {createNewborn(input: {id: '$id^', name: $name^, sex: $sex^, newbornGenerationId: '$newbornGenerationId^', living: false}) {id, name, living, sex, childs, parents, generation{index}}}";
   public static string postNewbornFromReproductionGraphQlMutation = "mutation NewbornPost {createNewborn(input: {id: '$id^', name: $name^, sex: $sex^, newbornGenerationId: '$newbornGenerationId^',living: false, parents:['$parentA^', '$parentB^']}) {id, name, generation{index}}}";
   public static string newbornsGraphQlQuery = "query NewbornsQuery {listNewborns(filter: {training: {eq: false}, living: {eq: false}}, limit: 1000) {items {id, parents}}}";
   public static string modelGraphQlMutation = "mutation ModelPost {createModel(input: {id: '$id^', cellInfos: $cellInfos^, cellPositions: $cellPositions^, modelNewbornId: '$modelNewbornId^'}) { id, cellInfos }}";
-  public static string newBornGraphQlQuery = "query getNewBorn {getNewborn(id: '$id^') { id, name, models { items { cellInfos } }, generation { id, index }  }}";
+  public static string newBornGraphQlQuery = "query getNewBorn {getNewborn(id: '$id^') { id, name, sex, childs, parents, models { items { cellInfos } }, generation { id, index }  }}";
   public static string trainingGraphQlQuery = "query GetPost {start(newbornId: '$id^')}";
   public static string fetchModelGraphQlQuery = "query GetPost {fetchModel(newbornId: '$id^')}";
   public static string updateNewbornInstanceId = "mutation UpdateNewbornInstanceId {updateNewborn(input: {id: '$id^', instanceId: $instanceId^}) { id, instanceId }}";

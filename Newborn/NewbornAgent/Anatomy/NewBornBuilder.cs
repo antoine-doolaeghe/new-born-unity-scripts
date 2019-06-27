@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using MLAgents;
+using SimpleJSON;
 using UnityEngine;
 
 namespace Newborn
@@ -61,7 +62,10 @@ namespace Newborn
 
     public void BuildNewBorn(float threshold)
     {
-      SetAgentNameFromBrainName();
+      if (newborn.title == "")
+      {
+        SetAgentNameFromBrainName();
+      }
       InitaliseNewbornInformation();
 
       if (newborn.GeneInformations.Count == 0)
@@ -197,8 +201,12 @@ namespace Newborn
       aTBehaviour.brain = brain;
     }
 
-    public void BuildNewbornFromResponse(GameObject agent, string responseId, List<float> infoResponse)
+    // assign newborn response to newborn Agent 
+    // build newborn 
+
+    public void BuildNewbornFromResponse(GameObject agent, JSONNode newbornResponseData)
     {
+      string responseId = newbornResponseData["id"];
       Debug.Log("Building Newborn From Fetch Response 🏗️");
       if (partNb == 0 && threshold == 0f)
       {
@@ -208,10 +216,11 @@ namespace Newborn
 
       requestApiData = true;
 
-      if (infoResponse.Count != 0 && !Initialised)
+      if (!Initialised)
       {
-        newborn.GeneInformations.Add(new GeneInformation(new List<float>()));
-        newborn.GeneInformations[0].info = infoResponse;
+        Debug.Log("HERE");
+        Debug.Log(newbornResponseData);
+        newborn.AssignNewbornInfoFromResponse(newbornResponseData);
         BuildNewBorn(threshold);
         SetGameObjectName(responseId);
         checkMinCellNb();
@@ -219,10 +228,8 @@ namespace Newborn
         NewbornBrain.SetBrainParameters(aTBehaviour, cellNb);
         NewbornBrain.SetBrainName(aTBehaviour, responseId);
         Initialised = true;
-        // aTBehaviour.enabled = true;
       }
     }
-
 
     public List<float> ReturnGeneInformations(int modelIndex)
     {
@@ -290,7 +297,6 @@ namespace Newborn
 
     private void InitaliseNewbornInformation()
     {
-      newborn.title = transform.gameObject.name;
       newborn.NewBornGenerations = new List<List<GameObject>>();
       newborn.Cells = new List<GameObject>();
       newborn.CellPositions = new List<Vector3>();
@@ -308,6 +314,7 @@ namespace Newborn
 
     private void SetAgentNameFromBrainName()
     {
+      newborn.title = aTBehaviour.brain.name;
       transform.gameObject.name = aTBehaviour.brain.name;
     }
 

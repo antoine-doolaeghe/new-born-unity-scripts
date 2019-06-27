@@ -44,13 +44,7 @@ namespace Newborn
           throw new Exception("❌There was an error sending request: " + www.text);
         }
         Debug.Log("NewBorn successfully requested!");
-        List<float> infoResponse = new List<float>();
-        string responseId = responseData["id"];
-        foreach (var cellInfo in responseData["models"]["items"][0]["cellInfos"].AsArray)
-        {
-          infoResponse.Add(cellInfo.Value.AsFloat);
-        }
-        agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseId, infoResponse);
+        agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseData);
       }
     }
 
@@ -205,12 +199,11 @@ namespace Newborn
     {
       NewbornService.variable["id"] = newBornPostData.id;
       NewbornService.variable["name"] = "\"newborn\"";
-      NewbornService.variable["sex"] = "\"demale\"";
+      NewbornService.variable["sex"] = "\"female\"";
       NewbornService.variable["newbornGenerationId"] = newBornPostData.generationId;
 
       WWW www;
       ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.newbornGraphQlMutation, ApiConfig.apiKey, ApiConfig.url);
-      Debug.Log(graphQlInput);
       yield return www;
       if (www.error != null)
       {
@@ -265,15 +258,9 @@ namespace Newborn
     public static IEnumerator RebuildAgent(Transform transform, WWW www, GameObject agent, string newbornId)
     {
       Debug.Log("Newborn Model successfully posted!");
-      List<float> infoResponse = new List<float>();
       DestroyAgent(transform);
       JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
-      string responseId = responseData["id"];
-      foreach (var cellInfo in responseData["cellInfos"].AsArray)
-      {
-        infoResponse.Add(cellInfo.Value.AsFloat);
-      }
-      agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseId, infoResponse);
+      agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseData);
       yield return "";
     }
 
