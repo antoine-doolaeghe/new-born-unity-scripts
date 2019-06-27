@@ -44,7 +44,9 @@ namespace Newborn
           throw new Exception("❌There was an error sending request: " + www.text);
         }
         Debug.Log("NewBorn successfully requested!");
-        agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseData);
+        agent.GetComponent<NewbornAgent>().AssignNewbornInfoFromResponse(responseData);
+        agent.GetComponent<NewbornAgent>().AssignNewbornModelInfoFromResponse(responseData["models"]["items"][0]);
+        agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseData["id"]);
       }
     }
 
@@ -190,6 +192,7 @@ namespace Newborn
         {
           throw new Exception("❌There was an error sending request: " + www.text);
         }
+        Debug.Log(www);
         yield return callback(transform, www, agent, modelId);
       }
     }
@@ -216,10 +219,9 @@ namespace Newborn
         {
           throw new Exception("There was an error sending request: " + www.text);
         }
-        string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
-        agent.transform.GetComponent<NewbornAgent>().GenerationIndex = JSON.Parse(www.text)["data"]["createNewborn"]["generation"]["index"];
+        agent.transform.GetComponent<NewbornAgent>().AssignNewbornInfoFromResponse(responseData);
         NewbornService.PostModelCallback callback = NewbornService.RebuildAgent;
-        yield return agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(createdNewBornId, 0, agent, callback); // will it always be first generation
+        yield return agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(responseData["id"], 0, agent, callback); // will it always be first generation
       }
     }
 
@@ -260,7 +262,8 @@ namespace Newborn
       Debug.Log("Newborn Model successfully posted!");
       DestroyAgent(transform);
       JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
-      agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseData);
+      agent.GetComponent<NewbornAgent>().AssignNewbornModelInfoFromResponse(responseData);
+      agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseData["id"]);
       yield return "";
     }
 

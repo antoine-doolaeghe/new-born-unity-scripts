@@ -202,11 +202,11 @@ namespace Newborn
     }
 
     // assign newborn response to newborn Agent 
-    // build newborn 
+    // build newborn responseId
 
-    public void BuildNewbornFromResponse(GameObject agent, JSONNode newbornResponseData)
+
+    public void BuildNewbornFromResponse(GameObject agent, string responseId)
     {
-      string responseId = newbornResponseData["id"];
       Debug.Log("Building Newborn From Fetch Response 🏗️");
       if (partNb == 0 && threshold == 0f)
       {
@@ -218,11 +218,8 @@ namespace Newborn
 
       if (!Initialised)
       {
-        Debug.Log("HERE");
-        Debug.Log(newbornResponseData);
-        newborn.AssignNewbornInfoFromResponse(newbornResponseData);
-        BuildNewBorn(threshold);
         SetGameObjectName(responseId);
+        BuildNewBorn(threshold);
         checkMinCellNb();
         AddBodyPart(true);
         NewbornBrain.SetBrainParameters(aTBehaviour, cellNb);

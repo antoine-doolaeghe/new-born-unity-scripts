@@ -39,8 +39,6 @@ public class NewbornAgent : MonoBehaviour
 
   public void AssignNewbornInfoFromResponse(JSONNode newbornResponseData)
   {
-    GeneInformations.Add(new GeneInformation(new List<float>()));
-    GeneInformations[0].info = ReturnNewbornModelInfoFromResponse(newbornResponseData);
     Sex = newbornResponseData["sex"];
     title = newbornResponseData["name"];
     GenerationId = newbornResponseData["generation"]["id"];
@@ -49,15 +47,16 @@ public class NewbornAgent : MonoBehaviour
     parents = ReturnNewbornParentsFromResponse(newbornResponseData);
   }
 
-  public static List<float> ReturnNewbornModelInfoFromResponse(JSONNode newbornResponseData)
+  public void AssignNewbornModelInfoFromResponse(JSONNode modelResponseData)
   {
     List<float> newbornModelInfo = new List<float>();
-    foreach (var cellInfo in newbornResponseData["models"]["items"][0]["cellInfos"].AsArray)
+    foreach (var cellInfo in modelResponseData["cellInfos"].AsArray)
     {
       newbornModelInfo.Add(cellInfo.Value.AsFloat);
     }
 
-    return newbornModelInfo;
+    GeneInformations.Add(new GeneInformation(new List<float>()));
+    GeneInformations[0].info = newbornModelInfo;
   }
 
   public static List<string> ReturnNewbornChildsFromResponse(JSONNode newbornResponseData)
