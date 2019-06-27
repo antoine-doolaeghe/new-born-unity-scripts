@@ -30,7 +30,8 @@ namespace Newborn
         timer += Time.deltaTime;
         if (timer > 10f)
         {
-          StartCoroutine(transform.GetComponent<SpawnerService>().ListTrainedNewborn(transform.gameObject));
+          SpawnerService.SetParentGestationCallback callback = SpawnerService.SetParentGestationToFalse;
+          StartCoroutine(transform.GetComponent<SpawnerService>().ListTrainedNewborn(this, callback));
           timer = 0.0f;
         }
       }

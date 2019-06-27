@@ -34,26 +34,23 @@ namespace Newborn
       yield return www;
       if (www.error != null)
       {
-        throw new Exception("There was an error sending request: " + www.error);
+        throw new Exception("❌There was an error sending request: " + www.error);
       }
       else
       {
         JSONNode responseData = JSON.Parse(www.text)["data"]["getNewborn"];
         if (responseData == null)
         {
-          throw new Exception("There was an error sending request: " + responseData);
+          throw new Exception("❌There was an error sending request: " + www.text);
         }
         Debug.Log("NewBorn successfully requested!");
-        List<float> infoResponse = new List<float>();
-        string responseId = responseData["id"];
-        foreach (var cellInfo in responseData["models"]["items"][0]["cellInfos"].AsArray)
-        {
-          infoResponse.Add(cellInfo.Value.AsFloat);
-        }
-        agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseId, infoResponse);
+        agent.GetComponent<NewbornAgent>().AssignNewbornInfoFromResponse(responseData);
+        agent.GetComponent<NewbornAgent>().AssignNewbornModelInfoFromResponse(responseData["models"]["items"][0]);
+        agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseData["id"]);
       }
     }
 
+    #region Update Methods
     public static IEnumerator UpdateInstanceId(string id, string instanceId)
     {
       NewbornService.variable["id"] = "\"" + id + "\"";
@@ -67,15 +64,12 @@ namespace Newborn
       }
       else
       {
-        JSONNode responseData = JSON.Parse(www.text);
-        if (responseData["data"]["updateNewborn"] != null)
+        JSONNode responseData = JSON.Parse(www.text)["data"]["updateNewborn"];
+        if (responseData == null)
         {
-          Debug.Log("NewBorn instanceId successfully updated!");
+          throw new Exception("❌There was an error sending request: " + www.text);
         }
-        else
-        {
-          throw new Exception("❌There was an error sending request: " + responseData);
-        }
+        Debug.Log("NewBorn instanceId successfully updated!");
       }
     }
 
@@ -93,15 +87,12 @@ namespace Newborn
       }
       else
       {
-        JSONNode responseData = JSON.Parse(www.text);
-        if (responseData["data"]["updateNewborn"] != null)
+        JSONNode responseData = JSON.Parse(www.text)["data"]["updateNewborn"];
+        if (responseData == null)
         {
-          Debug.Log("NewBorn instanceId successfully updated!");
+          throw new Exception("❌There was an error sending request: " + www.text);
         }
-        else
-        {
-          throw new Exception("❌There was an error sending request: " + responseData);
-        }
+        Debug.Log("NewBorn instanceId successfully updated!");
       }
     }
 
@@ -119,15 +110,12 @@ namespace Newborn
       }
       else
       {
-        JSONNode responseData = JSON.Parse(www.text);
-        if (responseData["data"]["updateNewborn"] != null)
+        JSONNode responseData = JSON.Parse(www.text)["data"]["updateNewborn"];
+        if (responseData["data"]["updateNewborn"] == null)
         {
-          Debug.Log("NewBorn Living status successfully updated!");
+          throw new Exception("❌There was an error sending request: " + www.text);
         }
-        else
-        {
-          throw new Exception("❌There was an error sending request: " + responseData);
-        }
+        Debug.Log("NewBorn Living status successfully updated!");
       }
     }
 
@@ -147,18 +135,40 @@ namespace Newborn
       }
       else
       {
-        Debug.Log(JSON.Parse(www.text));
-        if (JSON.Parse(www.text)["data"]["updateNewborn"] != null)
+        JSONNode responseData = JSON.Parse(www.text)["data"]["updateNewborn"];
+        if (responseData == null)
         {
-          Debug.Log("Training Stage successfully updated: " + stage);
+          throw new Exception("❌There was an error sending request:" + www.text);
         }
-        else
-        {
-          throw new Exception("There was an error sending request: ");
-        }
+        Debug.Log("Training Stage successfully updated: " + stage);
       }
     }
 
+    public static IEnumerator UpdateNewbornChildsAndPartners(string newbornId, List<string> childs, List<string> partners)
+    {
+      NewbornService.variable["id"] = "\"" + newbornId + "\"";
+      NewbornService.variable["childs"] = ServiceHelpers.ReturnNewbornChilds(childs);
+      NewbornService.variable["partners"] = ServiceHelpers.ReturnNewbornPartners(partners);
+      WWW www;
+      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateNewbornChildsAndPartners, ApiConfig.apiKey, ApiConfig.url);
+      yield return www;
+      if (www.error != null)
+      {
+        throw new Exception("❌There was an error sending request: " + www.error);
+      }
+      else
+      {
+        JSONNode responseData = JSON.Parse(www.text);
+        if (responseData["data"]["updateNewborn"] == null)
+        {
+          throw new Exception("❌There was an error sending request: " + www.text);
+        }
+        Debug.Log("NewBorn childs successfully updated!");
+      }
+    }
+    #endregion
+
+    #region Post Methods
     public static IEnumerator PostNewbornModel(Transform transform, GenerationPostData generationPostData, string modelId, GameObject agent, PostModelCallback callback)
     {
       string cellPositionsString = BuildCellPositionString(generationPostData);
@@ -177,37 +187,26 @@ namespace Newborn
       }
       else
       {
-        if (JSON.Parse(www.text)["data"]["createModel"] == null)
+        JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
+        if (responseData == null)
         {
-          throw new Exception("❌There was an error sending request: " + www.error);
+          throw new Exception("❌There was an error sending request: " + www.text);
         }
+        Debug.Log(www);
         yield return callback(transform, www, agent, modelId);
       }
     }
-    public static IEnumerator RebuildAgent(Transform transform, WWW www, GameObject agent, string newbornId)
-    {
-      Debug.Log("Newborn Model successfully posted!");
-      List<float> infoResponse = new List<float>();
-      DestroyAgent(transform);
-      JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
-      string responseId = responseData["id"];
-      foreach (var cellInfo in responseData["cellInfos"].AsArray)
-      {
-        infoResponse.Add(cellInfo.Value.AsFloat);
-      }
-      agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseId, infoResponse);
-      yield return "";
-    }
+
+
     public static IEnumerator PostNewborn(NewBornPostData newBornPostData, GameObject agent = null)
     {
       NewbornService.variable["id"] = newBornPostData.id;
       NewbornService.variable["name"] = "\"newborn\"";
-      NewbornService.variable["sex"] = "\"demale\"";
+      NewbornService.variable["sex"] = "\"female\"";
       NewbornService.variable["newbornGenerationId"] = newBornPostData.generationId;
 
       WWW www;
       ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.newbornGraphQlMutation, ApiConfig.apiKey, ApiConfig.url);
-      Debug.Log(graphQlInput);
       yield return www;
       if (www.error != null)
       {
@@ -215,14 +214,14 @@ namespace Newborn
       }
       else
       {
-        if (JSON.Parse(www.text)["data"]["createNewborn"] == null)
+        JSONNode responseData = JSON.Parse(www.text)["data"]["createNewborn"];
+        if (responseData == null)
         {
-          throw new Exception("There was an error sending request: " + www.error);
+          throw new Exception("There was an error sending request: " + www.text);
         }
-        string createdNewBornId = JSON.Parse(www.text)["data"]["createNewborn"]["id"];
-        agent.transform.GetComponent<NewbornAgent>().GenerationIndex = JSON.Parse(www.text)["data"]["createNewborn"]["generation"]["index"];
+        agent.transform.GetComponent<NewbornAgent>().AssignNewbornInfoFromResponse(responseData);
         NewbornService.PostModelCallback callback = NewbornService.RebuildAgent;
-        yield return agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(createdNewBornId, 0, agent, callback); // will it always be first generation
+        yield return agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(responseData["id"], 0, agent, callback); // will it always be first generation
       }
     }
 
@@ -245,7 +244,8 @@ namespace Newborn
       }
       else
       {
-        if (JSON.Parse(www.text)["data"]["createNewborn"] == null)
+        JSONNode responseData = JSON.Parse(www.text)["data"]["createNewborn"];
+        if (responseData == null)
         {
           throw new Exception("There was an error sending request: " + www.text);
         }
@@ -254,27 +254,17 @@ namespace Newborn
       }
     }
 
-    public static IEnumerator UpdateNewbornChildsAndPartners(string newbornId, List<string> childs, List<string> partners)
+    #endregion
+
+    #region callback methods
+    public static IEnumerator RebuildAgent(Transform transform, WWW www, GameObject agent, string newbornId)
     {
-      NewbornService.variable["id"] = "\"" + newbornId + "\"";
-      NewbornService.variable["childs"] = ServiceHelpers.ReturnNewbornChilds(childs);
-      NewbornService.variable["partners"] = ServiceHelpers.ReturnNewbornPartners(partners);
-      WWW www;
-      ServiceHelpers.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateNewbornChildsAndPartners, ApiConfig.apiKey, ApiConfig.url);
-      yield return www;
-      if (www.error != null)
-      {
-        throw new Exception("❌There was an error sending request: " + www.error);
-      }
-      else
-      {
-        JSONNode responseData = JSON.Parse(www.text);
-        if (responseData["data"]["updateNewborn"] == null)
-        {
-          throw new Exception("❌There was an error sending request: " + responseData);
-        }
-        Debug.Log("NewBorn childs successfully updated!");
-      }
+      Debug.Log("Newborn Model successfully posted!");
+      DestroyAgent(transform);
+      JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
+      agent.GetComponent<NewbornAgent>().AssignNewbornModelInfoFromResponse(responseData);
+      agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseData["id"]);
+      yield return "";
     }
 
     public static void DestroyAgent(Transform transform)
@@ -316,5 +306,6 @@ namespace Newborn
       NewbornService.PostModelCallback PostModelCallback = NewbornService.SuccessfullModelCallback;
       yield return agent.GetComponent<NewBornBuilder>().PostNewbornModel(newbornId, 0, agent, PostModelCallback); // will it always be first generation
     }
+    #endregion
   }
 }
