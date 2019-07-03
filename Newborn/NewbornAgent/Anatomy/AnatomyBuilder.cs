@@ -101,7 +101,7 @@ namespace Newborn
                 {
                   // you need to know about the side it is built from. 
                   // BuildCell(y, i, z, cellPosition);
-                  renderer.MakeCube(renderer.adjScale, cellPosition);
+                  renderer.MakeCube(1, cellPosition);
                 }
               }
             }

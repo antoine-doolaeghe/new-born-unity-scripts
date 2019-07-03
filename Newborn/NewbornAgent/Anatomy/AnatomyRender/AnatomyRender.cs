@@ -37,43 +37,15 @@ public class AnatomyRender : MonoBehaviour
     AssignBone();
   }
 
-  // void GenerateVoxelMesh(VoxelData data)
-  // {
-  //   vertices = new List<Vector3>();
-  //   triangles = new List<int>();
-
-  //   for (int z = 0; z < data.Depth; z++)
-  //   {
-  //     for (int x = 0; x < data.Width; x++)
-  //     {
-  //       for (int y = 0; y < data.Height; y++)
-  //       {
-  //         if (data.GetCell(x, y, z) == 0)
-  //         {
-  //           continue;
-  //         }
-  //         MakeCube(adjScale, new Vector3((float)x * scale, (float)y * scale, (float)z * scale), x, y, z, data);
-  //       }
-  //     }
-  //   }
-  // }
-
   // TO DO: ASSIGN THE OTHER VERTICE. 
   public void MakeCube(float cubeScale, Vector3 cubePos)
   {
     Transform cubeBone = new GameObject().transform;
     cubeBone.parent = transform;
-    cubeBone.localPosition = cubePos;
+    cubeBone.position = cubePos;
     for (int i = 0; i < 6; i++)
     {
-      // if (data.GetNeighbor(x, y, z, (Direction)i) == 0)
-      // {
       MakeFace(cubeBone, (Direction)i, cubeScale, cubePos);
-      // }
-      // else
-      {
-        // MAKE SURE THE vertices are assigned
-      }
     }
   }
 
@@ -120,6 +92,7 @@ public class AnatomyRender : MonoBehaviour
     mesh.bindposes = bindPoses.ToArray();
 
     // Assign bones and bind poses
+    rend.sharedMesh = mesh;
     rend.bones = bones.ToArray();
   }
 
