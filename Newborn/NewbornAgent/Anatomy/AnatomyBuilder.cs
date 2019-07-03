@@ -100,13 +100,15 @@ namespace Newborn
                 if (cellInfo > threshold)
                 {
                   // you need to know about the side it is built from. 
-                  BuildCell(y, i, z, cellPosition);
-                  // AnatomyRender.MakeCube();
+                  // BuildCell(y, i, z, cellPosition);
+                  renderer.MakeCube(renderer.adjScale, cellPosition);
                 }
               }
             }
           }
         }
+        renderer.UpdateMesh();
+        renderer.AssignBone();
       }
 
 

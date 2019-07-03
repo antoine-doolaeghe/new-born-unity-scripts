@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
+[ExecuteInEditMode]
 [RequireComponent(typeof(MeshFilter))]
 public class AnatomyRender : MonoBehaviour
 {
@@ -13,16 +14,18 @@ public class AnatomyRender : MonoBehaviour
   List<Transform> bones;
   List<BoneWeight> weights;
   List<Matrix4x4> bindPoses;
-  float adjScale;
+  public float adjScale;
 
   // Use this for initialization
   void Awake()
   {
-    mesh = GetComponent<MeshFilter>().mesh;
-    rend = transform.gameObject.AddComponent<SkinnedMeshRenderer>();
+    mesh = (GetComponent(typeof(MeshFilter)) as MeshFilter).mesh;
+    rend = GetComponent<SkinnedMeshRenderer>();
     bones = new List<Transform>();
     weights = new List<BoneWeight>();
     bindPoses = new List<Matrix4x4>();
+    vertices = new List<Vector3>();
+    triangles = new List<int>();
     adjScale = scale * 0.5f;
   }
 
@@ -34,42 +37,40 @@ public class AnatomyRender : MonoBehaviour
     AssignBone();
   }
 
-  void GenerateVoxelMesh(VoxelData data)
-  {
-    vertices = new List<Vector3>();
-    triangles = new List<int>();
-    int i = 0;
+  // void GenerateVoxelMesh(VoxelData data)
+  // {
+  //   vertices = new List<Vector3>();
+  //   triangles = new List<int>();
 
-    for (int z = 0; z < data.Depth; z++)
-    {
-      for (int x = 0; x < data.Width; x++)
-      {
-        for (int y = 0; y < data.Height; y++)
-        {
-          if (data.GetCell(x, y, z) == 0)
-          {
-            continue;
-          }
-          MakeCube(adjScale, new Vector3((float)x * scale, (float)y * scale, (float)z * scale), x, y, z, data, i);
-          i++;
-        }
-      }
-    }
-  }
+  //   for (int z = 0; z < data.Depth; z++)
+  //   {
+  //     for (int x = 0; x < data.Width; x++)
+  //     {
+  //       for (int y = 0; y < data.Height; y++)
+  //       {
+  //         if (data.GetCell(x, y, z) == 0)
+  //         {
+  //           continue;
+  //         }
+  //         MakeCube(adjScale, new Vector3((float)x * scale, (float)y * scale, (float)z * scale), x, y, z, data);
+  //       }
+  //     }
+  //   }
+  // }
 
   // TO DO: ASSIGN THE OTHER VERTICE. 
-  void MakeCube(float cubeScale, Vector3 cubePos, int x, int y, int z, VoxelData data, int w)
+  public void MakeCube(float cubeScale, Vector3 cubePos)
   {
     Transform cubeBone = new GameObject().transform;
     cubeBone.parent = transform;
     cubeBone.localPosition = cubePos;
     for (int i = 0; i < 6; i++)
     {
-      if (data.GetNeighbor(x, y, z, (Direction)i) == 0)
-      {
-        MakeFace(cubeBone, (Direction)i, cubeScale, cubePos);
-      }
-      else
+      // if (data.GetNeighbor(x, y, z, (Direction)i) == 0)
+      // {
+      MakeFace(cubeBone, (Direction)i, cubeScale, cubePos);
+      // }
+      // else
       {
         // MAKE SURE THE vertices are assigned
       }
@@ -96,7 +97,7 @@ public class AnatomyRender : MonoBehaviour
     triangles.Add(vCount - 4 + 2);
     triangles.Add(vCount - 4 + 3);
   }
-  void UpdateMesh()
+  public void UpdateMesh()
   {
     mesh.Clear();
     mesh.vertices = vertices.ToArray();
@@ -112,7 +113,7 @@ public class AnatomyRender : MonoBehaviour
     weights.Add(boneWeight);
   }
 
-  void AssignBone()
+  public void AssignBone()
   {
     // One bone at the bottom and one at the top
     mesh.boneWeights = weights.ToArray();
