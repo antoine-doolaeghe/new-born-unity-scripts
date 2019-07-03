@@ -77,9 +77,9 @@ namespace Newborn
       }
 
       newborn.NewBornGenerations.Add(new List<AnatomyCell>());
-      GameObject initCell = InitBaseShape(newborn.NewBornGenerations[0], 0);
+      GameObject initCell = InitBaseShape(new Vector3(0f, 0f, 0f), newborn.NewBornGenerations[0], 0);
       initCell.transform.parent = transform;
-      AnatomyHelpers.InitRigidBody(initCell);
+      // AnatomyHelpers.InitRigidBody(initCell);
       StoreNewbornCell(initCell, initCell.transform.position, initCell.transform.position);
       for (int y = 1; y < AgentConfig.layerNumber; y++)
       {
@@ -91,7 +91,7 @@ namespace Newborn
           {
             if (!requestApiData || cellInfoIndex < newborn.GeneInformations[0].info.Count) // solution ???????
             {
-              Vector3 cellPosition = newborn.NewBornGenerations[y - 1][i].mesh.transform.position + AnatomyHelpers.Sides[z];
+              Vector3 cellPosition = newborn.NewBornGenerations[y - 1][i].mesh.transform.localPosition + AnatomyHelpers.Sides[z];
               bool IsValidPosition = AnatomyHelpers.IsValidPosition(newborn, cellPosition);
               float cellInfo = HandleCellInfos(0, cellInfoIndex);
               cellInfoIndex++;
@@ -100,22 +100,22 @@ namespace Newborn
                 if (cellInfo > threshold)
                 {
                   // you need to know about the side it is built from. 
-                  // BuildCell(y, i, z, cellPosition);
-                  renderer.MakeCube(1, cellPosition);
+                  BuildCell(y, i, z, cellPosition);
+                  // renderer.MakeCube(1, cellPosition);
                 }
               }
             }
           }
         }
         renderer.UpdateMesh();
-        renderer.AssignBone();
+        // renderer.AssignBone();
       }
 
 
       foreach (var cell in newborn.Cells)
       {
         cell.transform.parent = transform;
-        cell.GetComponent<SphereCollider>().radius /= 2f;
+        // cell.GetComponent<SphereCollider>().radius /= 2f;
       }
       // aTBehaviour.enabled = true;
       cellNb = newborn.Cells.Count;
@@ -162,7 +162,7 @@ namespace Newborn
           {
             if (cellInfo > threshold)
             {
-              GameObject cell = InitBaseShape(newborn.NewBornGenerations[germNb + 1], germNb + 1);
+              GameObject cell = InitBaseShape(new Vector3(0f, 0f, 0f), newborn.NewBornGenerations[germNb + 1], germNb + 1);
               AnatomyHelpers.InitPosition(AnatomyHelpers.Sides, germNb + 1, i, z, cell, newborn);
               AnatomyHelpers.InitRigidBody(cell);
               AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[germNb][i].mesh, AnatomyHelpers.Sides[z], germNb + 1, z);
@@ -272,13 +272,13 @@ namespace Newborn
       }
     }
 
-    private GameObject InitBaseShape(List<AnatomyCell> NewBornGeneration, int y)
+    private GameObject InitBaseShape(Vector3 position, List<AnatomyCell> NewBornGeneration, int y)
     {
       AnatomyCell anatomyCell = new AnatomyCell();
-      anatomyCell.mesh = Instantiate(newborn.CellPrefab);
+      anatomyCell.mesh = renderer.MakeCube(1, position);
       NewBornGeneration.Add(anatomyCell);
       GameObject cell = newborn.NewBornGenerations[y][newborn.NewBornGenerations[y].Count - 1].mesh;
-      cell.transform.position = transform.position;
+      // cell.transform.position = transform.position;
       return cell;
     }
 
@@ -303,10 +303,10 @@ namespace Newborn
     }
     private void BuildCell(int y, int i, int z, Vector3 cellPosition)
     {
-      GameObject cell = InitBaseShape(newborn.NewBornGenerations[y], y);
-      AnatomyHelpers.InitPosition(AnatomyHelpers.Sides, y, i, z, cell, newborn);
-      AnatomyHelpers.InitRigidBody(cell);
-      AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[y - 1][i].mesh, AnatomyHelpers.Sides[z], y, z);
+      GameObject cell = InitBaseShape(cellPosition, newborn.NewBornGenerations[y], y);
+      // AnatomyHelpers.InitPosition(AnatomyHelpers.Sides, y, i, z, cell, newborn);
+      // AnatomyHelpers.InitRigidBody(cell);
+      // AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[y - 1][i].mesh, AnatomyHelpers.Sides[z], y, z);
       // you know about the previous cell here, therefore can connect it. 
       cell.transform.parent = transform;
       StoreNewbornCell(cell, cellPosition, cellPosition);

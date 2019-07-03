@@ -38,15 +38,16 @@ public class AnatomyRender : MonoBehaviour
   }
 
   // TO DO: ASSIGN THE OTHER VERTICE. 
-  public void MakeCube(float cubeScale, Vector3 cubePos)
+  public GameObject MakeCube(float cubeScale, Vector3 cubePos)
   {
     Transform cubeBone = new GameObject().transform;
     cubeBone.parent = transform;
-    cubeBone.position = cubePos;
+    cubeBone.localPosition = cubePos;
     for (int i = 0; i < 6; i++)
     {
       MakeFace(cubeBone, (Direction)i, cubeScale, cubePos);
     }
+    return cubeBone.gameObject;
   }
 
 
@@ -56,9 +57,9 @@ public class AnatomyRender : MonoBehaviour
     vertices.AddRange(newVertices);
     for (var i = 0; i < newVertices.Length; i++)
     {
-      int verticeIndex = vertices.IndexOf(newVertices[i]);
-      MakeBone(newVertices[i], parent);
-      AddBoneWeight(verticeIndex);
+      // int verticeIndex = vertices.IndexOf(newVertices[i]);
+      // MakeBone(newVertices[i], parent);
+      // AddBoneWeight(verticeIndex);
     }
 
     int vCount = vertices.Count;
