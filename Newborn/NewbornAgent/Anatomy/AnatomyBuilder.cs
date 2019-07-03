@@ -20,6 +20,7 @@ namespace Newborn
     private NewbornAgent newborn;
     private AnatomyBuilder anatomyBuilder;
     private AgentTrainBehaviour aTBehaviour;
+    private AnatomyRender renderer;
     [HideInInspector] public Academy academy;
     [HideInInspector] public float threshold;
     [HideInInspector] public int partNb;
@@ -30,6 +31,7 @@ namespace Newborn
       anatomyBuilder = transform.GetComponent<AnatomyBuilder>();
       aTBehaviour = transform.GetComponent<AgentTrainBehaviour>();
       academy = GameObject.Find("Academy").transform.GetComponent<Academy>();
+      renderer = GetComponent<AnatomyRender>();
     }
     public void ClearNewborns()
     {

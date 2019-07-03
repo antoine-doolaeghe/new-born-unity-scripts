@@ -19,14 +19,17 @@ public class AnatomyRender : MonoBehaviour
   void Awake()
   {
     mesh = GetComponent<MeshFilter>().mesh;
+    rend = transform.gameObject.AddComponent<SkinnedMeshRenderer>();
+    bones = new List<Transform>();
+    weights = new List<BoneWeight>();
+    bindPoses = new List<Matrix4x4>();
     adjScale = scale * 0.5f;
   }
 
   // Update is called once per frame
   void Start()
   {
-    initBoneWeight();
-    GenerateVoxelMesh(new VoxelData());
+    // GenerateVoxelMesh(new VoxelData());
     UpdateMesh();
     AssignBone();
   }
@@ -99,14 +102,6 @@ public class AnatomyRender : MonoBehaviour
     mesh.vertices = vertices.ToArray();
     mesh.triangles = triangles.ToArray();
     mesh.RecalculateNormals();
-  }
-
-  void initBoneWeight()
-  {
-    rend = transform.gameObject.AddComponent<SkinnedMeshRenderer>();
-    bones = new List<Transform>();
-    weights = new List<BoneWeight>();
-    bindPoses = new List<Matrix4x4>();
   }
 
   void AddBoneWeight(int vCount)
