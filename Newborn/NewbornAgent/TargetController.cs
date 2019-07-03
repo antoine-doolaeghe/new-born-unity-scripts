@@ -54,7 +54,7 @@ public class TargetController : MonoBehaviour
   public IEnumerator handleTouchedNewborn(GameObject touchingNewborn)
   {
     NewbornAgent newborn = transform.gameObject.GetComponent<NewbornAgent>();
-    NewBornBuilder newBornBuilder = transform.gameObject.GetComponent<NewBornBuilder>();
+    AnatomyBuilder AnatomyBuilder = transform.gameObject.GetComponent<AnatomyBuilder>();
     // CREATE A COROUTINE HERE 
     string sex = newborn.Sex;
     int generationIndex = newborn.GenerationIndex;
@@ -73,7 +73,7 @@ public class TargetController : MonoBehaviour
       string newNewbornGenerationId = newborn.GenerationId;
       string newNewbornSex = "male";
       string newNewbornHex = "MOCK HEX";
-      yield return StartCoroutine(transform.GetComponent<NewBornBuilder>().checkNewbornGeneration());
+      yield return StartCoroutine(transform.GetComponent<AnatomyBuilder>().checkNewbornGeneration());
       NewBornPostData newBornPostData = new NewBornPostData(newNewbornName, NewbornBrain.GenerateRandomName(), newNewbornGenerationId, newNewbornSex, newNewbornHex);
       NewbornService.PostNewbornFromReproductionCallback PostNewbornFromReproductionCallback = NewbornService.SuccessfullPostNewbornFromReproductionCallback;
       yield return NewbornService.PostNewbornFromReproduction(newBornPostData, transform.gameObject, touchingNewborn, PostNewbornFromReproductionCallback);

@@ -42,13 +42,13 @@ namespace Newborn
       for (int y = 0; y < agentNumber; y++)
       {
         AgentTrainBehaviour atBehaviour;
-        NewBornBuilder newBornBuilder;
+        AnatomyBuilder AnatomyBuilder;
         NewbornAgent newborn;
         GameObject newBornAgent;
         // let make the region a bit more dynamic here
         Vector3 agentPosition = ReturnAgentPosition(y);
-        Agents.Add(BuildAgent(requestApiData, agentPosition, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn));
-        InstantiateTrainingBrain(newBornAgent, atBehaviour, newBornBuilder, y);
+        Agents.Add(BuildAgent(requestApiData, agentPosition, out newBornAgent, out atBehaviour, out AnatomyBuilder, out newborn));
+        InstantiateTrainingBrain(newBornAgent, atBehaviour, AnatomyBuilder, y);
         if (transform.Find("Ground") != null)
         {
           AssignGround(transform.Find("Ground").transform);
@@ -56,11 +56,11 @@ namespace Newborn
       }
     }
 
-    public GameObject BuildAgent(bool requestApiData, Vector3 position, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out NewbornAgent newborn)
+    public GameObject BuildAgent(bool requestApiData, Vector3 position, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out AnatomyBuilder AnatomyBuilder, out NewbornAgent newborn)
     {
       newBornAgent = Instantiate(AgentPrefab, transform);
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
-      newBornBuilder = newBornAgent.transform.GetComponent<NewBornBuilder>();
+      AnatomyBuilder = newBornAgent.transform.GetComponent<AnatomyBuilder>();
       newborn = newBornAgent.transform.GetComponent<NewbornAgent>();
       newborn.Sex = SexConfig.sexes[UnityEngine.Random.Range(0, 2)];             // Randomly select male or female
       # region to refactor
@@ -70,8 +70,8 @@ namespace Newborn
       atBehaviour.spawner = this;
       atBehaviour.targetController = targetController;
       # endregion
-      SetApiRequestParameter(newBornBuilder, atBehaviour, requestApiData);
-      AddMinCellNb(newBornBuilder, minCellNb);
+      SetApiRequestParameter(AnatomyBuilder, atBehaviour, requestApiData);
+      AddMinCellNb(AnatomyBuilder, minCellNb);
       return newBornAgent;
     }
 
@@ -83,14 +83,14 @@ namespace Newborn
       foreach (GameObject agent in Agents)
       {
         NewbornAgent newborn = agent.transform.GetComponent<NewbornAgent>();
-        NewBornBuilder newBornBuilder = agent.transform.GetComponent<NewBornBuilder>();
+        AnatomyBuilder AnatomyBuilder = agent.transform.GetComponent<AnatomyBuilder>();
         AgentTrainBehaviour agentTrainBehaviour = agent.transform.GetComponent<AgentTrainBehaviour>();
         string newbornId = agentTrainBehaviour.brain.name;
         string newbornName = newborn.title;
         string newbornSex = newborn.Sex;
         string newbornHex = "mock hex";
         NewBornPostData newBornPostData = new NewBornPostData(newbornName, newbornId, generationId, newbornSex, newbornHex);
-        StartCoroutine(newBornBuilder.PostNewborn(newBornPostData, agent));
+        StartCoroutine(AnatomyBuilder.PostNewborn(newBornPostData, agent));
       }
     }
 
@@ -156,7 +156,7 @@ namespace Newborn
     {
       foreach (GameObject agent in Agents)
       {
-        agent.transform.GetComponent<NewBornBuilder>().BuildAgentRandomGeneration(agent.transform);
+        agent.transform.GetComponent<AnatomyBuilder>().BuildAgentRandomGeneration(agent.transform);
       }
     }
 
@@ -164,7 +164,7 @@ namespace Newborn
     {
       foreach (GameObject agent in Agents)
       {
-        StartCoroutine(agent.transform.GetComponent<NewBornBuilder>().BuildAgentRandomNewBorn());
+        StartCoroutine(agent.transform.GetComponent<AnatomyBuilder>().BuildAgentRandomNewBorn());
       }
     }
 
@@ -173,7 +173,7 @@ namespace Newborn
       foreach (GameObject agent in Agents)
       {
         agent.SetActive(true);
-        agent.GetComponent<NewBornBuilder>().ClearNewborns();
+        agent.GetComponent<AnatomyBuilder>().ClearNewborns();
         Transform[] childs = agent.transform.Cast<Transform>().ToArray();
         foreach (Transform child in childs)
         {
@@ -184,7 +184,7 @@ namespace Newborn
     #endregion
 
     #region helper methods
-    private void InstantiateTrainingBrain(GameObject newBornAgent, AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, int y)
+    private void InstantiateTrainingBrain(GameObject newBornAgent, AgentTrainBehaviour atBehaviour, AnatomyBuilder AnatomyBuilder, int y)
     {
       if (hasLearningBrain)
       {
@@ -192,21 +192,21 @@ namespace Newborn
         {
           learningBrains = new List<LearningBrain>();
           LearningBrain brain = Instantiate(newBornAgent.GetComponent<NewbornAgent>().learningBrain);
-          AddBrainToAcademy(newBornBuilder, brain);
-          UpdateTrainingParamFromLearningBrain(atBehaviour, newBornBuilder, brain);
+          AddBrainToAcademy(AnatomyBuilder, brain);
+          UpdateTrainingParamFromLearningBrain(atBehaviour, AnatomyBuilder, brain);
           learningBrains.Add(brain);
         }
         else
         {
           if (instantiateSingleBrain)
           {
-            UpdateTrainingParamFromLearningBrain(atBehaviour, newBornBuilder, learningBrains[0]);
+            UpdateTrainingParamFromLearningBrain(atBehaviour, AnatomyBuilder, learningBrains[0]);
           }
           else
           {
             LearningBrain brain = Instantiate(newBornAgent.GetComponent<NewbornAgent>().learningBrain);
-            AddBrainToAcademy(newBornBuilder, brain);
-            UpdateTrainingParamFromLearningBrain(atBehaviour, newBornBuilder, brain);
+            AddBrainToAcademy(AnatomyBuilder, brain);
+            UpdateTrainingParamFromLearningBrain(atBehaviour, AnatomyBuilder, brain);
             learningBrains.Add(brain);
           }
         }
@@ -217,21 +217,21 @@ namespace Newborn
         {
           playerBrains = new List<PlayerBrain>();
           PlayerBrain brain = Instantiate(newBornAgent.GetComponent<NewbornAgent>().playerBrain);
-          UpdateTrainingParamFromPlayerBrain(atBehaviour, newBornBuilder, brain);
-          AddBrainToAcademy(newBornBuilder, brain);
+          UpdateTrainingParamFromPlayerBrain(atBehaviour, AnatomyBuilder, brain);
+          AddBrainToAcademy(AnatomyBuilder, brain);
           playerBrains.Add(brain);
         }
         else
         {
           if (instantiateSingleBrain)
           {
-            UpdateTrainingParamFromPlayerBrain(atBehaviour, newBornBuilder, playerBrains[0]);
+            UpdateTrainingParamFromPlayerBrain(atBehaviour, AnatomyBuilder, playerBrains[0]);
           }
           else
           {
             PlayerBrain brain = Instantiate(newBornAgent.GetComponent<NewbornAgent>().playerBrain);
-            UpdateTrainingParamFromPlayerBrain(atBehaviour, newBornBuilder, brain);
-            AddBrainToAcademy(newBornBuilder, brain);
+            UpdateTrainingParamFromPlayerBrain(atBehaviour, AnatomyBuilder, brain);
+            AddBrainToAcademy(AnatomyBuilder, brain);
             playerBrains.Add(brain);
           }
         }
@@ -246,26 +246,26 @@ namespace Newborn
       }
     }
 
-    private void UpdateTrainingParamFromLearningBrain(AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, LearningBrain brain)
+    private void UpdateTrainingParamFromLearningBrain(AgentTrainBehaviour atBehaviour, AnatomyBuilder AnatomyBuilder, LearningBrain brain)
     {
-      SetBrainParams(newBornBuilder, brain, "temporaryName");
+      SetBrainParams(AnatomyBuilder, brain, "temporaryName");
       AddBrainToAgentBehaviour(atBehaviour, brain);
     }
-    private void UpdateTrainingParamFromPlayerBrain(AgentTrainBehaviour atBehaviour, NewBornBuilder newBornBuilder, PlayerBrain brain)
+    private void UpdateTrainingParamFromPlayerBrain(AgentTrainBehaviour atBehaviour, AnatomyBuilder AnatomyBuilder, PlayerBrain brain)
     {
-      SetBrainParams(newBornBuilder, brain, "temporaryName");
+      SetBrainParams(AnatomyBuilder, brain, "temporaryName");
       AddBrainToAgentBehaviour(atBehaviour, brain);
     }
-    private void SetBrainParams(NewBornBuilder newbornBuilder, Brain brain, string brainName)
+    private void SetBrainParams(AnatomyBuilder AnatomyBuilder, Brain brain, string brainName)
     {
       brain.name = brainName;
       brain.brainParameters.vectorActionSize = new int[1] { vectorActionSize };
-      newbornBuilder.academy.broadcastHub.SetControlled(brain, control);
+      AnatomyBuilder.academy.broadcastHub.SetControlled(brain, control);
     }
 
-    public void AddBrainToAcademy(NewBornBuilder newbornBuilder, Brain brain)
+    public void AddBrainToAcademy(AnatomyBuilder AnatomyBuilder, Brain brain)
     {
-      newbornBuilder.academy.broadcastHub.broadcastingBrains.Add(brain);
+      AnatomyBuilder.academy.broadcastHub.broadcastingBrains.Add(brain);
     }
 
 
@@ -274,15 +274,15 @@ namespace Newborn
       atBehaviour.brain = brain;
     }
 
-    public void SetApiRequestParameter(NewBornBuilder newBornBuilder, AgentTrainBehaviour atBehaviour, bool requestApiData)
+    public void SetApiRequestParameter(AnatomyBuilder AnatomyBuilder, AgentTrainBehaviour atBehaviour, bool requestApiData)
     {
       atBehaviour.requestApiData = requestApiData;
-      newBornBuilder.requestApiData = requestApiData;
+      AnatomyBuilder.requestApiData = requestApiData;
     }
 
-    public void AddMinCellNb(NewBornBuilder newBornBuilder, int minCellNb)
+    public void AddMinCellNb(AnatomyBuilder AnatomyBuilder, int minCellNb)
     {
-      newBornBuilder.minCellNb = minCellNb;
+      AnatomyBuilder.minCellNb = minCellNb;
     }
     #endregion
   }

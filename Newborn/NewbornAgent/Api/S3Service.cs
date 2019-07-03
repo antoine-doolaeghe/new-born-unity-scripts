@@ -81,7 +81,7 @@ public class S3Service : MonoBehaviour
             data = memstream.ToArray();
             MLAgents.InferenceBrain.NNModel model = ScriptableObject.CreateInstance<MLAgents.InferenceBrain.NNModel>();
             model.Value = data;
-            agent.GetComponent<NewBornBuilder>().LoadModelToLearningBrain(newbornId, model);
+            agent.GetComponent<AnatomyBuilder>().LoadModelToLearningBrain(newbornId, model);
           }
         }
       }

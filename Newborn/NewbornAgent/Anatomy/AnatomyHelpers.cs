@@ -33,21 +33,21 @@ namespace Newborn
     }
     public static void InitPosition(List<Vector3> sides, int y, int i, int z, GameObject cell, NewbornAgent newborn)
     {
-      cell.transform.parent = newborn.NewBornGenerations[y - 1][i].transform;
+      cell.transform.parent = newborn.NewBornGenerations[y - 1][i].mesh.transform;
       cell.transform.localPosition = sides[z];
     }
 
-    public static bool IsValidPosition(NewbornAgent newborn, bool isValid, Vector3 cellPosition)
+    public static bool IsValidPosition(NewbornAgent newborn, Vector3 cellPosition)
     {
       foreach (var position in newborn.CellPositions)
       {
         if (cellPosition == position)
         {
-          isValid = false;
+          return false;
         }
       }
 
-      return isValid;
+      return true;
     }
     public static void InitRigidBody(GameObject cell)
     {
