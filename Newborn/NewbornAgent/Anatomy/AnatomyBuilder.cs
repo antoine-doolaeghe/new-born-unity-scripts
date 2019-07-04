@@ -33,6 +33,7 @@ namespace Newborn
       academy = GameObject.Find("Academy").transform.GetComponent<Academy>();
       renderer = GetComponent<AnatomyRender>();
     }
+
     public void ClearNewborns()
     {
       if (newborn.Cells != null)
@@ -55,20 +56,15 @@ namespace Newborn
       {
         newborn.GeneInformations.Clear();
       }
+      renderer.ResetMesh();
       cellInfoIndex = 0;
       Initialised = false;
-      // academy.broadcastHub.broadcastingBrains.Clear();
       cellNb = 0;
       aTBehaviour.DeleteBodyParts();
     }
 
     public void BuildNewBorn(float threshold)
     {
-      if (newborn.title == "")
-      {
-        SetAgentNameFromBrainName();
-      }
-
       InitaliseNewbornInformation();
 
       if (newborn.GeneInformations.Count == 0)
@@ -76,57 +72,46 @@ namespace Newborn
         newborn.GeneInformations.Add(new GeneInformation(new List<float>()));
       }
 
-      newborn.NewBornGenerations.Add(new List<AnatomyCell>());
-      GameObject initCell = InitBaseShape(new Vector3(0f, 0f, 0f), newborn.NewBornGenerations[0], 0);
-      AnatomyHelpers.InitRigidBody(initCell);
-      AnatomyHelpers.InitJoint(initCell, transform.gameObject, transform.position, 0, 0);
-      initCell.GetComponent<ConfigurableJoint>().angularXMotion = ConfigurableJointMotion.Limited;
-      initCell.GetComponent<ConfigurableJoint>().angularYMotion = ConfigurableJointMotion.Limited;
-      initCell.GetComponent<ConfigurableJoint>().angularZMotion = ConfigurableJointMotion.Limited;
-      initCell.transform.parent = transform;
-      // AnatomyHelpers.InitRigidBody(initCell);
-      StoreNewbornCell(initCell, initCell.transform.position, initCell.transform.position);
+      BuildInitCell();
+
       for (int y = 1; y < AgentConfig.layerNumber; y++)
       {
-        int previousGenerationCellNumber = newborn.NewBornGenerations[y - 1].Count;
+        int generationCount = newborn.NewBornGenerations[y - 1].Count;
         newborn.NewBornGenerations.Add(new List<AnatomyCell>());
-        for (int i = 0; i < previousGenerationCellNumber; i++)
+        for (int i = 0; i < generationCount; i++)
         {
           for (int z = 0; z < AnatomyHelpers.Sides.Count; z++)
           {
             if (!requestApiData || cellInfoIndex < newborn.GeneInformations[0].info.Count) // solution ???????
             {
-              Vector3 cellPosition = newborn.NewBornGenerations[y - 1][i].mesh.transform.localPosition + AnatomyHelpers.Sides[z];
-              bool IsValidPosition = AnatomyHelpers.IsValidPosition(newborn, cellPosition);
-              float cellInfo = HandleCellInfos(0, cellInfoIndex);
+              GameObject previousCell = newborn.NewBornGenerations[y - 1][i].mesh;
+              Vector3 newCellPosition = previousCell.transform.localPosition + AnatomyHelpers.Sides[z];
               cellInfoIndex++;
-              if (IsValidPosition)
+              if (AnatomyHelpers.IsValidPosition(newborn, newCellPosition))
               {
-                if (cellInfo > threshold)
+                if (ReturnCurrentInfo(0, cellInfoIndex) > threshold)
                 {
-                  // you need to know about the side it is built from. 
-                  BuildCell(y, i, z, cellPosition);
-                  // renderer.MakeCube(1, cellPosition);
+                  BuildCell(y, i, z, newCellPosition);
                 }
               }
             }
           }
         }
-        renderer.UpdateMesh();
-        renderer.AssignBone();
       }
 
+      renderer.UpdateMesh();
+      renderer.AssignBone();
 
       foreach (var cell in newborn.Cells)
       {
         cell.transform.parent = transform;
-        // cell.GetComponent<SphereCollider>().radius /= 2f;
+        cell.GetComponent<SphereCollider>().radius /= 2f;
       }
-      // aTBehaviour.enabled = true;
+
       cellNb = newborn.Cells.Count;
     }
 
-    public void BuildNewGeneration(int generationInfo)
+    public void AddNewbornGeneration(int generationInfo)
     {
       int indexInfo = 0;
       int previousGenerationCellNumber = 0;
@@ -147,11 +132,6 @@ namespace Newborn
         }
       }
 
-      // if (!isAfterRequest)
-      // {
-      //   newborn.GeneInformations.Add(new GeneInformation(new List<float>()));
-      // }
-
       newborn.NewBornGenerations.Add(new List<AnatomyCell>()); // new list of newborn elements
 
       for (int i = 0; i < previousGenerationCellNumber; i++)
@@ -161,7 +141,7 @@ namespace Newborn
           float cellInfo = 0f;
           Vector3 cellPosition = newborn.NewBornGenerations[germNb][i].mesh.transform.position + AnatomyHelpers.Sides[z];
           bool IsValidPosition = AnatomyHelpers.IsValidPosition(newborn, cellPosition);
-          cellInfo = HandleCellInfos(newborn.GeneInformations.Count - 1, indexInfo);
+          cellInfo = ReturnCurrentInfo(newborn.GeneInformations.Count - 1, indexInfo);
           indexInfo++;
           if (IsValidPosition)
           {
@@ -170,7 +150,7 @@ namespace Newborn
               GameObject cell = InitBaseShape(new Vector3(0f, 0f, 0f), newborn.NewBornGenerations[germNb + 1], germNb + 1);
               AnatomyHelpers.InitPosition(AnatomyHelpers.Sides, germNb + 1, i, z, cell, newborn);
               AnatomyHelpers.InitRigidBody(cell);
-              AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[germNb][i].mesh, AnatomyHelpers.Sides[z], germNb + 1, z);
+              AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[germNb][i].mesh, AnatomyHelpers.Sides[z]);
               cell.transform.parent = transform;
               StoreNewbornCell(cell, cellPosition, cellPosition);
             }
@@ -201,7 +181,7 @@ namespace Newborn
     public void BuildAgentRandomGeneration(Transform agent)
     {
       anatomyBuilder.threshold = AgentConfig.threshold;
-      anatomyBuilder.BuildNewGeneration(newborn.GeneInformations.Count);
+      anatomyBuilder.AddNewbornGeneration(newborn.GeneInformations.Count);
       Brain brain = Resources.Load<Brain>("Brains/agentBrain0");
       agent.gameObject.name = brain.name;
       brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
@@ -262,7 +242,7 @@ namespace Newborn
       newborn.CelllocalPositions.Add(cellLocalPosition);
     }
 
-    private float HandleCellInfos(int generationIndex, int cellIndex)
+    private float ReturnCurrentInfo(int generationIndex, int cellIndex)
     {
       if (requestApiData)
       {
@@ -302,18 +282,29 @@ namespace Newborn
 
     private void InitaliseNewbornInformation()
     {
-      newborn.NewBornGenerations = new List<List<AnatomyCell>>();
+      if (newborn.title == "")
+      {
+        SetAgentNameFromBrainName();
+      }
+      newborn.NewBornGenerations = new List<List<AnatomyCell>>() { new List<AnatomyCell>() };
       newborn.Cells = new List<GameObject>();
       newborn.CellPositions = new List<Vector3>();
       newborn.CelllocalPositions = new List<Vector3>();
     }
+    private void BuildInitCell()
+    {
+      GameObject initCell = InitBaseShape(new Vector3(0f, 0f, 0f), newborn.NewBornGenerations[0], 0);
+      AnatomyHelpers.InitRigidBody(initCell);
+      AnatomyHelpers.InitJoint(initCell, transform.gameObject, transform.position, true);
+      initCell.transform.parent = transform;
+      StoreNewbornCell(initCell, initCell.transform.position, initCell.transform.position);
+    }
+
     private void BuildCell(int y, int i, int z, Vector3 cellPosition)
     {
       GameObject cell = InitBaseShape(cellPosition, newborn.NewBornGenerations[y], y);
-      // AnatomyHelpers.InitPosition(AnatomyHelpers.Sides, y, i, z, cell, newborn);
       AnatomyHelpers.InitRigidBody(cell);
-      AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[y - 1][i].mesh, AnatomyHelpers.Sides[z], y, z);
-      // you know about the previous cell here, therefore can connect it. 
+      AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[y - 1][i].mesh, AnatomyHelpers.Sides[z]);
       cell.transform.parent = transform;
       StoreNewbornCell(cell, cellPosition, cellPosition);
     }

@@ -13,15 +13,15 @@ namespace Newborn
       new Vector3 (0f, -2f, 0f),
       new Vector3 (0f, 0f, -2f)
     };
-    public static void InitJoint(GameObject part, GameObject connectedBody, Vector3 jointAnchor, int y, int z)
+    public static void InitJoint(GameObject part, GameObject connectedBody, Vector3 jointAnchor, bool isInitJoint = false)
     {
       ConfigurableJoint cj = part.transform.gameObject.AddComponent<ConfigurableJoint>();
       cj.xMotion = ConfigurableJointMotion.Locked;
       cj.yMotion = ConfigurableJointMotion.Locked;
       cj.zMotion = ConfigurableJointMotion.Locked;
-      cj.angularXMotion = ConfigurableJointMotion.Limited;
-      cj.angularYMotion = ConfigurableJointMotion.Limited;
-      cj.angularZMotion = ConfigurableJointMotion.Limited;
+      cj.angularXMotion = isInitJoint ? ConfigurableJointMotion.Locked : ConfigurableJointMotion.Limited;
+      cj.angularYMotion = isInitJoint ? ConfigurableJointMotion.Locked : ConfigurableJointMotion.Limited;
+      cj.angularZMotion = isInitJoint ? ConfigurableJointMotion.Locked : ConfigurableJointMotion.Limited;
       cj.anchor = -jointAnchor;
       cj.connectedBody = connectedBody.gameObject.GetComponent<Rigidbody>();
       cj.rotationDriveMode = RotationDriveMode.Slerp;

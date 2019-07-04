@@ -6,7 +6,6 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter))]
 public class AnatomyRender : MonoBehaviour
 {
-
   Mesh mesh;
   List<Vector3> vertices;
   List<int> triangles;
@@ -17,7 +16,6 @@ public class AnatomyRender : MonoBehaviour
   List<Matrix4x4> bindPoses;
   public float adjScale;
 
-  // Use this for initialization
   void Awake()
   {
     mesh = (GetComponent(typeof(MeshFilter)) as MeshFilter).mesh;
@@ -30,7 +28,6 @@ public class AnatomyRender : MonoBehaviour
     adjScale = scale * 0.5f;
   }
 
-  // TO DO: ASSIGN THE OTHER VERTICE. 
   public GameObject MakeCube(float cubeScale, Vector3 cubePos)
   {
     Transform cubeBone = new GameObject().transform;
@@ -42,7 +39,6 @@ public class AnatomyRender : MonoBehaviour
     }
     return cubeBone.gameObject;
   }
-
 
   void MakeFace(Transform parent, Direction dir, float faceScale, Vector3 facePos)
   {
@@ -63,12 +59,25 @@ public class AnatomyRender : MonoBehaviour
     triangles.Add(vCount - 4 + 2);
     triangles.Add(vCount - 4 + 3);
   }
+
   public void UpdateMesh()
   {
     mesh.Clear();
     mesh.vertices = vertices.ToArray();
     mesh.triangles = triangles.ToArray();
     mesh.RecalculateNormals();
+  }
+
+  public void ResetMesh()
+  {
+    mesh.Clear();
+    bones.Clear();
+    vertices.Clear();
+    triangles.Clear();
+    weights.Clear();
+    bindPoses.Clear();
+    Array.Clear(mesh.vertices, 0, mesh.vertices.Length);
+    Array.Clear(mesh.triangles, 0, mesh.triangles.Length);
   }
 
   void AddBoneWeight(int vCount)
