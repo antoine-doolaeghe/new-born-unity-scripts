@@ -36,13 +36,13 @@ namespace Newborn
         foreach (System.Collections.Generic.KeyValuePair<string, SimpleJSON.JSONNode> newbornId in responseData)
         {
           AgentTrainBehaviour atBehaviour;
-          NewBornBuilder newBornBuilder;
+          AnatomyBuilder AnatomyBuilder;
           NewbornAgent newborn;
           GameObject newBornAgent;
 
           SetParentGestationCallback(newbornId);
           GameObject agent;
-          BuildAgentAtRuntime(spawner, out atBehaviour, out newBornBuilder, out newborn, out newBornAgent, out agent);
+          BuildAgentAtRuntime(spawner, out atBehaviour, out AnatomyBuilder, out newborn, out newBornAgent, out agent);
           yield return StartCoroutine(NewbornService.GetNewborn(newbornId.Value["id"], agent, false));
           Debug.Log(newbornId.Value["id"]);
           GameObject.Find("S3Service").GetComponent<S3Service>().GetObject(newbornId.Value["id"], agent);
@@ -51,10 +51,10 @@ namespace Newborn
       }
     }
 
-    public void BuildAgentAtRuntime(NewbornSpawner spawner, out AgentTrainBehaviour atBehaviour, out NewBornBuilder newBornBuilder, out NewbornAgent newborn, out GameObject newBornAgent, out GameObject agent)
+    public void BuildAgentAtRuntime(NewbornSpawner spawner, out AgentTrainBehaviour atBehaviour, out AnatomyBuilder AnatomyBuilder, out NewbornAgent newborn, out GameObject newBornAgent, out GameObject agent)
     {
       Vector3 agentPosition = spawner.ReturnAgentPosition(0);
-      agent = spawner.BuildAgent(true, agentPosition, out newBornAgent, out atBehaviour, out newBornBuilder, out newborn);
+      agent = spawner.BuildAgent(true, agentPosition, out newBornAgent, out atBehaviour, out AnatomyBuilder, out newborn);
       if (transform.Find("Ground") != null)
       {
         spawner.AssignGround(transform.Find("Ground").transform);

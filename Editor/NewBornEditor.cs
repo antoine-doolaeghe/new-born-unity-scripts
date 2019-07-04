@@ -5,8 +5,8 @@ using UnityEngine;
 
 namespace Newborn
 {
-  [CustomEditor(typeof(NewBornBuilder))]
-  public class NewBornBuilderEditor : Editor
+  [CustomEditor(typeof(AnatomyBuilder))]
+  public class AnatomyBuilderEditor : Editor
   {
     public int agentNumber;
     public GameObject agent;
@@ -15,10 +15,10 @@ namespace Newborn
     public override void OnInspectorGUI()
     {
       DrawDefaultInspector();
-      NewBornBuilder newBornBuilder = (NewBornBuilder)target;
+      AnatomyBuilder AnatomyBuilder = (AnatomyBuilder)target;
 
       // if (GUILayout.Button ("Post Single Gene")) {
-      //     newBornBuilder.PostCell("");
+      //     AnatomyBuilder.PostCell("");
       // }
     }
   }

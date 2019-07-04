@@ -5,9 +5,9 @@ using UnityEngine;
 public class VoxelData : MonoBehaviour
 {
 
-  int[,,] data = new int[,,] {
-    { { 1, 0, 0 }, { 0, 1, 0 }, { 0, 0, 1 } },
-    { { 1, 1, 0 }, { 0, 0, 1 }, { 1, 0, 1 } },
+  public int[,,] data = new int[,,] {
+    { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 0, 0} },
+    { { 0, 0, 0 }, { 0, 1, 0 }, { 0, 0, 0 } },
     { { 1, 1, 1 }, { 1, 1, 0 }, { 1, 1, 1 } }
   };
   public int Width

@@ -46,7 +46,7 @@ namespace Newborn
         Debug.Log("NewBorn successfully requested!");
         agent.GetComponent<NewbornAgent>().AssignNewbornInfoFromResponse(responseData);
         agent.GetComponent<NewbornAgent>().AssignNewbornModelInfoFromResponse(responseData["models"]["items"][0]);
-        agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseData["id"]);
+        agent.GetComponent<AnatomyBuilder>().BuildNewbornFromResponse(agent, responseData["id"]);
       }
     }
 
@@ -221,7 +221,7 @@ namespace Newborn
         }
         agent.transform.GetComponent<NewbornAgent>().AssignNewbornInfoFromResponse(responseData);
         NewbornService.PostModelCallback callback = NewbornService.RebuildAgent;
-        yield return agent.transform.GetComponent<NewBornBuilder>().PostNewbornModel(responseData["id"], 0, agent, callback); // will it always be first generation
+        yield return agent.transform.GetComponent<AnatomyBuilder>().PostNewbornModel(responseData["id"], 0, agent, callback); // will it always be first generation
       }
     }
 
@@ -263,7 +263,7 @@ namespace Newborn
       DestroyAgent(transform);
       JSONNode responseData = JSON.Parse(www.text)["data"]["createModel"];
       agent.GetComponent<NewbornAgent>().AssignNewbornModelInfoFromResponse(responseData);
-      agent.GetComponent<NewBornBuilder>().BuildNewbornFromResponse(agent, responseData["id"]);
+      agent.GetComponent<AnatomyBuilder>().BuildNewbornFromResponse(agent, responseData["id"]);
       yield return "";
     }
 
@@ -271,7 +271,7 @@ namespace Newborn
     {
       Transform[] childs = transform.Cast<Transform>().ToArray();
       transform.gameObject.SetActive(true);
-      transform.GetComponent<NewBornBuilder>().ClearNewborns();
+      transform.GetComponent<AnatomyBuilder>().ClearNewborns();
       foreach (Transform child in childs)
       {
         DestroyImmediate(child.gameObject);
@@ -304,7 +304,7 @@ namespace Newborn
       yield return NewbornService.UpdateNewbornChildsAndPartners(agent.name, agent.transform.GetComponent<NewbornAgent>().childs, agent.transform.GetComponent<NewbornAgent>().partners);
       yield return NewbornService.UpdateNewbornChildsAndPartners(agentPartner.name, agentPartner.transform.GetComponent<NewbornAgent>().childs, agentPartner.transform.GetComponent<NewbornAgent>().partners);
       NewbornService.PostModelCallback PostModelCallback = NewbornService.SuccessfullModelCallback;
-      yield return agent.GetComponent<NewBornBuilder>().PostNewbornModel(newbornId, 0, agent, PostModelCallback); // will it always be first generation
+      yield return agent.GetComponent<AnatomyBuilder>().PostNewbornModel(newbornId, 0, agent, PostModelCallback); // will it always be first generation
     }
     #endregion
   }
