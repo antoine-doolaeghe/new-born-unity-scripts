@@ -18,7 +18,7 @@ public class AnatomyRender : MonoBehaviour
 
   void Awake()
   {
-    mesh = (GetComponent(typeof(MeshFilter)) as MeshFilter).mesh;
+    mesh = new Mesh();
     rend = GetComponent<SkinnedMeshRenderer>();
     bones = new List<Transform>();
     weights = new List<BoneWeight>();
@@ -62,7 +62,6 @@ public class AnatomyRender : MonoBehaviour
 
   public void UpdateMesh()
   {
-    mesh.Clear();
     mesh.vertices = vertices.ToArray();
     mesh.triangles = triangles.ToArray();
     mesh.RecalculateNormals();
