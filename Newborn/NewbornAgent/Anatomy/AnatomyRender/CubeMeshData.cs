@@ -1,4 +1,7 @@
-﻿using UnityEngine;
+﻿
+using System;
+using System.Collections.Generic;
+using UnityEngine;
 
 public static class CubeMeshData
 {
@@ -24,18 +27,26 @@ public static class CubeMeshData
     new int[] {3, 2, 7, 6},
   };
 
-  public static Vector3[] faceVertices(int dir, float scale, Vector3 pos)
+  public static Vector3[] faceVertices(Vector3[] previousVertices, int dir, float scale, Vector3 pos)
   {
-    Vector3[] fv = new Vector3[4];
-    for (int i = 0; i < fv.Length; i++)
+    List<Vector3> fv = new List<Vector3>();
+    for (int i = 0; i < 4; i++)
     {
-      fv[i] = (vertices[faceTriangles[dir][i]] * scale) + pos;
+      Vector3 newVertice = vertices[faceTriangles[dir][i]] * scale + pos;
+      // if (Array.IndexOf(previousVertices, newVertice) == -1)
+      // {
+      fv.Add(newVertice);
+      // }
+      // else
+      // {
+      //   // fv.Add(previousVertices[Array.IndexOf(previousVertices, newVertice)]);
+      // }
     }
-    return fv;
+    return fv.ToArray();
   }
 
-  public static Vector3[] faceVertices(Direction dir, float scale, Vector3 pos)
+  public static Vector3[] faceVertices(Vector3[] previousVertices, Direction dir, float scale, Vector3 pos)
   {
-    return faceVertices((int)dir, scale, pos);
+    return faceVertices(previousVertices, (int)dir, scale, pos);
   }
 }

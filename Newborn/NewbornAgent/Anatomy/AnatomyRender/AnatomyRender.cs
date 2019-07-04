@@ -6,6 +6,7 @@ using UnityEngine;
 [RequireComponent(typeof(MeshFilter))]
 public class AnatomyRender : MonoBehaviour
 {
+
   Mesh mesh;
   List<Vector3> vertices;
   List<int> triangles;
@@ -29,14 +30,6 @@ public class AnatomyRender : MonoBehaviour
     adjScale = scale * 0.5f;
   }
 
-  // Update is called once per frame
-  void Start()
-  {
-    // GenerateVoxelMesh(new VoxelData());
-    UpdateMesh();
-    AssignBone();
-  }
-
   // TO DO: ASSIGN THE OTHER VERTICE. 
   public GameObject MakeCube(float cubeScale, Vector3 cubePos)
   {
@@ -53,13 +46,13 @@ public class AnatomyRender : MonoBehaviour
 
   void MakeFace(Transform parent, Direction dir, float faceScale, Vector3 facePos)
   {
-    Vector3[] newVertices = CubeMeshData.faceVertices(dir, faceScale, facePos);
+    Vector3[] newVertices = CubeMeshData.faceVertices(vertices.ToArray(), dir, faceScale, facePos);
     vertices.AddRange(newVertices);
     for (var i = 0; i < newVertices.Length; i++)
     {
-      // int verticeIndex = vertices.IndexOf(newVertices[i]);
-      // MakeBone(newVertices[i], parent);
-      // AddBoneWeight(verticeIndex);
+      int verticeIndex = vertices.IndexOf(newVertices[i]);
+      MakeBone(newVertices[i], parent);
+      AddBoneWeight(verticeIndex);
     }
 
     int vCount = vertices.Count;

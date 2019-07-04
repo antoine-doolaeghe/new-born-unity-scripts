@@ -78,6 +78,11 @@ namespace Newborn
 
       newborn.NewBornGenerations.Add(new List<AnatomyCell>());
       GameObject initCell = InitBaseShape(new Vector3(0f, 0f, 0f), newborn.NewBornGenerations[0], 0);
+      AnatomyHelpers.InitRigidBody(initCell);
+      AnatomyHelpers.InitJoint(initCell, transform.gameObject, transform.position, 0, 0);
+      initCell.GetComponent<ConfigurableJoint>().angularXMotion = ConfigurableJointMotion.Limited;
+      initCell.GetComponent<ConfigurableJoint>().angularYMotion = ConfigurableJointMotion.Limited;
+      initCell.GetComponent<ConfigurableJoint>().angularZMotion = ConfigurableJointMotion.Limited;
       initCell.transform.parent = transform;
       // AnatomyHelpers.InitRigidBody(initCell);
       StoreNewbornCell(initCell, initCell.transform.position, initCell.transform.position);
@@ -108,7 +113,7 @@ namespace Newborn
           }
         }
         renderer.UpdateMesh();
-        // renderer.AssignBone();
+        renderer.AssignBone();
       }
 
 
@@ -276,9 +281,10 @@ namespace Newborn
     {
       AnatomyCell anatomyCell = new AnatomyCell();
       anatomyCell.mesh = renderer.MakeCube(1, position);
+      anatomyCell.mesh.AddComponent<SphereCollider>();
+      anatomyCell.mesh.AddComponent<Rigidbody>();
       NewBornGeneration.Add(anatomyCell);
       GameObject cell = newborn.NewBornGenerations[y][newborn.NewBornGenerations[y].Count - 1].mesh;
-      // cell.transform.position = transform.position;
       return cell;
     }
 
@@ -305,8 +311,8 @@ namespace Newborn
     {
       GameObject cell = InitBaseShape(cellPosition, newborn.NewBornGenerations[y], y);
       // AnatomyHelpers.InitPosition(AnatomyHelpers.Sides, y, i, z, cell, newborn);
-      // AnatomyHelpers.InitRigidBody(cell);
-      // AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[y - 1][i].mesh, AnatomyHelpers.Sides[z], y, z);
+      AnatomyHelpers.InitRigidBody(cell);
+      AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[y - 1][i].mesh, AnatomyHelpers.Sides[z], y, z);
       // you know about the previous cell here, therefore can connect it. 
       cell.transform.parent = transform;
       StoreNewbornCell(cell, cellPosition, cellPosition);
