@@ -115,42 +115,28 @@ namespace Newborn
     {
       int indexInfo = 0;
       int previousGenerationCellNumber = 0;
-      int germNb = 0;
+      int generationCount = 0;
       partNb += 1;
 
+      CheckPreviousGeneration(ref previousGenerationCellNumber, ref generationCount);
 
-      for (int i = 0; i < newborn.NewBornGenerations.Count; i++)
-      {
-        if (newborn.NewBornGenerations[i].Count > 0)
-        {
-          previousGenerationCellNumber = newborn.NewBornGenerations[i].Count;
-          germNb = i;
-        }
-        else
-        {
-          newborn.NewBornGenerations.RemoveAt(i);
-        }
-      }
-
-      newborn.NewBornGenerations.Add(new List<AnatomyCell>()); // new list of newborn elements
+      newborn.NewBornGenerations.Add(new List<AnatomyCell>());
 
       for (int i = 0; i < previousGenerationCellNumber; i++)
       {
         for (int z = 0; z < AnatomyHelpers.Sides.Count; z++)
         {
-          float cellInfo = 0f;
-          Vector3 cellPosition = newborn.NewBornGenerations[germNb][i].mesh.transform.position + AnatomyHelpers.Sides[z];
-          bool IsValidPosition = AnatomyHelpers.IsValidPosition(newborn, cellPosition);
-          cellInfo = ReturnCurrentInfo(newborn.GeneInformations.Count - 1, indexInfo);
+          GameObject previousCell = newborn.NewBornGenerations[generationCount][i].mesh;
+          Vector3 cellPosition = previousCell.transform.position + AnatomyHelpers.Sides[z];
           indexInfo++;
-          if (IsValidPosition)
+          if (AnatomyHelpers.IsValidPosition(newborn, cellPosition))
           {
-            if (cellInfo > threshold)
+            if (ReturnCurrentInfo(newborn.GeneInformations.Count - 1, indexInfo) > threshold)
             {
-              GameObject cell = InitBaseShape(new Vector3(0f, 0f, 0f), newborn.NewBornGenerations[germNb + 1], germNb + 1);
-              AnatomyHelpers.InitPosition(AnatomyHelpers.Sides, germNb + 1, i, z, cell, newborn);
+              GameObject cell = InitBaseShape(cellPosition, newborn.NewBornGenerations[generationCount + 1], generationCount + 1);
+              AnatomyHelpers.InitPosition(AnatomyHelpers.Sides, generationCount + 1, i, z, cell, newborn);
               AnatomyHelpers.InitRigidBody(cell);
-              AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[germNb][i].mesh, AnatomyHelpers.Sides[z]);
+              AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[generationCount][i].mesh, AnatomyHelpers.Sides[z]);
               cell.transform.parent = transform;
               StoreNewbornCell(cell, cellPosition, cellPosition);
             }
@@ -161,6 +147,21 @@ namespace Newborn
       AddBodyPart(false);
     }
 
+    private void CheckPreviousGeneration(ref int previousGenerationCellNumber, ref int generationCount)
+    {
+      for (int i = 0; i < newborn.NewBornGenerations.Count; i++)
+      {
+        if (newborn.NewBornGenerations[i].Count > 0)
+        {
+          previousGenerationCellNumber = newborn.NewBornGenerations[i].Count;
+          generationCount = i;
+        }
+        else
+        {
+          newborn.NewBornGenerations.RemoveAt(i);
+        }
+      }
+    }
 
     public IEnumerator BuildAgentRandomNewBorn()
     {
