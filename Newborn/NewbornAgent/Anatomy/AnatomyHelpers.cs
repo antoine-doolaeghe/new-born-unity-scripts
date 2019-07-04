@@ -28,7 +28,7 @@ namespace Newborn
       cj.angularYLimit = new SoftJointLimit() { limit = AgentConfig.yLimit, bounciness = AgentConfig.bounciness };
       AnatomyHelpers.HandleAngularLimit(cj, jointAnchor);
       cj.angularZLimit = new SoftJointLimit() { limit = AgentConfig.zLimit, bounciness = AgentConfig.bounciness };
-      part.gameObject.GetComponent<Rigidbody>().useGravity = true;
+      part.gameObject.GetComponent<Rigidbody>().useGravity = !isInitJoint;
       part.gameObject.GetComponent<Rigidbody>().mass = 1f;
     }
     public static void InitPosition(List<Vector3> sides, int y, int i, int z, GameObject cell, NewbornAgent newborn)

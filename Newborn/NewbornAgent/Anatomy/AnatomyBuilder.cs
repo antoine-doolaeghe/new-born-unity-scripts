@@ -111,6 +111,8 @@ namespace Newborn
       cellNb = newborn.Cells.Count;
     }
 
+
+    // NOT IN USE
     public void AddNewbornGeneration(int generationInfo)
     {
       int indexInfo = 0;
@@ -143,6 +145,8 @@ namespace Newborn
           }
         }
       }
+      renderer.UpdateMesh();
+      renderer.AssignBone();
       cellNb = newborn.Cells.Count;
       AddBodyPart(false);
     }
