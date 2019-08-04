@@ -5,7 +5,7 @@ using UnityEngine;
 public class ApiConfig : ScriptableObject
 {
   public static string url = "https://sw2hs7ufb5gevarvuyswhrndjm.appsync-api.eu-west-1.amazonaws.com/graphql";
-  public static string apiKey = "da2-cefcgcbfdbgbneiupdeizfwqfq";
+  public static string apiKey = "da2-5aipqbxwx5eyfkoain3jhxtigm";
   public static string generationsGraphQlQuery = "query getGenerations {listGenerations { items {id} }}";
   public static string generationsGraphQlMutation = "mutation createGeneration {createGeneration(input: {id: $id^, index: $index^}) { id, index }}";
   public static string newbornGraphQlMutation = "mutation NewbornPost {createNewborn(input: {id: '$id^', name: $name^, sex: $sex^, newbornGenerationId: '$newbornGenerationId^', living: false}) {id, name, living, sex, childs, parents, generation{index}}}";
