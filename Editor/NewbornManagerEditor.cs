@@ -21,7 +21,7 @@ namespace Newborn
 
       if (GUILayout.Button("Build environment"))
       {
-        manager.BuildSpawners();
+        FindObjectOfType<BuildStorage>().GetTrainingData();
       }
 
       if (GUILayout.Button("Delete environment"))
@@ -33,17 +33,17 @@ namespace Newborn
 
       if (GUILayout.Button("Build NewBorn Production Cells"))
       {
-        foreach (GameObject spawner in manager.Spawners)
+        foreach (AnatomyBuilder spawner in FindObjectsOfType<AnatomyBuilder>())
         {
-          spawner.GetComponent<NewbornSpawner>().BuildAllAgentsRandomNewBorn();
+          spawner.BuildAgentRandomNewBornCoroutine();
         }
       }
 
       if (GUILayout.Button("Delete NewBorn Cells"))
       {
-        foreach (GameObject spawner in manager.Spawners)
+        foreach (NewbornSpawner spawner in FindObjectsOfType<NewbornSpawner>())
         {
-          spawner.GetComponent<NewbornSpawner>().ClearAgents();
+          spawner.ClearAgents();
         }
       }
 
@@ -76,7 +76,7 @@ namespace Newborn
       if (GUILayout.Button("Post Training NewBorn"))
       {
         // manager.ClearBroadCastingBrains();
-        foreach (GameObject spawner in manager.Spawners)
+        foreach (NewbornSpawner spawner in FindObjectsOfType<NewbornSpawner>())
         {
           spawner.GetComponent<NewbornSpawner>().PostTrainingNewborns();
         }

@@ -31,7 +31,7 @@ namespace Newborn
     public TextAsset brainModel;
     [Header("Camera parameters")]
 
-    [HideInInspector] public List<GameObject> Spawners = new List<GameObject>();
+    public List<GameObject> Spawners = new List<GameObject>();
     public void DeleteSpawner()
     {
       Transform[] childs = transform.Cast<Transform>().ToArray();
@@ -51,28 +51,34 @@ namespace Newborn
 
       for (var i = 0; i < spawnerNumber; i++)
       {
-        GameObject spawner;
         Brain brain = Instantiate(brainObject);
 
-        if (isTrainingMode && i % 4 == 0)
+        // if (isTrainingMode && i % 4 == 0)
+        // {
+        //   floor++;
+        //   squarePosition = 0;
+        //   parent = CreateTrainingFloor(floor);
+        //   NameFloor(parent, floor);
+        // }
+
+        // Spawners.Add(InstantiateSpawner(parent, floor, squarePosition, out spawner));
+
+        // if (isTrainingMode)
+        // {
+        //   PositionTrainingSpawner(squarePosition, spawner);
+        // }
+
+        NewbornSpawner[] spawners = Object.FindObjectsOfType<NewbornSpawner>();
+        Debug.Log(spawners.Length);
+        foreach (var spawner in spawners)
         {
-          floor++;
-          squarePosition = 0;
-          parent = CreateTrainingFloor(floor);
-          NameFloor(parent, floor);
+          Spawners.Add(spawner.transform.gameObject);
+          spawner.BuildAgents(requestApiData);
+          // spawner.GetComponent<FoodSpawner>().BuildTarget();
         }
+        // spawner.GetComponent<NewbornSpawner>().BuildAgents(requestApiData);
 
-        Spawners.Add(InstantiateSpawner(parent, floor, squarePosition, out spawner));
-
-        if (isTrainingMode)
-        {
-          PositionTrainingSpawner(squarePosition, spawner);
-        }
-
-        spawner.GetComponent<NewbornSpawner>().BuildAgents(requestApiData);
-        spawner.GetComponent<FoodSpawner>().BuildTarget();
-
-        squarePosition++;
+        // squarePosition++;
       }
     }
 
@@ -81,9 +87,10 @@ namespace Newborn
       Debug.Log("Request Agent info from server...📡");
       GameObject[] agents = GameObject.FindGameObjectsWithTag("agent");
       Debug.Log("number of agents found");
-      Debug.Log(agents.Length);
       for (int a = 0; a < agents.Length; a++)
       {
+        Debug.Log(newbornId);
+        // would be better to build after the fetch
         yield return StartCoroutine(NewbornService.GetNewborn(newbornId, agents[a], false));
         agents[a].GetComponent<AgentTrainBehaviour>().enabled = true;
       }

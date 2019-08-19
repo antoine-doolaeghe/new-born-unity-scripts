@@ -200,16 +200,18 @@ namespace Newborn
 
     public static IEnumerator PostNewborn(NewBornPostData newBornPostData, GameObject agent = null)
     {
-      NewbornService.variable["id"] = newBornPostData.id;
+      NewbornService.variable["id"] = "\"" + newBornPostData.id + "\"";
       NewbornService.variable["name"] = "\"newborn\"";
       NewbornService.variable["sex"] = "\"female\"";
-      NewbornService.variable["newbornGenerationId"] = newBornPostData.generationId;
+      NewbornService.variable["newbornGenerationId"] = "\"" + newBornPostData.generationId + "\"";
 
       WWW www;
       ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.newbornGraphQlMutation, ApiConfig.apiKey, ApiConfig.url);
       yield return www;
       if (www.error != null)
       {
+        Debug.Log(graphQlInput);
+        Debug.Log(www.text);
         throw new Exception("❌There was an error sending request: " + www.error);
       }
       else
@@ -227,10 +229,10 @@ namespace Newborn
 
     public static IEnumerator PostNewbornFromReproduction(NewBornPostData newBornPostData, GameObject agent, GameObject agentPartner, PostNewbornFromReproductionCallback callback)
     {
-      NewbornService.variable["id"] = newBornPostData.id;
+      NewbornService.variable["id"] = "\"" + newBornPostData.id + "\"";
       NewbornService.variable["name"] = "\"newborn\"";
       NewbornService.variable["sex"] = "\"female\"";
-      NewbornService.variable["newbornGenerationId"] = GenerationService.generations[GenerationService.generations.Count - 1];  // Get the latest generation;;
+      NewbornService.variable["newbornGenerationId"] = "\"" + GenerationService.generations[GenerationService.generations.Count - 1] + "\"";  // Get the latest generation;;
       NewbornService.variable["parentA"] = "\"" + agent.GetComponent<AgentTrainBehaviour>().brain.name + "\"";
       NewbornService.variable["parentB"] = "\"" + agentPartner.GetComponent<AgentTrainBehaviour>().brain.name + "\"";
       WWW www;

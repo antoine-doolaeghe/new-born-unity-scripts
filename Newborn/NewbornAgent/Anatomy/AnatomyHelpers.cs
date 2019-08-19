@@ -6,12 +6,12 @@ namespace Newborn
   public class AnatomyHelpers
   {
     public static List<Vector3> Sides = new List<Vector3> {
-      new Vector3 (2f, 0f, 0f),
-      new Vector3 (0f, 2f, 0f),
-      new Vector3 (0f, 0f, 2f),
-      new Vector3 (-2f, 0f, 0f),
-      new Vector3 (0f, -2f, 0f),
-      new Vector3 (0f, 0f, -2f)
+      new Vector3 (0.2f, 0f, 0f),
+      new Vector3 (0f, 0.2f, 0f),
+      new Vector3 (0f, 0f, 0.2f),
+      new Vector3 (-0.2f, 0f, 0f),
+      new Vector3 (0f, -0.2f, 0f),
+      new Vector3 (0f, 0f, -0.2f)
     };
     public static void InitJoint(GameObject part, GameObject connectedBody, Vector3 jointAnchor, bool isInitJoint = false)
     {

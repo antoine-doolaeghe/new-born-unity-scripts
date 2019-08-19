@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using SimpleJSON;
 using UnityEngine;
+using MLAgents;
 
 namespace Newborn
 {
@@ -42,6 +43,59 @@ namespace Newborn
         Debug.Log("Training Instance successfully launched");
         string instanceId = responseData;
         yield return NewbornService.UpdateInstanceId(newbornId, instanceId);
+      }
+    }
+
+    public IEnumerator GetObject(string trainerKey)
+    {
+      byte[] postData;
+      Dictionary<string, string> postHeader;
+      TrainingService.variable["key"] = "\"" + trainerKey + "\"";
+
+      WWW www;
+      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.downloadTrainerData, ApiConfig.apiKey, ApiConfig.url);
+      yield return www;
+      if (www.error != null)
+      {
+        throw new Exception("There was an error sending request: " + www.error + www.text);
+      }
+      else
+      {
+        JSONNode responseData = JSON.Parse(www.text)["data"]["downloadTrainer"];
+        if (responseData == null)
+        {
+          throw new Exception("There was an error sending request: " + www.text);
+        }
+        Debug.Log("Training Instance successfully launched");
+        yield return transform.GetComponent<BuildStorage>().LoadDataFile(responseData);
+        FindObjectOfType<Academy>().GetCommandLineArgs();
+      }
+    }
+
+    public static IEnumerator UpdateTrainerData(string trainerKey, string trainerData)
+    {
+      byte[] postData;
+      Dictionary<string, string> postHeader;
+      trainerData = trainerData.Replace("\"", "'");
+      TrainingService.variable["key"] = "\"" + trainerKey + "\"";
+      TrainingService.variable["data"] = "\"" + trainerData + "\"";
+
+      WWW www;
+      ServiceHelpers.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateTrainerData, ApiConfig.apiKey, ApiConfig.url);
+      yield return www;
+      if (www.error != null)
+      {
+        throw new Exception("There was an error sending request: " + www.error + www.text);
+      }
+      else
+      {
+        JSONNode responseData = JSON.Parse(www.text)["data"]["updateTrainer"];
+        if (responseData == null)
+        {
+          throw new Exception("There was an error sending request: " + www.text);
+        }
+        Debug.Log("Training Instance successfully launched");
+        yield return "hello";
       }
     }
   }

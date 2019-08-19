@@ -97,6 +97,7 @@ namespace MLAgents
     "docs/Learning-Environment-Design-Academy.md")]
   public abstract class Academy : MonoBehaviour
   {
+    public bool isTrainingAcademy;
     [HideInInspector] public bool initialized = false;
     public BroadcastHub broadcastHub = new BroadcastHub();
 
@@ -234,7 +235,17 @@ namespace MLAgents
     /// </summary>
     void Awake()
     {
+      Debug.Log("HERE AWAKE ACADEMY");
       initialized = false;
+      if (!isTrainingAcademy)
+      {
+        InitializeEnvironment();
+        initialized = true;
+      }
+    }
+
+    public void GetCommandLineArgs()
+    {
       bool hasNewbornId = false;
       string[] arguments = Environment.GetCommandLineArgs();
       for (int x = 0; x < arguments.Length; x++)
@@ -250,11 +261,6 @@ namespace MLAgents
       if (hasNewbornId)
       {
         StartCoroutine(manager.RequestNewbornAgentInfo());
-      }
-      else
-      {
-        InitializeEnvironment();
-        initialized = true;
       }
     }
 
@@ -346,15 +352,18 @@ namespace MLAgents
             key, resetParameters[key]
           );
         }
-
+        Debug.Log("HERE!");
         var pythonParameters = brainBatcher.SendAcademyParameters(academyParameters);
+        Debug.Log("UNITY test2");
         UnityEngine.Random.InitState(pythonParameters.Seed);
+        Debug.Log("UNITY test3");
         Application.logMessageReceived += HandleLog;
         logPath = Path.GetFullPath(".") + "/UnitySDK.log";
         logWriter = new StreamWriter(logPath, false);
         logWriter.WriteLine(System.DateTime.Now.ToString());
         logWriter.WriteLine(" ");
         logWriter.Close();
+        Debug.Log("HERE2");
       }
 
       // If a communicator is enabled/provided, then we assume we are in

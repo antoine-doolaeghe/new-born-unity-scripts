@@ -58,7 +58,8 @@ namespace Newborn
 
     public GameObject BuildAgent(bool requestApiData, Vector3 position, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out AnatomyBuilder AnatomyBuilder, out NewbornAgent newborn)
     {
-      newBornAgent = Instantiate(AgentPrefab, transform);
+      newBornAgent = Instantiate(AgentPrefab);
+      newBornAgent.transform.parent = transform;
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       AnatomyBuilder = newBornAgent.transform.GetComponent<AnatomyBuilder>();
       newborn = newBornAgent.transform.GetComponent<NewbornAgent>();

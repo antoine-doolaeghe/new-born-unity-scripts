@@ -1,8 +1,7 @@
 {
     "name": "Tests",
     "references": [
-        "Newborn",
-        "Unity.RenderPipelines.HighDefinition.Runtime"
+        "Newborn"
     ],
     "optionalUnityReferences": [
         "TestAssemblies"

@@ -27,6 +27,7 @@ namespace Newborn
 
     void Awake()
     {
+      Debug.Log("AT BEHAG AWAKE");
       newborn = transform.GetComponent<NewbornAgent>();
       anatomyBuilder = transform.GetComponent<AnatomyBuilder>();
       aTBehaviour = transform.GetComponent<AgentTrainBehaviour>();
@@ -86,7 +87,6 @@ namespace Newborn
             {
               GameObject previousCell = newborn.NewBornGenerations[y - 1][i].mesh;
               Vector3 newCellPosition = previousCell.transform.localPosition + AnatomyHelpers.Sides[z];
-              cellInfoIndex++;
               if (AnatomyHelpers.IsValidPosition(newborn, newCellPosition))
               {
                 if (ReturnCurrentInfo(0, cellInfoIndex) > threshold)
@@ -94,6 +94,7 @@ namespace Newborn
                   BuildCell(y, i, z, newCellPosition);
                 }
               }
+              cellInfoIndex++;
             }
           }
         }
@@ -105,7 +106,7 @@ namespace Newborn
       foreach (var cell in newborn.Cells)
       {
         cell.transform.parent = transform;
-        cell.GetComponent<SphereCollider>().radius /= 2f;
+        cell.GetComponent<SphereCollider>().radius = 0.10f;
       }
 
       cellNb = newborn.Cells.Count;
@@ -165,6 +166,11 @@ namespace Newborn
           newborn.NewBornGenerations.RemoveAt(i);
         }
       }
+    }
+
+    public void BuildAgentRandomNewBornCoroutine()
+    {
+      StartCoroutine(BuildAgentRandomNewBorn());
     }
 
     public IEnumerator BuildAgentRandomNewBorn()
@@ -251,6 +257,8 @@ namespace Newborn
     {
       if (requestApiData)
       {
+        Debug.Log(newborn.GeneInformations[generationIndex].info.Count);
+        Debug.Log(cellIndex);
         float cellInfo = newborn.GeneInformations[generationIndex].info[cellIndex];
         return cellInfo;
       }
@@ -265,7 +273,7 @@ namespace Newborn
     private GameObject InitBaseShape(Vector3 position, List<AnatomyCell> NewBornGeneration, int y)
     {
       AnatomyCell anatomyCell = new AnatomyCell();
-      anatomyCell.mesh = renderer.MakeCube(1, position);
+      anatomyCell.mesh = renderer.MakeCube(0.1f, position);
       anatomyCell.mesh.AddComponent<SphereCollider>();
       anatomyCell.mesh.AddComponent<Rigidbody>();
       NewBornGeneration.Add(anatomyCell);

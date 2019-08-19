@@ -32,10 +32,14 @@ public class AgentTrainBehaviour : Agent
   private bool initialized = false;
   public override void InitializeAgent()
   {
+    Debug.Log("INITIALIZING AGENT");
     if (!initialized)
     {
       initBodyParts();
-      StartCoroutine(NewbornService.UpdateTrainingStage(brain.name, targetController.trainingStage.ToString()));
+      if (requestApiData)
+      {
+        StartCoroutine(NewbornService.UpdateTrainingStage(brain.name, targetController.trainingStage.ToString()));
+      }
       currentDecisionStep = 1;
       initialized = true;
     }
@@ -46,7 +50,7 @@ public class AgentTrainBehaviour : Agent
     Debug.Log("INIT BOD");
     jdController.target = targetController.target;
     jdController.SetupBodyPart(initPart);
-    targetController.minimumTargetDistance = Vector3.Distance(initPart.position, targetController.target.position);
+    // targetController.minimumTargetDistance = Vector3.Distance(initPart.position, targetController.target.position);
     foreach (var part in parts)
     {
       jdController.SetupBodyPart(part);
