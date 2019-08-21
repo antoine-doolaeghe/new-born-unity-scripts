@@ -1,8 +1,9 @@
 using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
+using Service.Newborn;
 using System.IO.Abstractions.TestingHelpers;
-
+using Components.Generation;
 namespace Newborn
 {
   public class NewbornServiceTest : NewbornService

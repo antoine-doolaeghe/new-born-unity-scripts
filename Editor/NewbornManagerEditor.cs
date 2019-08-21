@@ -5,7 +5,9 @@ using System.Linq;
 using MyBox;
 using UnityEditor;
 using UnityEngine;
-
+using Components.Manager;
+using Components.Newborn.Anatomy;
+using Components.Spawner.Newborn;
 namespace Newborn
 {
   [CustomEditor(typeof(NewbornManager))]

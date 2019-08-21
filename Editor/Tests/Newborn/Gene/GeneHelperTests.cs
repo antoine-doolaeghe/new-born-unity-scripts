@@ -2,6 +2,7 @@ using System.Collections.Generic;
 using NUnit.Framework;
 using UnityEngine;
 using System.IO.Abstractions.TestingHelpers;
+using Components.Newborn.Gene;
 
 namespace Newborn
 {
