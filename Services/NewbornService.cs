@@ -176,7 +176,7 @@ namespace Service.Newborn
     #region Post Methods
     public static IEnumerator PostNewbornModel(Transform transform, GenerationPostData generationPostData, string modelId, GameObject agent, PostModelCallback callback)
     {
-      string cellPositionsString = BuildCellPositionString(generationPostData);
+      string cellPositionsString = BuildArmPositionString(generationPostData);
       NewbornService.variable["id"] = generationPostData.id;
       NewbornService.variable["modelNewbornId"] = modelId;
       NewbornService.variable["cellPositions"] = cellPositionsString;
@@ -285,7 +285,7 @@ namespace Service.Newborn
       }
     }
 
-    private static string BuildCellPositionString(GenerationPostData generationPostData)
+    private static string BuildArmPositionString(GenerationPostData generationPostData)
     {
       string cellPositionsString = "[";
       for (int i = 0; i < generationPostData.cellPositions.Count; i++)

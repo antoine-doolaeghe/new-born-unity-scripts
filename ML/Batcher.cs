@@ -76,11 +76,9 @@ namespace MLAgents
         CommunicatorObjects.UnityRLInitializationOutput academyParameters)
     {
       CommunicatorObjects.UnityInput input;
-      Debug.Log("UNITY@@@");
       var initializationInput = new CommunicatorObjects.UnityInput();
       try
       {
-        Debug.Log("UNITY test");
         Debug.Log(academyParameters);
         initializationInput = m_communicator.Initialize(
             new CommunicatorObjects.UnityOutput
@@ -88,7 +86,6 @@ namespace MLAgents
               RlInitializationOutput = academyParameters
             },
             out input);
-        Debug.Log("UNITY test1");
       }
       catch
       {

@@ -32,6 +32,7 @@ public enum StorageSerializerType
 }
 
 [AddComponentMenu("Easy Build System/Features/Utilities/Build Storage")]
+[ExecuteInEditMode]
 public class BuildStorage : MonoBehaviour
 {
   #region Public Fields
@@ -65,6 +66,8 @@ public class BuildStorage : MonoBehaviour
 
   private bool FileIsCorrupted;
 
+  private BuildManager Manager;
+
   #endregion Private Fields
 
   #region Public Methods
@@ -77,7 +80,7 @@ public class BuildStorage : MonoBehaviour
     int PrefabLoaded = 0;
     PrefabsLoaded = new List<PartBehaviour>();
 
-    BuildManager Manager = FindObjectOfType<BuildManager>();
+    Manager = FindObjectOfType<BuildManager>();
 
     if (Manager == null)
     {
@@ -311,22 +314,19 @@ public class BuildStorage : MonoBehaviour
       yield break;
     }
 
-    // GameObject Parent = new GameObject("(Runtime) " + StorageOutputFile, typeof(GroupBehaviour))
     GameObject Parent = new GameObject("(Runtime) " + StorageOutputFile, typeof(GroupBehaviour));
     Parent.transform.parent = GameObject.Find("NewbornManager").transform;
-
+    Manager = FindObjectOfType<BuildManager>();
     foreach (PartModel.SerializedPart Data in Serializer.Prefabs)
     {
       if (Data != null)
       {
-        Debug.Log(BuildManager.Instance);
-
-        PartBehaviour Prefab = BuildManager.Instance.GetPart(Data.Id);
+        PartBehaviour Prefab = Manager.GetPart(Data.Id);
         Prefab.uuid = Data.uuid;
         Prefab.targetUuid = Data.targetUuid;
         if (Prefab != null)
         {
-          PartBehaviour PlacedPrefab = BuildManager.Instance.PlacePrefab(Prefab,
+          PartBehaviour PlacedPrefab = Manager.PlacePrefab(Prefab,
               PartModel.ParseToVector3(Data.Position),
               PartModel.ParseToVector3(Data.Rotation),
               PartModel.ParseToVector3(Data.Scale),

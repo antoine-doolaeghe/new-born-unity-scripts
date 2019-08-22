@@ -25,7 +25,7 @@ namespace Components.Newborn
     public GameObject CellPrefab;
     public LearningBrain learningBrain;
     public PlayerBrain playerBrain;
-    public List<List<AnatomyCell>> NewBornGenerations;
+    public List<List<GameObject>> NewBornGenerations;
     public List<GameObject> Cells;
     public List<Vector3> CellPositions;
     public List<Vector3> CelllocalPositions;

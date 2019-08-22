@@ -235,7 +235,6 @@ namespace MLAgents
     /// </summary>
     void Awake()
     {
-      Debug.Log("HERE AWAKE ACADEMY");
       initialized = false;
       if (!isTrainingAcademy)
       {

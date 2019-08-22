@@ -171,7 +171,7 @@ namespace EasyBuildSystem.Runtimes.Internal.Managers
     {
       GameObject PlacedTemp = Instantiate(part.gameObject, position, Quaternion.Euler(rotation));
       PlacedTemp.transform.localScale = scale;
-
+      // Manager = FindObjectOfType<BuilderBehaviour>();
       PartBehaviour PlacedPart = PlacedTemp.GetComponent<PartBehaviour>();
 
       if (PlacedPart.uuid == "")
@@ -204,13 +204,18 @@ namespace EasyBuildSystem.Runtimes.Internal.Managers
 
       PlacedPart.ChangeState(DefaultState);
 
+
+
       if (part.Id == 8) // Spawner
       {
+#if UNITY_ENGINE
         BuilderBehaviour.Instance.SelectPrefab(BuildManager.Instance.PartsCollection.Parts[7]);
+#endif
         PlacedTemp.GetComponent<NewbornSpawner>().BuildAgents(false);
       }
       if (part.Id == 9) // target
       {
+#if UNITY_ENGINE
         if (BuilderBehaviour.Instance.CurrentMode == BuildMode.Placement)
         {
           TargetController[] tc = Parts[Parts.Count - 1].transform.GetComponentsInChildren<TargetController>();
@@ -223,6 +228,7 @@ namespace EasyBuildSystem.Runtimes.Internal.Managers
 
           BuilderBehaviour.Instance.ChangeMode(BuildMode.None);
         }
+#endif
       }
 
       return PlacedPart;
