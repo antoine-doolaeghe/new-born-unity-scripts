@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using MyBox;
+﻿
 using UnityEditor;
 using UnityEngine;
 using Components.Manager;
@@ -10,14 +6,14 @@ using Components.Newborn.Anatomy;
 using Components.Spawner.Newborn;
 namespace Newborn
 {
-  [CustomEditor(typeof(NewbornManager))]
-  public class NewbornManagerBuildEditor : Editor
+  [CustomEditor(typeof(Manager))]
+  public class ManagerBuildEditor : Editor
   {
 
     public override void OnInspectorGUI()
     {
       DrawDefaultInspector();
-      NewbornManager manager = (NewbornManager)target;
+      Manager manager = (Manager)target;
 
       EditorGUILayout.LabelField("Environmnet Parameters");
 
@@ -28,7 +24,7 @@ namespace Newborn
 
       if (GUILayout.Button("Delete environment"))
       {
-        manager.DeleteSpawner();
+        manager.DeleteEnvironment();
       }
 
       EditorGUILayout.LabelField("Random NewBorn Builds");
@@ -51,11 +47,12 @@ namespace Newborn
 
       if (GUILayout.Button("Add Agent Generation"))
       {
-        manager.ClearBroadCastingBrains();
-        foreach (GameObject spawner in manager.Spawners)
-        {
-          spawner.GetComponent<NewbornSpawner>().BuildAllAgentsRandomGeneration();
-        }
+        // TODO
+        // manager.ClearBroadCastingBrains();
+        // foreach (GameObject spawner in manager.Spawners)
+        // {
+        //   spawner.GetComponent<NewbornSpawner>().BuildAllAgentsRandomGeneration();
+        // }
       }
 
       EditorGUILayout.LabelField("Serviced Newborn Builds");
@@ -82,6 +79,11 @@ namespace Newborn
         {
           spawner.GetComponent<NewbornSpawner>().PostTrainingNewborns();
         }
+      }
+
+      if (GUILayout.Button("Reset trainer data"))
+      {
+        manager.ResetTrainerData();
       }
     }
   }

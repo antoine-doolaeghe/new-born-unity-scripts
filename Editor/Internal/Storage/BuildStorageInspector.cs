@@ -153,11 +153,6 @@ namespace EasyBuildSystem.Editor.Internal.Storage
 
         GUI.color = MainEditor.GetEditorColor;
 
-        if (GUILayout.Button("Load Storage File In Editor Scene ..."))
-        {
-          Target.GetTrainingData();
-        }
-
         GUILayout.EndVertical();
 
         GUILayout.BeginVertical("box");

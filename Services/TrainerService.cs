@@ -47,12 +47,11 @@ namespace Service.Trainer
       }
     }
 
-    public IEnumerator GetObject(string trainerKey)
+    public IEnumerator DownloadTrainer(string trainerKey)
     {
       byte[] postData;
       Dictionary<string, string> postHeader;
       TrainerService.variable["key"] = "\"" + trainerKey + "\"";
-
       WWW www;
       ServiceUtils.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.downloadTrainerData, ApiConfig.apiKey, ApiConfig.url);
       yield return www;
@@ -67,7 +66,7 @@ namespace Service.Trainer
         {
           throw new Exception("There was an error sending request: " + www.text);
         }
-        Debug.Log("Training Instance successfully launched");
+        Debug.Log("<b><color=green>[DownloadTrainer Success]</color></b>");
         yield return transform.GetComponent<BuildStorage>().LoadDataFile(responseData);
         FindObjectOfType<Academy>().GetCommandLineArgs();
       }
@@ -95,8 +94,7 @@ namespace Service.Trainer
         {
           throw new Exception("There was an error sending request: " + www.text);
         }
-        Debug.Log("Training Instance successfully launched");
-        yield return "hello";
+        Debug.Log("<b><color=green>[UpdateTrainer Success]</color></b>");
       }
     }
   }

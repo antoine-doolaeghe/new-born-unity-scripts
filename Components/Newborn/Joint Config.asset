@@ -9,7 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 021956ecd03cb49c2941f18f394efac6, type: 3}
-  m_Name: Agent config
+  m_Script: {fileID: 11500000, guid: 3ae985919ec7b4a259a02c59175351f9, type: 3}
+  m_Name: Joint Config
   m_EditorClassIdentifier: 
-  layerNumber: 10
+  bounciness: 10
+  yLimit: 22.5
+  highLimit: 135
+  lowLimit: 22.5
+  zLimit: 70
+  threshold: 0.6

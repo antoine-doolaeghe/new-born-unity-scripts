@@ -14,20 +14,13 @@ namespace Components.Spawner.Newborn
   public class NewbornSpawner : MonoBehaviour
   {
     [HideInInspector] public List<GameObject> Agents = new List<GameObject>();
-    public int agentNumber;
+    public NewbornSpawnerConfig NewbornSpawnerConfig;
     public bool isListeningToTrainedBorn;
-    public GameObject AgentPrefab;
-    public int minCellNb;
     public bool hasLearningBrain;
     private float timer = 0.0f;
     public int vectorActionSize;
-    public bool control;
     private List<LearningBrain> learningBrains;
     private List<PlayerBrain> playerBrains;
-    public bool isRandomSpawn;
-    public float spawnRange;
-
-    public bool instantiateSingleBrain;
 
     public void Update()
     {
@@ -45,13 +38,12 @@ namespace Components.Spawner.Newborn
 
     public void BuildAgents(bool requestApiData)
     {
-      for (int y = 0; y < agentNumber; y++)
+      for (int y = 0; y < NewbornSpawnerConfig.agentNumber; y++)
       {
         AgentTrainBehaviour atBehaviour;
         AnatomyBuilder AnatomyBuilder;
         NewbornAgent newborn;
         GameObject newBornAgent;
-        // let make the region a bit more dynamic here
         Vector3 agentPosition = ReturnAgentPosition(y);
         Agents.Add(BuildAgent(requestApiData, agentPosition, out newBornAgent, out atBehaviour, out AnatomyBuilder, out newborn));
         InstantiateTrainingBrain(newBornAgent, atBehaviour, AnatomyBuilder, y);
@@ -64,7 +56,7 @@ namespace Components.Spawner.Newborn
 
     public GameObject BuildAgent(bool requestApiData, Vector3 position, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out AnatomyBuilder AnatomyBuilder, out NewbornAgent newborn)
     {
-      newBornAgent = Instantiate(AgentPrefab);
+      newBornAgent = Instantiate(NewbornSpawnerConfig.AgentPrefab);
       newBornAgent.transform.parent = transform;
       atBehaviour = newBornAgent.transform.GetComponent<AgentTrainBehaviour>();
       AnatomyBuilder = newBornAgent.transform.GetComponent<AnatomyBuilder>();
@@ -78,7 +70,6 @@ namespace Components.Spawner.Newborn
       atBehaviour.targetController = targetController;
       # endregion
       SetApiRequestParameter(AnatomyBuilder, atBehaviour, requestApiData);
-      AddMinCellNb(AnatomyBuilder, minCellNb);
       return newBornAgent;
     }
 
@@ -105,9 +96,10 @@ namespace Components.Spawner.Newborn
     public Vector3 ReturnAgentPosition(int y)
     {
       Vector3 agentPosition;
-      if (isRandomSpawn)
+      if (NewbornSpawnerConfig.isRandomSpawn)
       {
-        agentPosition = new Vector3(Random.Range(0f, spawnRange), 10f, Random.Range(0f, spawnRange));
+        float spawnRange = NewbornSpawnerConfig.spawnRange;
+        agentPosition = new Vector3(Random.Range(0f, spawnRange), 5f, Random.Range(0f, spawnRange));
       }
       else
       {
@@ -205,7 +197,7 @@ namespace Components.Spawner.Newborn
         }
         else
         {
-          if (instantiateSingleBrain)
+          if (NewbornSpawnerConfig.instantiateSingleBrain)
           {
             UpdateTrainingParamFromLearningBrain(atBehaviour, AnatomyBuilder, learningBrains[0]);
           }
@@ -230,7 +222,7 @@ namespace Components.Spawner.Newborn
         }
         else
         {
-          if (instantiateSingleBrain)
+          if (NewbornSpawnerConfig.instantiateSingleBrain)
           {
             UpdateTrainingParamFromPlayerBrain(atBehaviour, AnatomyBuilder, playerBrains[0]);
           }
@@ -267,7 +259,7 @@ namespace Components.Spawner.Newborn
     {
       brain.name = brainName;
       brain.brainParameters.vectorActionSize = new int[1] { vectorActionSize };
-      AnatomyBuilder.academy.broadcastHub.SetControlled(brain, control);
+      AnatomyBuilder.academy.broadcastHub.SetControlled(brain, NewbornSpawnerConfig.control);
     }
 
     public void AddBrainToAcademy(AnatomyBuilder AnatomyBuilder, Brain brain)
@@ -287,10 +279,6 @@ namespace Components.Spawner.Newborn
       AnatomyBuilder.requestApiData = requestApiData;
     }
 
-    public void AddMinCellNb(AnatomyBuilder AnatomyBuilder, int minCellNb)
-    {
-      AnatomyBuilder.minCellNb = minCellNb;
-    }
     #endregion
   }
 }

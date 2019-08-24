@@ -24,7 +24,16 @@ namespace Components.Newborn.Anatomy
       new Vector3 (90f, 0f, 0f),
       new Vector3 (-90f, 0f, 0f)
     };
-    public static void InitJoint(GameObject part, GameObject connectedBody, Vector3 jointAnchor, bool isInitJoint = false)
+
+    public static List<Vector3> JointRotation = new List<Vector3> {
+      new Vector3 (0f, 0f, 0f),
+      new Vector3 (0f, 90f, 0f),
+      new Vector3 (0f, -90f, 0f),
+      new Vector3 (0f, 0f, 0f),
+      new Vector3 (-90f, 0f, 0f)
+    };
+
+    public static void InitJoint(GameObject part, GameObject connectedBody, Vector3 jointAnchor, JointConfig jointConfig, bool isInitJoint = false)
     {
       ConfigurableJoint cj = part.transform.gameObject.AddComponent<ConfigurableJoint>();
       cj.xMotion = ConfigurableJointMotion.Locked;
@@ -36,9 +45,10 @@ namespace Components.Newborn.Anatomy
       cj.anchor = -jointAnchor;
       cj.connectedBody = connectedBody.gameObject.GetComponent<Rigidbody>();
       cj.rotationDriveMode = RotationDriveMode.Slerp;
-      cj.angularYLimit = new SoftJointLimit() { limit = AgentConfig.yLimit, bounciness = AgentConfig.bounciness };
-      AnatomyHelpers.HandleAngularLimit(cj, jointAnchor);
-      cj.angularZLimit = new SoftJointLimit() { limit = AgentConfig.zLimit, bounciness = AgentConfig.bounciness };
+      cj.angularYLimit = new SoftJointLimit() { limit = jointConfig.yLimit, bounciness = jointConfig.bounciness };
+      cj.axis = new Vector3(-1f, 0f, 0f);
+      // AnatomyHelpers.HandleAngularLimit(cj, jointAnchor);
+      cj.angularZLimit = new SoftJointLimit() { limit = jointConfig.zLimit, bounciness = jointConfig.bounciness };
       part.gameObject.GetComponent<Rigidbody>().useGravity = !isInitJoint;
       part.gameObject.GetComponent<Rigidbody>().mass = 1f;
     }
@@ -79,42 +89,44 @@ namespace Components.Newborn.Anatomy
       }
       return positions;
     }
-    public static void HandleAngularLimit(ConfigurableJoint cj, Vector3 jointAnchor)
-    {
-      if (jointAnchor.y == -1)
-      {
-        cj.lowAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
-        cj.highAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
-      }
-      else if (jointAnchor.y == 1)
-      {
-        cj.highAngularXLimit = new SoftJointLimit() { limit = AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
-        cj.lowAngularXLimit = new SoftJointLimit() { limit = AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
-      }
-      else if (jointAnchor.x == 1)
-      {
-        cj.highAngularXLimit = new SoftJointLimit() { limit = AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
-        cj.lowAngularXLimit = new SoftJointLimit() { limit = AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
-        cj.axis = new Vector3(0f, -1f, 0f);
-      }
-      else if (jointAnchor.x == -1)
-      {
-        cj.lowAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
-        cj.highAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
-        cj.axis = new Vector3(0f, -1f, 0f);
-      }
-      else if (jointAnchor.z == 1)
-      {
-        cj.axis = new Vector3(0f, -1f, 0f);
-        cj.highAngularXLimit = new SoftJointLimit() { limit = AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
-        cj.lowAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
-      }
-      else if (jointAnchor.z == -1)
-      {
-        cj.axis = new Vector3(-1f, 0f, 0f);
-        cj.highAngularXLimit = new SoftJointLimit() { limit = AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
-        cj.lowAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
-      }
-    }
+    // public static void HandleAngularLimit(ConfigurableJoint cj, Vector3 jointAnchor)
+    // {
+    //   if (jointAnchor.y == -1)
+    //   {
+    //     cj.lowAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
+    //     cj.highAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
+    //     cj.axis = new Vector3(-1f, 0f, 0f);
+    //   }
+    //   else if (jointAnchor.y == 1)
+    //   {
+    //     cj.highAngularXLimit = new SoftJointLimit() { limit = AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
+    //     cj.lowAngularXLimit = new SoftJointLimit() { limit = AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
+    //     cj.axis = new Vector3(-1f, 0f, 0f);
+    //   }
+    //   else if (jointAnchor.x == 1)
+    //   {
+    //     cj.highAngularXLimit = new SoftJointLimit() { limit = AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
+    //     cj.lowAngularXLimit = new SoftJointLimit() { limit = AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
+    //     cj.axis = new Vector3(-1f, 0f, 0f);
+    //   }
+    //   else if (jointAnchor.x == -1)
+    //   {
+    //     cj.lowAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
+    //     cj.highAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.highLimit, bounciness = AgentConfig.bounciness };
+    //     cj.axis = new Vector3(-1f, 0f, 0f);
+    //   }
+    //   else if (jointAnchor.z == 1)
+    //   {
+    //     cj.axis = new Vector3(-1f, 0f, 0f);
+    //     cj.highAngularXLimit = new SoftJointLimit() { limit = AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
+    //     cj.lowAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
+    //   }
+    //   else if (jointAnchor.z == -1)
+    //   {
+    //     cj.axis = new Vector3(-1f, 0f, 0f);
+    //     cj.highAngularXLimit = new SoftJointLimit() { limit = AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
+    //     cj.lowAngularXLimit = new SoftJointLimit() { limit = -AgentConfig.lowLimit, bounciness = AgentConfig.bounciness };
+    //   }
+    // }
   }
 }

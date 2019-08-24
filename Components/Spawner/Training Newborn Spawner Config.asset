@@ -9,7 +9,12 @@ MonoBehaviour:
   m_GameObject: {fileID: 0}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 021956ecd03cb49c2941f18f394efac6, type: 3}
-  m_Name: Agent config
+  m_Script: {fileID: 11500000, guid: 5ad018fa6ad094c93b2f2fe4d6f37029, type: 3}
+  m_Name: Newborn Spawner Config
   m_EditorClassIdentifier: 
-  layerNumber: 10
+  AgentPrefab: {fileID: 0}
+  agentNumber: 0
+  isRandomSpawn: 0
+  spawnRange: 0
+  instantiateSingleBrain: 0
+  control: 0

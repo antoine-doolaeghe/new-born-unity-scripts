@@ -79,7 +79,6 @@ namespace MLAgents
       var initializationInput = new CommunicatorObjects.UnityInput();
       try
       {
-        Debug.Log(academyParameters);
         initializationInput = m_communicator.Initialize(
             new CommunicatorObjects.UnityOutput
             {
@@ -89,7 +88,6 @@ namespace MLAgents
       }
       catch
       {
-        Debug.Log("UNITY EXEPCTION");
         throw new UnityAgentsException(
             "The Communicator was unable to connect. Please make sure the External " +
             "process is ready to accept communication with Unity.");

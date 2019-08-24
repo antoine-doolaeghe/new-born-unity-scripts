@@ -7,7 +7,7 @@
 
 // namespace Tests
 // {
-//   public class NewbornManagerTests
+//   public class ManagerTests
 //   {
 //     [UnitySetUp]
 //     public IEnumerator TestSceneSetup()
@@ -20,22 +20,22 @@
 //     [UnityTest]
 //     public IEnumerator TestDeleteScene()
 //     {
-//       Assert.IsTrue(GameObject.Find("NewbornManager").transform.childCount == 2);
-//       Newborn.NewbornManager tm = GameObject.Find("NewbornManager").GetComponent<Newborn.NewbornManager>();
-//       tm.DeleteSpawner();
-//       Assert.IsTrue(GameObject.Find("NewbornManager").transform.childCount == 0);
+//       Assert.IsTrue(GameObject.Find("Manager").transform.childCount == 2);
+//       Newborn.Manager tm = GameObject.Find("Manager").GetComponent<Newborn.Manager>();
+//       tm.DeleteEnvironment();
+//       Assert.IsTrue(GameObject.Find("Manager").transform.childCount == 0);
 //       yield return null;
 //     }
 
 //     [UnityTest]
 //     public IEnumerator TestBuildAgentScene()
 //     {
-//       Newborn.NewbornManager tm = GameObject.Find("NewbornManager").GetComponent<Newborn.NewbornManager>();
-//       tm.DeleteSpawner();
-//       Assert.IsTrue(GameObject.Find("NewbornManager").transform.childCount == 0);
+//       Newborn.Manager tm = GameObject.Find("Manager").GetComponent<Newborn.Manager>();
+//       tm.DeleteEnvironment();
+//       Assert.IsTrue(GameObject.Find("Manager").transform.childCount == 0);
 //       tm.spawnerNumber = 2;
 //       tm.BuildSpawners();
-//       Assert.IsTrue(GameObject.Find("NewbornManager").transform.childCount == 2);
+//       Assert.IsTrue(GameObject.Find("Manager").transform.childCount == 2);
 //       yield return null;
 //     }
 //   }

@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using UnityEngine;
+using Components.Manager;
 #if UNITY_EDITOR
 using UnityEditor;
-using Components.Manager;
-
-
 #endif
 
 /**
@@ -101,7 +99,7 @@ namespace MLAgents
     [HideInInspector] public bool initialized = false;
     public BroadcastHub broadcastHub = new BroadcastHub();
 
-    public NewbornManager manager;
+    public Manager manager;
 
     private const string kApiVersion = "API-6";
 

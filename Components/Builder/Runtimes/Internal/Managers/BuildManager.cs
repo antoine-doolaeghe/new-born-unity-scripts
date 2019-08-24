@@ -6,7 +6,7 @@ using EasyBuildSystem.Runtimes.Internal.Part;
 using EasyBuildSystem.Runtimes.Internal.Socket;
 using EasyBuildSystem.Runtimes.Internal.Terrain;
 using EasyBuildSystem.Runtimes.Internal.Builder;
-// using Newborn;
+using Components.Manager;
 using System.Collections.Generic;
 using UnityEngine;
 using Components.Spawner.Newborn;
@@ -171,7 +171,6 @@ namespace EasyBuildSystem.Runtimes.Internal.Managers
     {
       GameObject PlacedTemp = Instantiate(part.gameObject, position, Quaternion.Euler(rotation));
       PlacedTemp.transform.localScale = scale;
-      // Manager = FindObjectOfType<BuilderBehaviour>();
       PartBehaviour PlacedPart = PlacedTemp.GetComponent<PartBehaviour>();
 
       if (PlacedPart.uuid == "")
@@ -191,7 +190,7 @@ namespace EasyBuildSystem.Runtimes.Internal.Managers
         else
         {
           GameObject Group = new GameObject("Group (" + PlacedPart.GetInstanceID() + ")", typeof(GroupBehaviour));
-          Group.transform.parent = GameObject.Find("NewbornManager").transform;
+          Group.transform.parent = FindObjectOfType<Manager>().transform;
           PlacedTemp.transform.SetParent(Group.transform, true);
         }
       }
@@ -201,38 +200,17 @@ namespace EasyBuildSystem.Runtimes.Internal.Managers
       PlacedPart.EntityInstanceId = PlacedPart.GetInstanceID();
 
       EventHandlers.PlacedPart(PlacedPart, socket);
-
       PlacedPart.ChangeState(DefaultState);
 
 
-
-      if (part.Id == 8) // Spawner
+      if (PlacedTemp.GetComponent<NewbornSpawner>())
       {
-#if UNITY_ENGINE
-        BuilderBehaviour.Instance.SelectPrefab(BuildManager.Instance.PartsCollection.Parts[7]);
-#endif
         PlacedTemp.GetComponent<NewbornSpawner>().BuildAgents(false);
-      }
-      if (part.Id == 9) // target
-      {
-#if UNITY_ENGINE
-        if (BuilderBehaviour.Instance.CurrentMode == BuildMode.Placement)
-        {
-          TargetController[] tc = Parts[Parts.Count - 1].transform.GetComponentsInChildren<TargetController>();
-          Parts[Parts.Count - 1].targetUuid = PlacedPart.uuid;
-
-          foreach (var target in tc)
-          {
-            target.target = PlacedTemp.transform;
-          }
-
-          BuilderBehaviour.Instance.ChangeMode(BuildMode.None);
-        }
-#endif
       }
 
       return PlacedPart;
     }
+
 
     /// <summary>
     /// This method allows to get the nearest area.
