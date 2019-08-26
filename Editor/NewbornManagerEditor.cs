@@ -1,21 +1,19 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Linq;
-using MyBox;
+﻿
 using UnityEditor;
 using UnityEngine;
-
+using Components.Manager;
+using Components.Newborn.Anatomy;
+using Components.Spawner.Newborn;
 namespace Newborn
 {
-  [CustomEditor(typeof(NewbornManager))]
-  public class NewbornManagerBuildEditor : Editor
+  [CustomEditor(typeof(Manager))]
+  public class ManagerBuildEditor : Editor
   {
 
     public override void OnInspectorGUI()
     {
       DrawDefaultInspector();
-      NewbornManager manager = (NewbornManager)target;
+      Manager manager = (Manager)target;
 
       EditorGUILayout.LabelField("Environmnet Parameters");
 
@@ -23,11 +21,12 @@ namespace Newborn
       {
         FindObjectOfType<BuildStorage>().GetTrainingData();
       }
-
+      GUI.backgroundColor = Color.red;
       if (GUILayout.Button("Delete environment"))
       {
-        manager.DeleteSpawner();
+        manager.DeleteEnvironment();
       }
+      GUI.backgroundColor = Color.white;
 
       EditorGUILayout.LabelField("Random NewBorn Builds");
 
@@ -38,7 +37,7 @@ namespace Newborn
           spawner.BuildAgentRandomNewBornCoroutine();
         }
       }
-
+      GUI.backgroundColor = Color.red;
       if (GUILayout.Button("Delete NewBorn Cells"))
       {
         foreach (NewbornSpawner spawner in FindObjectsOfType<NewbornSpawner>())
@@ -46,14 +45,16 @@ namespace Newborn
           spawner.ClearAgents();
         }
       }
+      GUI.backgroundColor = Color.white;
 
       if (GUILayout.Button("Add Agent Generation"))
       {
-        manager.ClearBroadCastingBrains();
-        foreach (GameObject spawner in manager.Spawners)
-        {
-          spawner.GetComponent<NewbornSpawner>().BuildAllAgentsRandomGeneration();
-        }
+        // TODO
+        // manager.ClearBroadCastingBrains();
+        // foreach (GameObject spawner in manager.Spawners)
+        // {
+        //   spawner.GetComponent<NewbornSpawner>().BuildAllAgentsRandomGeneration();
+        // }
       }
 
       EditorGUILayout.LabelField("Serviced Newborn Builds");
@@ -73,6 +74,7 @@ namespace Newborn
 
 
       EditorGUILayout.LabelField("API Post request");
+      GUI.backgroundColor = Color.green;
       if (GUILayout.Button("Post Training NewBorn"))
       {
         // manager.ClearBroadCastingBrains();
@@ -80,6 +82,12 @@ namespace Newborn
         {
           spawner.GetComponent<NewbornSpawner>().PostTrainingNewborns();
         }
+      }
+      EditorGUILayout.LabelField("Reset");
+      GUI.backgroundColor = Color.yellow;
+      if (GUILayout.Button("Reset trainer data"))
+      {
+        manager.ResetTrainerData();
       }
     }
   }

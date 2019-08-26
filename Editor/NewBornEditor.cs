@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using UnityEditor;
 using UnityEngine;
+using Components.Newborn.Anatomy;
 
 namespace Newborn
 {
