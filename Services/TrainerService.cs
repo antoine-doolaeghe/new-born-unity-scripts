@@ -47,11 +47,11 @@ namespace Service.Trainer
       }
     }
 
-    public IEnumerator DownloadTrainer(string trainerKey)
+    public IEnumerator DownloadTrainer(string TrainerName)
     {
       byte[] postData;
       Dictionary<string, string> postHeader;
-      TrainerService.variable["key"] = "\"" + trainerKey + "\"";
+      TrainerService.variable["key"] = "\"" + TrainerName + "\"";
       WWW www;
       ServiceUtils.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.downloadTrainerData, ApiConfig.apiKey, ApiConfig.url);
       yield return www;
@@ -66,19 +66,23 @@ namespace Service.Trainer
         {
           throw new Exception("There was an error sending request: " + www.text);
         }
+        Debug.Log(responseData);
+
+
         Debug.Log("<b><color=green>[DownloadTrainer Success]</color></b>");
-        yield return transform.GetComponent<BuildStorage>().LoadDataFile(responseData);
+        yield return FindObjectOfType<BuildStorage>().LoadDataFile(responseData);
+        // TODO should you always get the command like args
         FindObjectOfType<Academy>().GetCommandLineArgs();
       }
     }
 
-    public static IEnumerator UpdateTrainerData(string trainerKey, string trainerData)
+    public static IEnumerator UpdateTrainerData(string TrainerName, string TrainerData)
     {
       byte[] postData;
       Dictionary<string, string> postHeader;
-      trainerData = trainerData.Replace("\"", "'");
-      TrainerService.variable["key"] = "\"" + trainerKey + "\"";
-      TrainerService.variable["data"] = "\"" + trainerData + "\"";
+      TrainerData = TrainerData.Replace("\"", "'");
+      TrainerService.variable["key"] = "\"" + TrainerName + "\"";
+      TrainerService.variable["data"] = "\"" + TrainerData + "\"";
 
       WWW www;
       ServiceUtils.graphQlApiRequest(variable, array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.updateTrainerData, ApiConfig.apiKey, ApiConfig.url);

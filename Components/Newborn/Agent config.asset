@@ -12,4 +12,5 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 021956ecd03cb49c2941f18f394efac6, type: 3}
   m_Name: Agent config
   m_EditorClassIdentifier: 
-  layerNumber: 10
+  LayerNumber: 10
+  LimbSpacing: {x: 0.05, y: 0.05, z: 0.05}

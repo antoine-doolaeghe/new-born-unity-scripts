@@ -19,7 +19,7 @@ namespace Newborn
 
       if (GUILayout.Button("Build environment"))
       {
-        FindObjectOfType<BuildStorage>().GetTrainingData();
+        manager.BuildTrainerEnvironment();
       }
       GUI.backgroundColor = Color.red;
       if (GUILayout.Button("Delete environment"))

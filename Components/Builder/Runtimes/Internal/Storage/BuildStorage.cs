@@ -88,9 +88,9 @@ public class BuildStorage : MonoBehaviour
   #region Private Methods
   private void Start()
   {
-    FindObjectOfType<Manager>().DeleteEnvironment();
-    GetTrainingData();
-
+    Manager manager = FindObjectOfType<Manager>();
+    manager.DeleteEnvironment();
+    manager.BuildTrainerEnvironment();
 
     if (AutoSave)
       TimerAutoSave = AutoSaveInterval;
@@ -134,11 +134,6 @@ public class BuildStorage : MonoBehaviour
     SaveStorageFile();
   }
 
-  public void GetTrainingData()
-  {
-    StartCoroutine(transform.GetComponent<TrainerService>().DownloadTrainer("test"));
-  }
-
   public IEnumerator LoadDataFile(string data = null)
   {
     if (StorageType == StorageType.Desktop)
@@ -173,12 +168,8 @@ public class BuildStorage : MonoBehaviour
     }
     catch (Exception ex)
     {
-      FileIsCorrupted = true;
-
-      Debug.LogError("<b><color=cyan>[Easy Build System]</color></b> : " + ex);
-
-      EventHandlers.StorageFailed(ex.Message);
-
+      // TODO Proper error handling when the trainer doesn't exist
+      Debug.Log("<b><color=cyan>[Easy Build System]</color></b> : " + ex);
       yield break;
     }
 
@@ -236,6 +227,9 @@ public class BuildStorage : MonoBehaviour
 
   private IEnumerator SaveDataFile()
   {
+    MemoryStream Stream = new MemoryStream();
+    BinaryFormatter Formatter = new BinaryFormatter();
+
     if (FileIsCorrupted)
     {
       Debug.LogWarning("<b><color=cyan>[Easy Build System]</color></b> : The file is corrupted, the Prefabs could not be saved.");
@@ -284,27 +278,14 @@ public class BuildStorage : MonoBehaviour
           DataTemp.Scale = PartModel.ParseToSerializedVector3(Prefab.transform.localScale);
           DataTemp.Properties = Prefab.ExtraProperties;
           Data.Prefabs.Add(DataTemp);
-
           SavedCount++;
         }
       }
 
-      if (StorageType == StorageType.Desktop)
-      {
-
-        MemoryStream stream = new MemoryStream();
-        BinaryFormatter Formatter = new BinaryFormatter();
-        Formatter.Serialize(stream, Data);
-        stream.Position = 0;
-        StartCoroutine(TrainerService.UpdateTrainerData("test", JsonUtility.ToJson(Data)));
-
-      }
-      else
-      {
-        PlayerPrefs.SetString("EBS_Storage", JsonUtility.ToJson(Data));
-
-        PlayerPrefs.Save();
-      }
+      Formatter.Serialize(Stream, Data);
+      Stream.Position = 0;
+      string TrainerName = FindObjectOfType<Manager>().TrainerName;
+      StartCoroutine(TrainerService.UpdateTrainerData(TrainerName, JsonUtility.ToJson(Data)));
 
       Debug.Log("<b><color=cyan>[Easy Build System]</color></b> : Data file saved " + SavedCount + " Prefab(s).");
 

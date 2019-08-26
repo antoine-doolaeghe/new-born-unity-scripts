@@ -13,7 +13,7 @@ namespace Components.Manager
   {
     public bool isTrainingMode;
     public string newbornId;
-    public string trainerKey;
+    public string TrainerName;
     public void DeleteEnvironment()
     {
       Transform[] childs = transform.Cast<Transform>().ToArray();
@@ -22,6 +22,11 @@ namespace Components.Manager
         DestroyImmediate(child.gameObject);
       }
       FindObjectOfType<Academy>().broadcastHub.broadcastingBrains.Clear();
+    }
+
+    public void BuildTrainerEnvironment()
+    {
+      StartCoroutine(FindObjectOfType<TrainerService>().DownloadTrainer(TrainerName));
     }
 
     public IEnumerator RequestNewbornAgentInfo()
@@ -48,7 +53,7 @@ namespace Components.Manager
 
     public void ResetTrainerData()
     {
-      StartCoroutine(TrainerService.UpdateTrainerData(trainerKey, string.Empty));
+      StartCoroutine(TrainerService.UpdateTrainerData(TrainerName, string.Empty));
       DeleteEnvironment();
     }
   }

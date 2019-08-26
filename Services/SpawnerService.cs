@@ -51,7 +51,7 @@ namespace Service.Spawner
           BuildAgentAtRuntime(spawner, out atBehaviour, out AnatomyBuilder, out newborn, out newBornAgent, out agent);
           yield return StartCoroutine(NewbornService.GetNewborn(newbornId.Value["id"], agent, false));
           Debug.Log(newbornId.Value["id"]);
-          GameObject.Find("S3Service").GetComponent<S3Service>().GetObject(newbornId.Value["id"], agent);
+          FindObjectOfType<S3Service>().GetObject(newbornId.Value["id"], agent);
           StartCoroutine(NewbornService.UpdateLivingStatus(newbornId.Value["id"], "true"));
         };
       }
