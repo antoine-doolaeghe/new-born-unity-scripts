@@ -1,40 +1,42 @@
 ﻿using UnityEngine;
 
-namespace Components.Newborn {
-[DisallowMultipleComponent]
-public class CollisionController : MonoBehaviour
+namespace Components.Newborn
 {
-  public Transform target;
-  [Header("Detect Targets")]
-  public GameObject touchingNewborn;
-  public bool touchingFood;
-  private const string NewbornTag = "newborn";
-
-  private const string FoodTag = "food";
-
-  void OnCollisionEnter(Collision col)
+  [DisallowMultipleComponent]
+  [ExecuteInEditMode]
+  public class CollisionController : MonoBehaviour
   {
-    if (col.transform.CompareTag(NewbornTag) && col.transform.parent != transform.parent)
+    public Transform target;
+    [Header("Detect Targets")]
+    public GameObject touchingNewborn;
+    public bool touchingFood;
+    private const string NewbornTag = "newborn";
+
+    private const string FoodTag = "food";
+
+    void OnCollisionEnter(Collision col)
     {
-      touchingNewborn = col.transform.parent.gameObject;
+      if (col.transform.CompareTag(NewbornTag) && col.transform.parent != transform.parent)
+      {
+        touchingNewborn = col.transform.parent.gameObject;
+      }
+      if (col.transform.CompareTag(FoodTag))
+      {
+        touchingFood = true;
+      }
     }
-    if (col.transform.CompareTag(FoodTag))
+
+    void OnCollisionExit(Collision other)
     {
-      touchingFood = true;
+      if (other.transform.CompareTag(NewbornTag))
+      {
+        touchingNewborn = null;
+      }
+      if (other.transform.CompareTag(FoodTag))
+      {
+        touchingFood = false;
+      }
     }
   }
-
-  void OnCollisionExit(Collision other)
-  {
-    if (other.transform.CompareTag(NewbornTag))
-    {
-      touchingNewborn = null;
-    }
-    if (other.transform.CompareTag(FoodTag))
-    {
-      touchingFood = false;
-    }
-  }
-}
 
 }

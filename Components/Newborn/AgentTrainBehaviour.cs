@@ -14,7 +14,7 @@ namespace Components.Newborn
     [HideInInspector] [SerializeField] public List<Transform> parts;
     [HideInInspector] [SerializeField] public Transform initPart;
     [Header("API Service")]
-    public bool requestApiData;
+    public bool HasApiConnection;
     public string cellId;
     [Header("Joint Settings")]
     [Space(10)]
@@ -39,7 +39,7 @@ namespace Components.Newborn
       if (!initialized)
       {
         InitBodyParts();
-        if (requestApiData)
+        if (HasApiConnection)
         {
           StartCoroutine(NewbornService.UpdateTrainingStage(brain.name, targetController.trainingStage.ToString()));
         }

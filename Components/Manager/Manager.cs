@@ -49,6 +49,7 @@ namespace Components.Manager
     public void ResetTrainerData()
     {
       StartCoroutine(TrainerService.UpdateTrainerData(trainerKey, string.Empty));
+      DeleteEnvironment();
     }
   }
 }

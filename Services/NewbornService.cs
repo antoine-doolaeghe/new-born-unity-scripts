@@ -180,8 +180,8 @@ namespace Service.Newborn
       NewbornService.variable["id"] = generationPostData.id;
       NewbornService.variable["modelNewbornId"] = modelId;
       NewbornService.variable["cellPositions"] = cellPositionsString;
+      NewbornService.variable["cellPaths"] = JSON.Parse(JsonUtility.ToJson(generationPostData))["cellPaths"].ToString();
       NewbornService.variable["cellInfos"] = JSON.Parse(JsonUtility.ToJson(generationPostData))["cellInfos"].ToString();
-
       WWW www;
       ServiceUtils.graphQlApiRequest(NewbornService.variable, NewbornService.array, out postData, out postHeader, out www, out graphQlInput, ApiConfig.modelGraphQlMutation, ApiConfig.apiKey, ApiConfig.url);
 
@@ -278,7 +278,7 @@ namespace Service.Newborn
     {
       Transform[] childs = transform.Cast<Transform>().ToArray();
       transform.gameObject.SetActive(true);
-      transform.GetComponent<AnatomyBuilder>().ClearNewborns();
+      transform.GetComponent<AnatomyBuilder>().ResetBuilder();
       foreach (Transform child in childs)
       {
         DestroyImmediate(child.gameObject);

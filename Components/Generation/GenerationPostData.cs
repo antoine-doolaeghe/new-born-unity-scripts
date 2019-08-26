@@ -7,12 +7,15 @@ namespace Components.Generation
   public struct GenerationPostData
   {
     public List<float> cellInfos;
+
+    public List<string> cellPaths;
     public List<PositionPostData> cellPositions;
     public string id;
-    public GenerationPostData(string id, List<PositionPostData> cellPositions, List<float> cellInfos)
+    public GenerationPostData(string id, List<PositionPostData> cellPositions, List<float> cellInfos, List<string> cellPaths)
     {
       this.id = id;
       this.cellInfos = cellInfos;
+      this.cellPaths = cellPaths;
       this.cellPositions = cellPositions;
     }
   }

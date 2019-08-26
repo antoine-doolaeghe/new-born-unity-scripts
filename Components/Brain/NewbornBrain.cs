@@ -6,11 +6,11 @@ namespace Components.Newborn.Util
 {
   public class NewbornBrain
   {
-    public static void SetBrainParameters(AgentTrainBehaviour atBehaviour, int cellNb)
+    public static void SetBrainParameters(AgentTrainBehaviour atBehaviour, int CellCount)
     {
       atBehaviour.brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
-      atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { cellNb * 3 };
-      atBehaviour.brain.brainParameters.vectorObservationSize = cellNb * 13 - 4;
+      atBehaviour.brain.brainParameters.vectorActionSize = new int[1] { CellCount * 3 };
+      atBehaviour.brain.brainParameters.vectorObservationSize = CellCount * 13 - 4;
     }
 
     public static void SetBrainName(AgentTrainBehaviour atBehaviour, string responseId)

@@ -58,17 +58,9 @@ namespace Components.Newborn.Anatomy
       cell.transform.localPosition = sides[z];
     }
 
-    public static bool IsValidPosition(NewbornAgent newborn, Vector3 cellPosition)
+    public static bool IsValidPosition(Vector3 Position, Vector3 Spacing)
     {
-      foreach (var position in newborn.CellPositions)
-      {
-        if (cellPosition == position)
-        {
-          return false;
-        }
-      }
-
-      return true;
+      return !Physics.CheckBox(Position, Spacing);
     }
     public static void InitRigidBody(GameObject cell)
     {
@@ -88,6 +80,13 @@ namespace Components.Newborn.Anatomy
         positions.Add(new PositionPostData(position));
       }
       return positions;
+    }
+
+    public static string ReturnLimbPrefabPath()
+    {
+      string size = AnatomyTypes.sizes[Random.Range(0, AnatomyTypes.sizes.Length)];
+      string type = AnatomyTypes.types[Random.Range(0, AnatomyTypes.types.Length)];
+      return "Prefabs/Anatomy/limbs/" + type + "/" + size + "/prefab";
     }
     // public static void HandleAngularLimit(ConfigurableJoint cj, Vector3 jointAnchor)
     // {

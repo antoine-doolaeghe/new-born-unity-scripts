@@ -29,6 +29,7 @@ namespace Components.Newborn
     public List<GameObject> Cells;
     public List<Vector3> CellPositions;
     public List<Vector3> CelllocalPositions;
+    public List<string> CellTypes;
     public List<GeneInformation> GeneInformations;
 
     public void SetNewbornInGestation()
@@ -54,13 +55,20 @@ namespace Components.Newborn
     public void AssignNewbornModelInfoFromResponse(SimpleJSON.JSONNode modelResponseData)
     {
       List<float> newbornModelInfo = new List<float>();
+      List<string> newbornModelPath = new List<string>();
       foreach (var cellInfo in modelResponseData["cellInfos"].AsArray)
       {
         newbornModelInfo.Add(cellInfo.Value.AsFloat);
       }
 
-      GeneInformations.Add(new GeneInformation(new List<float>()));
+      foreach (var cellInfo in modelResponseData["cellPaths"].AsArray)
+      {
+        newbornModelPath.Add(cellInfo.Value);
+      }
+
+      GeneInformations.Add(new GeneInformation(new List<float>(), new List<string>()));
       GeneInformations[0].info = newbornModelInfo;
+      GeneInformations[0].path = newbornModelPath;
     }
 
     public static List<string> ReturnNewbornChildsFromResponse(SimpleJSON.JSONNode newbornResponseData)

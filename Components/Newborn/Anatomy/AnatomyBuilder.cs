@@ -13,21 +13,16 @@ namespace Components.Newborn.Anatomy
   [ExecuteInEditMode]
   public class AnatomyBuilder : MonoBehaviour
   {
-    public JointConfig jointConfig;
-    public AgentConfig agentConfig;
-
-    [Header("Connection to API Service")]
-    public bool requestApiData;
-    public int cellNb = 0;
-    public List<GeneInformation> GeneInformations;
-    private int cellInfoIndex = 0;
+    public JointConfig JointConfig;
+    public AgentConfig AgentConfig;
+    public bool HasApiConnection;
+    private int CellCount = 0;
     private bool Initialised = false;
     private NewbornAgent newborn;
     private AnatomyBuilder anatomyBuilder;
     private AgentTrainBehaviour aTBehaviour;
-
     [HideInInspector] public Academy academy;
-    [HideInInspector] public int partNb;
+    [HideInInspector] public int PartCount;
 
     void Awake()
     {
@@ -37,7 +32,7 @@ namespace Components.Newborn.Anatomy
       academy = FindObjectOfType<Academy>();
     }
 
-    public void ClearNewborns()
+    public void ResetBuilder()
     {
       if (newborn.Cells != null)
       {
@@ -55,29 +50,36 @@ namespace Components.Newborn.Anatomy
       {
         newborn.CelllocalPositions.Clear();
       }
+      if (newborn.CellTypes != null)
+      {
+        newborn.CellTypes.Clear();
+      }
       if (newborn.GeneInformations != null)
       {
         newborn.GeneInformations.Clear();
       }
 
-      cellInfoIndex = 0;
       Initialised = false;
-      cellNb = 0;
+      CellCount = 0;
       aTBehaviour.DeleteBodyParts();
     }
 
     public void BuildNewBorn()
     {
+      int InfoIndex = 0;
+      int PathIndex = 0;
+
       InitaliseNewbornInformation();
 
       if (newborn.GeneInformations.Count == 0)
       {
-        newborn.GeneInformations.Add(new GeneInformation(new List<float>()));
+        newborn.GeneInformations.Add(new GeneInformation(new List<float>(), new List<string>()));
       }
+      string initPath = ReturnCurrentPath(0, PathIndex);
+      BuildInitArm(initPath);
+      PathIndex++;
 
-      BuildInitArm();
-
-      for (int y = 1; y < agentConfig.layerNumber; y++)
+      for (int y = 1; y < AgentConfig.LayerNumber; y++)
       {
         int generationCount = newborn.NewBornGenerations[y - 1].Count;
         newborn.NewBornGenerations.Add(new List<GameObject>());
@@ -85,19 +87,21 @@ namespace Components.Newborn.Anatomy
         {
           for (int z = 0; z < AnatomyHelpers.Rotations.Count; z++)
           {
-            if (!requestApiData || cellInfoIndex < newborn.GeneInformations[0].info.Count) // solution ???????
+            if (!HasApiConnection || InfoIndex < newborn.GeneInformations[0].info.Count) // solution ???????
             {
               GameObject previousCell = newborn.NewBornGenerations[y - 1][i];
               Vector3 newCellPosition = previousCell.transform.GetChild(0).position;
               Vector3 newCellRotation = AnatomyHelpers.Rotations[z];
-              if (AnatomyHelpers.IsValidPosition(newborn, newCellPosition))
+              if (AnatomyHelpers.IsValidPosition(newCellPosition, AgentConfig.LimbSpacing))
               {
-                if (ReturnCurrentInfo(0, cellInfoIndex) > jointConfig.threshold)
+                if (ReturnCurrentInfo(0, InfoIndex) > JointConfig.threshold)
                 {
-                  BuildArm(y, i, z, newCellPosition, newCellRotation);
+                  string path = ReturnCurrentPath(0, PathIndex);
+                  BuildArm(y, i, z, newCellPosition, newCellRotation, path);
+                  PathIndex++;
                 }
+                InfoIndex++;
               }
-              cellInfoIndex++;
             }
           }
         }
@@ -108,7 +112,7 @@ namespace Components.Newborn.Anatomy
         cell.transform.parent = transform;
       }
 
-      cellNb = newborn.Cells.Count;
+      CellCount = newborn.Cells.Count;
     }
 
 
@@ -118,7 +122,7 @@ namespace Components.Newborn.Anatomy
       int indexInfo = 0;
       int previousGenerationCellNumber = 0;
       int generationCount = 0;
-      partNb += 1;
+      PartCount += 1;
 
       CheckPreviousGeneration(ref previousGenerationCellNumber, ref generationCount);
 
@@ -131,21 +135,22 @@ namespace Components.Newborn.Anatomy
           GameObject previousCell = newborn.NewBornGenerations[generationCount][i];
           Vector3 cellPosition = previousCell.transform.localPosition + AnatomyHelpers.Sides[z];
           indexInfo++;
-          if (AnatomyHelpers.IsValidPosition(newborn, cellPosition))
+          if (AnatomyHelpers.IsValidPosition(cellPosition, AgentConfig.LimbSpacing))
           {
-            if (ReturnCurrentInfo(newborn.GeneInformations.Count - 1, indexInfo) > jointConfig.threshold)
+            if (ReturnCurrentInfo(newborn.GeneInformations.Count - 1, indexInfo) > JointConfig.threshold)
             {
-              GameObject cell = InitBase(cellPosition, new Vector3(0f, 0f, 0f), newborn.NewBornGenerations[generationCount + 1], generationCount + 1);
+              string path = AnatomyHelpers.ReturnLimbPrefabPath();
+              GameObject cell = InitBase(cellPosition, new Vector3(0f, 0f, 0f), newborn.NewBornGenerations[generationCount + 1], path);
               AnatomyHelpers.InitPosition(AnatomyHelpers.Sides, generationCount + 1, i, z, cell, newborn);
               AnatomyHelpers.InitRigidBody(cell);
-              AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[generationCount][i], AnatomyHelpers.Sides[z], jointConfig);
+              AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[generationCount][i], AnatomyHelpers.Sides[z], JointConfig);
               cell.transform.parent = transform;
-              StoreNewbornCell(cell, cellPosition, cellPosition);
+              StoreNewbornCell(cell, cellPosition, cellPosition, path);
             }
           }
         }
       }
-      cellNb = newborn.Cells.Count;
+      CellCount = newborn.Cells.Count;
       AddBodyPart(false);
     }
 
@@ -176,11 +181,11 @@ namespace Components.Newborn.Anatomy
       string name = NewbornBrain.GenerateRandomName();
       newborn.GenerationIndex = GenerationService.generations.Count;
       newborn.GenerationId = GenerationService.generations[newborn.GenerationIndex - 1];
-      requestApiData = false;
+      HasApiConnection = false;
       BuildNewBorn();
       SetGameObjectName(name);
       AddBodyPart(true);
-      NewbornBrain.SetBrainParameters(aTBehaviour, cellNb);
+      NewbornBrain.SetBrainParameters(aTBehaviour, CellCount);
       NewbornBrain.SetBrainName(aTBehaviour, name);
       aTBehaviour.enabled = true;
     }
@@ -191,27 +196,27 @@ namespace Components.Newborn.Anatomy
       Brain brain = Resources.Load<Brain>("Brains/agentBrain0");
       agent.gameObject.name = brain.name;
       brain.brainParameters.vectorActionSpaceType = SpaceType.continuous;
-      brain.brainParameters.vectorActionSize = new int[1] { anatomyBuilder.cellNb * 3 };
-      brain.brainParameters.vectorObservationSize = anatomyBuilder.cellNb * 13 - 4;
+      brain.brainParameters.vectorActionSize = new int[1] { anatomyBuilder.CellCount * 3 };
+      brain.brainParameters.vectorObservationSize = anatomyBuilder.CellCount * 13 - 4;
       aTBehaviour.brain = brain;
     }
 
     public void BuildNewbornFromResponse(GameObject agent, string responseId)
     {
       Debug.Log("Building Newborn From Fetch Response 🏗️");
-      if (partNb == 0)
+      if (PartCount == 0)
       {
-        partNb = agentConfig.layerNumber;
+        PartCount = AgentConfig.LayerNumber;
       }
 
-      requestApiData = true;
+      HasApiConnection = true;
 
       if (!Initialised)
       {
         SetGameObjectName(responseId);
         BuildNewBorn();
         AddBodyPart(true);
-        NewbornBrain.SetBrainParameters(aTBehaviour, cellNb);
+        NewbornBrain.SetBrainParameters(aTBehaviour, CellCount);
         NewbornBrain.SetBrainName(aTBehaviour, responseId);
         Initialised = true;
       }
@@ -233,22 +238,26 @@ namespace Components.Newborn.Anatomy
     {
       transform.GetComponent<NewbornAgent>().learningBrain.model = model;
       aTBehaviour.brain = Instantiate(transform.GetComponent<NewbornAgent>().learningBrain);
-      NewbornBrain.SetBrainParameters(aTBehaviour, cellNb);
+      NewbornBrain.SetBrainParameters(aTBehaviour, CellCount);
       NewbornBrain.SetBrainName(aTBehaviour, newbornId);
       academy.broadcastHub.broadcastingBrains.Add(aTBehaviour.brain);
       aTBehaviour.enabled = true;
     }
 
-    private void StoreNewbornCell(GameObject cell, Vector3 cellPosition, Vector3 cellLocalPosition)
+    #region private methods
+    private void StoreNewbornCell(GameObject cell, Vector3 cellPosition, Vector3 cellLocalPosition, string type)
     {
       newborn.Cells.Add(cell);
       newborn.CellPositions.Add(cellPosition);
       newborn.CelllocalPositions.Add(cellLocalPosition);
+      newborn.CellTypes.Add(type);
     }
 
+
+    // TODO Move to helper ? 
     private float ReturnCurrentInfo(int generationIndex, int cellIndex)
     {
-      if (requestApiData)
+      if (HasApiConnection)
       {
         float cellInfo = newborn.GeneInformations[generationIndex].info[cellIndex];
         return cellInfo;
@@ -261,19 +270,32 @@ namespace Components.Newborn.Anatomy
       }
     }
 
-    private GameObject InitBase(Vector3 position, Vector3 rotation, List<GameObject> NewBornGeneration, int y)
+    private string ReturnCurrentPath(int generationIndex, int cellIndex)
     {
-      GameObject Base = SpawnBase(position, rotation);
+      if (HasApiConnection)
+      {
+        string path = newborn.GeneInformations[generationIndex].path[cellIndex];
+        return path;
+      }
+      else
+      {
+        string path = AnatomyHelpers.ReturnLimbPrefabPath();
+        newborn.GeneInformations[generationIndex].path.Add(path);
+        return path;
+      }
+    }
+
+    private GameObject InitBase(Vector3 position, Vector3 rotation, List<GameObject> NewBornGeneration, string path)
+    {
+      GameObject Base = SpawnBase(position, rotation, path);
       SpawnJoint(Base);
       NewBornGeneration.Add(Base);
       return Base;
     }
 
-    private GameObject SpawnBase(Vector3 position, Vector3 rotation)
+    private GameObject SpawnBase(Vector3 position, Vector3 rotation, string path)
     {
-      string[] sizes = new string[3] { "small", "medium", "large" };
-      string size = sizes[Random.Range(0, sizes.Length - 1)];
-      GameObject BaseShape = Instantiate(Resources.Load<GameObject>("Models/Anatomy/arm/" + size + "/prefab"));
+      GameObject BaseShape = Instantiate(Resources.Load<GameObject>(path));
       BaseShape.transform.parent = transform;
       BaseShape.transform.position = position;
       BaseShape.transform.eulerAngles = rotation;
@@ -282,7 +304,7 @@ namespace Components.Newborn.Anatomy
 
     private void SpawnJoint(GameObject Base)
     {
-      GameObject Joint = Instantiate(Resources.Load<GameObject>("Models/Anatomy/joint/prefab"));
+      GameObject Joint = Instantiate(Resources.Load<GameObject>("Prefabs/Anatomy/joints/prefab"));
       Joint.transform.parent = Base.transform;
       Joint.transform.localPosition = Base.transform.Find("Joint").localPosition;
       Joint.transform.eulerAngles = Base.transform.eulerAngles;
@@ -291,7 +313,7 @@ namespace Components.Newborn.Anatomy
     private void AddBodyPart(bool init)
     {
       aTBehaviour.initPart = newborn.Cells[0].transform;
-      for (int i = 1; i < cellNb; i++)
+      for (int i = 1; i < CellCount; i++)
       {
         if (aTBehaviour.parts.Count < i)
         {
@@ -310,24 +332,28 @@ namespace Components.Newborn.Anatomy
       newborn.Cells = new List<GameObject>();
       newborn.CellPositions = new List<Vector3>();
       newborn.CelllocalPositions = new List<Vector3>();
+      newborn.CellTypes = new List<string>();
     }
-    private void BuildInitArm()
+
+    private void BuildInitArm(string path)
     {
-      GameObject initCell = InitBase(new Vector3(0f, 0f, 0f), new Vector3(0f, 0f, 0f), newborn.NewBornGenerations[0], 0);
+      GameObject initCell = InitBase(new Vector3(0f, 0f, 0f), new Vector3(0f, 0f, 0f), newborn.NewBornGenerations[0], path);
       AnatomyHelpers.InitRigidBody(initCell);
       initCell.transform.parent = transform;
       initCell.transform.localPosition = new Vector3(0f, 0f, 0f);
-      StoreNewbornCell(initCell, initCell.transform.position, initCell.transform.position);
+      StoreNewbornCell(initCell, initCell.transform.position, initCell.transform.position, path);
     }
 
-    private void BuildArm(int y, int i, int z, Vector3 cellPosition, Vector3 cellRotation)
+    private void BuildArm(int y, int i, int z, Vector3 cellPosition, Vector3 cellRotation, string path)
     {
-      GameObject cell = InitBase(cellPosition, cellRotation, newborn.NewBornGenerations[y], y);
-      Vector3 anchor = cell.transform.Find("Anchor").transform.localPosition;
-      AnatomyHelpers.InitRigidBody(cell);
-      AnatomyHelpers.InitJoint(cell, newborn.NewBornGenerations[y - 1][i], anchor, jointConfig);
-      StoreNewbornCell(cell, cellPosition, cellPosition);
+      GameObject arm = InitBase(cellPosition, cellRotation, newborn.NewBornGenerations[y], path);
+      Vector3 anchor = arm.transform.Find("Anchor").transform.localPosition;
+      AnatomyHelpers.InitRigidBody(arm);
+      AnatomyHelpers.InitJoint(arm, newborn.NewBornGenerations[y - 1][i], anchor, JointConfig);
+      StoreNewbornCell(arm, cellPosition, cellPosition, path);
     }
+
+
 
     private void SetAgentNameFromBrainName()
     {
@@ -358,8 +384,9 @@ namespace Components.Newborn.Anatomy
       List<float> modelInfos = ReturnGeneInformations(modelIndex);
       List<PositionPostData> cellPositions = AnatomyHelpers.ReturnModelPositions(newborn);
       string id = NewbornBrain.GenerateRandomName();
-      GenerationPostData generationPostData = new GenerationPostData(newbornId, cellPositions, modelInfos);
+      GenerationPostData generationPostData = new GenerationPostData(newbornId, cellPositions, modelInfos, newborn.CellTypes);
       yield return NewbornService.PostNewbornModel(transform, generationPostData, newbornId, agent, responseCallback);
     }
+    #endregion
   }
 }

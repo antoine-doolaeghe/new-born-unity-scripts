@@ -36,7 +36,7 @@ namespace Components.Spawner.Newborn
       }
     }
 
-    public void BuildAgents(bool requestApiData)
+    public void BuildAgents(bool HasApiConnection)
     {
       for (int y = 0; y < NewbornSpawnerConfig.agentNumber; y++)
       {
@@ -45,7 +45,7 @@ namespace Components.Spawner.Newborn
         NewbornAgent newborn;
         GameObject newBornAgent;
         Vector3 agentPosition = ReturnAgentPosition(y);
-        Agents.Add(BuildAgent(requestApiData, agentPosition, out newBornAgent, out atBehaviour, out AnatomyBuilder, out newborn));
+        Agents.Add(BuildAgent(HasApiConnection, agentPosition, out newBornAgent, out atBehaviour, out AnatomyBuilder, out newborn));
         InstantiateTrainingBrain(newBornAgent, atBehaviour, AnatomyBuilder, y);
         if (transform.Find("Ground") != null)
         {
@@ -54,7 +54,7 @@ namespace Components.Spawner.Newborn
       }
     }
 
-    public GameObject BuildAgent(bool requestApiData, Vector3 position, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out AnatomyBuilder AnatomyBuilder, out NewbornAgent newborn)
+    public GameObject BuildAgent(bool HasApiConnection, Vector3 position, out GameObject newBornAgent, out AgentTrainBehaviour atBehaviour, out AnatomyBuilder AnatomyBuilder, out NewbornAgent newborn)
     {
       newBornAgent = Instantiate(NewbornSpawnerConfig.AgentPrefab);
       newBornAgent.transform.parent = transform;
@@ -69,7 +69,7 @@ namespace Components.Spawner.Newborn
       atBehaviour.spawner = this;
       atBehaviour.targetController = targetController;
       # endregion
-      SetApiRequestParameter(AnatomyBuilder, atBehaviour, requestApiData);
+      SetApiRequestParameter(AnatomyBuilder, atBehaviour, HasApiConnection);
       return newBornAgent;
     }
 
@@ -172,7 +172,7 @@ namespace Components.Spawner.Newborn
       foreach (GameObject agent in Agents)
       {
         agent.SetActive(true);
-        agent.GetComponent<AnatomyBuilder>().ClearNewborns();
+        agent.GetComponent<AnatomyBuilder>().ResetBuilder();
         Transform[] childs = agent.transform.Cast<Transform>().ToArray();
         foreach (Transform child in childs)
         {
@@ -273,10 +273,10 @@ namespace Components.Spawner.Newborn
       atBehaviour.brain = brain;
     }
 
-    public void SetApiRequestParameter(AnatomyBuilder AnatomyBuilder, AgentTrainBehaviour atBehaviour, bool requestApiData)
+    public void SetApiRequestParameter(AnatomyBuilder AnatomyBuilder, AgentTrainBehaviour atBehaviour, bool HasApiConnection)
     {
-      atBehaviour.requestApiData = requestApiData;
-      AnatomyBuilder.requestApiData = requestApiData;
+      atBehaviour.HasApiConnection = HasApiConnection;
+      AnatomyBuilder.HasApiConnection = HasApiConnection;
     }
 
     #endregion

@@ -17,4 +17,4 @@ MonoBehaviour:
   highLimit: 135
   lowLimit: 22.5
   zLimit: 70
-  threshold: 0.6
+  threshold: 0.82

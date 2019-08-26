@@ -302,9 +302,7 @@ namespace EasyBuildSystem.Runtimes.Internal.Builder
                     if (Socket != null)
                         Socket.EnableColliderByPartType(SelectedPrefab.Type);
             }
-
             UpdatePreviewCollisions();
-
             CurrentPreview.gameObject.ChangeAllMaterialsColorInChildren(CurrentPreview.Renderers.ToArray(),
                 AllowPlacement ? BuildManager.Instance.PreviewAllowedColor : BuildManager.Instance.PreviewDeniedColor, SelectedPrefab.PreviewColorLerpTime, SelectedPrefab.PreviewUseColorLerpTime);
         }
@@ -499,22 +497,20 @@ namespace EasyBuildSystem.Runtimes.Internal.Builder
 
             if (!HasCollision)
                 HasCollision = CurrentPreview.CheckAreas();
-
             if (HasSocket)
                 AllowPlacement = !HasCollision;
             else
                 AllowPlacement = !CurrentPreview.RequireSockets && !HasCollision;
+            // if (!HasCollision && AllowPlacement) //TODO see why this failing to work 
+            //     if (OutOfRangeDistance != 0)
+            //         AllowPlacement = Vector3.Distance(GetTransform.position, CurrentPreview.transform.position) < ActionDistance;
 
-            if (!HasCollision && AllowPlacement)
-                if (OutOfRangeDistance != 0)
-                    AllowPlacement = Vector3.Distance(GetTransform.position, CurrentPreview.transform.position) < ActionDistance;
-
-            if (!HasCollision && CurrentPreview.UseConditionalPhysics && CurrentPreview.PhysicsOnlyStablePlacement)
-                AllowPlacement = AllowPlacement && CurrentPreview.CheckStability();
+            // if (!HasCollision && CurrentPreview.UseConditionalPhysics && CurrentPreview.PhysicsOnlyStablePlacement)
+            //     AllowPlacement = AllowPlacement && CurrentPreview.CheckStability();
 
             RaycastHit Hit;
 
-            if (!CurrentPreview.FreePlacement)
+            if (CurrentPreview.FreePlacement)
             {
                 if (CurrentPreview.Type == PartType.Foundation)
                 {

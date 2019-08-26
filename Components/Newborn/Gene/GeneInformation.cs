@@ -6,9 +6,11 @@ namespace Components.Newborn.Gene
   public class GeneInformation
   {
     public List<float> info;
-    public GeneInformation(List<float> info)
+    public List<string> path;
+    public GeneInformation(List<float> info, List<string> path)
     {
       this.info = info;
+      this.path = path;
     }
   }
 }

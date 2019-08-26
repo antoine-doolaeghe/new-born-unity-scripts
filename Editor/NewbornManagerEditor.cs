@@ -21,11 +21,12 @@ namespace Newborn
       {
         FindObjectOfType<BuildStorage>().GetTrainingData();
       }
-
+      GUI.backgroundColor = Color.red;
       if (GUILayout.Button("Delete environment"))
       {
         manager.DeleteEnvironment();
       }
+      GUI.backgroundColor = Color.white;
 
       EditorGUILayout.LabelField("Random NewBorn Builds");
 
@@ -36,7 +37,7 @@ namespace Newborn
           spawner.BuildAgentRandomNewBornCoroutine();
         }
       }
-
+      GUI.backgroundColor = Color.red;
       if (GUILayout.Button("Delete NewBorn Cells"))
       {
         foreach (NewbornSpawner spawner in FindObjectsOfType<NewbornSpawner>())
@@ -44,6 +45,7 @@ namespace Newborn
           spawner.ClearAgents();
         }
       }
+      GUI.backgroundColor = Color.white;
 
       if (GUILayout.Button("Add Agent Generation"))
       {
@@ -72,6 +74,7 @@ namespace Newborn
 
 
       EditorGUILayout.LabelField("API Post request");
+      GUI.backgroundColor = Color.green;
       if (GUILayout.Button("Post Training NewBorn"))
       {
         // manager.ClearBroadCastingBrains();
@@ -80,7 +83,8 @@ namespace Newborn
           spawner.GetComponent<NewbornSpawner>().PostTrainingNewborns();
         }
       }
-
+      EditorGUILayout.LabelField("Reset");
+      GUI.backgroundColor = Color.yellow;
       if (GUILayout.Button("Reset trainer data"))
       {
         manager.ResetTrainerData();

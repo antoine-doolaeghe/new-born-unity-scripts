@@ -24,7 +24,6 @@ public class DesktopBuilderBehaviour : BuilderBehaviour
     public override void UpdateModes()
     {
         base.UpdateModes();
-
         if (CreativeMode)
         {
             if (Input.GetKeyDown(PlacementModeKey))

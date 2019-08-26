@@ -10,11 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 5ad018fa6ad094c93b2f2fe4d6f37029, type: 3}
-  m_Name: Newborn Spawner Config
+  m_Name: Training Newborn Spawner Config
   m_EditorClassIdentifier: 
-  AgentPrefab: {fileID: 0}
-  agentNumber: 0
-  isRandomSpawn: 0
-  spawnRange: 0
+  AgentPrefab: {fileID: 5358169075177354765, guid: 05e15c60d0dc94d30bc77a2e761ed657,
+    type: 3}
+  agentNumber: 1
+  isRandomSpawn: 1
+  spawnRange: 5.49
   instantiateSingleBrain: 0
   control: 0
